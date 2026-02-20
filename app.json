@@ -9,6 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.javier.climanuvem",
+      "usesAppleSignIn": true,
       "supportsTablet": true
     },
     "android": {
@@ -23,7 +25,8 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",
@@ -31,14 +34,26 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "imageWidth": 10,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#000000",
           "dark": {
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "We need access to your photos to upload images for weather analysis.",
+          "cameraPermission": "We need access to your camera to take photos for weather analysis."
+        }
+      ],
+      "expo-video",
+      "expo-secure-store",
+      "expo-sqlite",
+      "expo-apple-authentication",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
