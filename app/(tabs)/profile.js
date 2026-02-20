@@ -7,13 +7,12 @@ import {
   Alert,
   Keyboard,
   Platform,
+  Pressable,
   ScrollView,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { IconoUser } from "../../components/icons";
 import "../../global.css";
 
@@ -78,6 +77,7 @@ export default function Profile() {
   const profile = useAuthStore((s) => s.profile);
   const isLoading = useAuthStore((s) => s.isLoading);
   const refreshProfile = useAuthStore((s) => s.refreshProfile);
+  const signOut = useAuthStore((s) => s.signOut);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -115,6 +115,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (isSaveSuccess === true) {
+      clearTimeout();
       setTimeout(() => setIsSaveSuccess(null), 2000);
       return () => clearTimeout();
     }
@@ -196,110 +197,115 @@ export default function Profile() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-        automaticallyAdjustKeyboardInsets
-      >
-        {/* Header */}
-        <View className="items-center mb-8">
-          <View className="rounded-full bg-slate-400 p-6">
-            <IconoUser size={64} />
-          </View>
-
-          <Text className="mt-4 text-3xl font-bold">{displayName}</Text>
-          <Text className="mt-1 mb-2 text-slate-500">{email}</Text>
-
-          {isEditing ? (
-            <Text className="absolute -bottom-4 text-xs  text-slate-500">
-              Editando perfil…
-            </Text>
-          ) : null}
-
-          {isSaveSuccess ? (
-            <Text className="absolute -bottom-4 text-xs  text-green-500">
-              Cambios guardados con éxito ✅
-            </Text>
-          ) : null}
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+      automaticallyAdjustKeyboardInsets
+    >
+      {/* Header */}
+      <View className="items-center mb-8">
+        <View className="rounded-full bg-slate-400 p-6">
+          <IconoUser size={64} />
         </View>
 
-        <View className="px-20">
-          {/* Contenido */}
-          <View className="gap-4">
-            <FieldPrueba
-              label="Nombre completo"
-              value={fullName}
-              onChangeText={setFullName}
-              isEditing={isEditing}
-              returnKeyType="next"
-              autoComplete="name"
-              textContentType="name"
-              autoCapitalize="words"
-              maxLength={20}
-            />
-            <FieldPrueba
-              label="Teléfono"
-              value={phone}
-              onChangeText={setPhone}
-              isEditing={isEditing}
-              keyboardType="phone-pad"
-              textContentType="telephoneNumber"
-              autoComplete="tel"
-              returnKeyType="next"
-            />
-            <FieldPrueba
-              label="Nombre de usuario"
-              value={username}
-              onChangeText={setUsername}
-              isEditing={isEditing}
-              returnKeyType="done"
-              autoComplete="username"
-              textContentType="username"
-              autoCapitalize="none"
-              maxLength={15}
-            />
-          </View>
-          <View className="mt-12">
-            {!isEditing ? (
-              <TouchableOpacity
-                onPress={onEdit}
-                className="items-center rounded-xl bg-blue-900 py-4"
+        <Text className="mt-4 text-3xl font-bold">{displayName}</Text>
+        <Text className="mt-1 mb-2 text-slate-500">{email}</Text>
+
+        {isEditing ? (
+          <Text className="absolute -bottom-4 text-xs  text-slate-500">
+            Editando perfil…
+          </Text>
+        ) : null}
+
+        {isSaveSuccess && !isEditing ? (
+          <Text className="absolute -bottom-4 text-xs  text-green-500">
+            Cambios guardados con éxito ✅
+          </Text>
+        ) : null}
+      </View>
+
+      <View className="px-20">
+        {/* Contenido */}
+        <View className="gap-4">
+          <FieldPrueba
+            label="Nombre completo"
+            value={fullName}
+            onChangeText={setFullName}
+            isEditing={isEditing}
+            returnKeyType="next"
+            autoComplete="name"
+            textContentType="name"
+            autoCapitalize="words"
+            maxLength={20}
+          />
+          <FieldPrueba
+            label="Teléfono"
+            value={phone}
+            onChangeText={setPhone}
+            isEditing={isEditing}
+            keyboardType="phone-pad"
+            textContentType="telephoneNumber"
+            autoComplete="tel"
+            returnKeyType="next"
+          />
+          <FieldPrueba
+            label="Nombre de usuario"
+            value={username}
+            onChangeText={setUsername}
+            isEditing={isEditing}
+            returnKeyType="done"
+            autoComplete="username"
+            textContentType="username"
+            autoCapitalize="none"
+            maxLength={15}
+          />
+        </View>
+        <View className="mt-12">
+          {!isEditing ? (
+            <Pressable
+              onPress={onEdit}
+              className="items-center rounded-xl bg-blue-900 py-4 active:opacity-50 "
+            >
+              <Text className="text-base font-semibold text-white">
+                Editar perfil
+              </Text>
+            </Pressable>
+          ) : (
+            <View className="flex-row gap-3">
+              <Pressable
+                onPress={onCancel}
+                disabled={isSaving}
+                className="flex-1 items-center rounded-xl border border-slate-300 py-4 active:opacity-50"
+              >
+                <Text className="text-base font-semibold text-slate-900">
+                  Cancelar
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={onSave}
+                disabled={isSaving}
+                className="flex-1 items-center rounded-xl py-4 active:opacity-50 bg-blue-900"
               >
                 <Text className="text-base font-semibold text-white">
-                  Editar perfil
+                  {isSaving ? "Guardando…" : "Guardar"}
                 </Text>
-              </TouchableOpacity>
-            ) : (
-              <View className="flex-row gap-3">
-                <TouchableOpacity
-                  onPress={onCancel}
-                  disabled={isSaving}
-                  className="flex-1 items-center rounded-xl border border-slate-300 py-4"
-                >
-                  <Text className="text-base font-semibold text-slate-900">
-                    Cancelar
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={onSave}
-                  disabled={isSaving}
-                  className={`flex-1 items-center rounded-xl py-4 ${
-                    isSaving ? "bg-slate-400" : "bg-black"
-                  }`}
-                >
-                  <Text className="text-base font-semibold text-white">
-                    {isSaving ? "Guardando…" : "Guardar"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
+              </Pressable>
+            </View>
+          )}
+          <View className="h-px bg-slate-400 my-8" />
+          {/* LINEA DIVISORIA */}
+          <Pressable
+            onPress={signOut}
+            className="items-center rounded-xl bg-black py-4 active:opacity-50 "
+          >
+            <Text className="text-base font-semibold text-white">
+              Cerrar sesión
+            </Text>
+          </Pressable>
         </View>
-      </ScrollView>
-      {/* Barra inferior sticky */}
-    </SafeAreaView>
+      </View>
+    </ScrollView>
   );
 }
 /*
