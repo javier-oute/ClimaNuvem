@@ -1,4 +1,4 @@
-import { BotonCargarImagen, BotonTomarFoto } from "@/components/botones";
+import { BotonCargarImagen, BotonTomarFoto } from "@/components/buttons";
 import DemoVideo from "@/components/videoComponent";
 import { Text, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";

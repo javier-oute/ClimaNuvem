@@ -1,18 +1,17 @@
 import { Tabs } from "expo-router";
 import { IconoHome } from "../../components/icons";
 import "../../global.css";
-import { useAuthStore } from "../../stores/auth.store";
 
 const isLoggedInmock = true; // Simulación del estado de autenticación
 
 export default function TabsLayout() {
-  const session = useAuthStore((s) => !!s.session); // Simulación del estado de autenticación
+  //const session = useAuthStore((s) => !!s.session); // Simulación del estado de autenticación
   //const isLoading = useAuthStore((s) => s.isLoading);
 
   return (
     <Tabs
       screenOptions={{
-        tabBarStyle: session
+        tabBarStyle: isLoggedInmock
           ? { backgroundColor: "white" }
           : { display: "none" },
         tabBarActiveTintColor: "black",
@@ -27,7 +26,7 @@ export default function TabsLayout() {
           headerShown: false,
         }}
       />
-      <Tabs.Protected guard={session}>
+      <Tabs.Protected guard={isLoggedInmock}>
         <Tabs.Screen
           name="history"
           options={{

@@ -216,6 +216,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
       try {
         const { error } = await supabase.auth.signOut();
         if (error) throw new Error(error.message);
+        set({ session: null, profile: null });
       } finally {
         endLoading();
       }
