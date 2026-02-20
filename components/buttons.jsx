@@ -48,7 +48,6 @@ export function BotonCargarImagen() {
     </Pressable>
   );
 }
-
 /* 
 
 
