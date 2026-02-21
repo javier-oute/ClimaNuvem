@@ -1,3 +1,5 @@
+import { saveForecastWithPhoto } from "@/stores/forecast.store";
+import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import CargarImagen from "../hooks/useCargarImagen";
 import useTomarFoto from "../hooks/useTomarFoto";
@@ -5,14 +7,21 @@ import { IconoCamera, IconoImage } from "./icons";
 
 export function BotonTomarFoto() {
   const { abrirCamara } = useTomarFoto();
+  const [photo, setPhoto] = useState(null);
 
   return (
     <Pressable
       onPress={() => {
-        abrirCamara().then((foto) => {
+        abrirCamara().then(async (foto) => {
           if (foto) {
             console.log("foto tomada: ", foto);
           }
+          await saveForecastWithPhoto({
+            asset: foto, // el asset que devuelve abrirCamara()
+            name: "eyou",
+            forecast: "choiva",
+            probability: 0.8,
+          });
         });
       }}
       className="flex flex-row items-center justify-between w-64 rounded-3xl bg-black px-6 py-4 shadow-sm active:opacity-75"
