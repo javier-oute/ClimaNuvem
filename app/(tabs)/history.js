@@ -1,51 +1,88 @@
 import { fetchForecastHistoryWithSignedUrls } from "@/lib/forecastHistory";
+import { formatDateTimeWithWeekday } from "@/lib/format";
+import { Link } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import "../../global.css";
 
-/*
-const data = [];
-for (let i = 1; i <= 15; i++) {
-  data.push({ ...prueba_objeto_1, id: i });
-}
-  */
+const PAGE_SIZE = 15;
 
 export default function Historial() {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const loadPage = useCallback(async (pageIndex) => {
+    const from = pageIndex * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    return await fetchForecastHistoryWithSignedUrls(from, to);
+  }, []);
+
+  const loadInitial = useCallback(async () => {
     try {
-      const rowsWithUrl = await fetchForecastHistoryWithSignedUrls();
+      setPageIndex(0);
+      setHasMore(true);
+
+      const rowsWithUrl = await loadPage(0);
       setItems(rowsWithUrl);
+      setHasMore(rowsWithUrl.length === PAGE_SIZE);
     } catch (err) {
       console.error("Error fetching signed URLs:", err);
       setItems([]);
+      setHasMore(false);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [loadPage]);
+
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore || isLoading || isRefreshing || !hasMore) return;
+    if (items.length === 0) return;
+
+    setIsLoadingMore(true);
+    try {
+      const nextPage = pageIndex + 1;
+      const rowsWithUrl = await loadPage(nextPage);
+
+      if (rowsWithUrl.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      setItems((prev) => [...prev, ...rowsWithUrl]);
+      setPageIndex(nextPage);
+      setHasMore(rowsWithUrl.length === PAGE_SIZE);
+    } catch (err) {
+      console.error("Error loadMore:", err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [pageIndex, hasMore, isLoadingMore, isLoading, isRefreshing, loadPage]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    loadInitial();
+  }, [loadInitial]);
 
   const onRefresh = useCallback(() => {
     setIsRefreshing(true);
-    load();
-  }, [load]);
+    loadInitial();
+  }, [loadInitial]);
 
   return (
     <View className="flex-1 bg-white">
-      {/* 
-      <Image
-        source={require("../../assets/images/fondo-nubes-1.avif")}
-        className="w-full h-full absolute z-0 opacity-50"
-        resizeMode="cover"
-      />
- */}
       <FlatList
         data={items}
         style={{ flex: 1 }}
@@ -63,65 +100,50 @@ export default function Historial() {
             <Text className="font-bold text-lg">Historial</Text>
           </View>
         }
-        /*
-        onEndReached={""}
-        onEndReachedThreshold={""}
-        */
-        renderItem={({ item, index }) => (
-          <View className="flex bg-white rounded-xl shadow-sm">
-            <Image
-              source={
-                item.signedUrl
-                  ? { uri: item.signedUrl }
-                  : require("@/assets/images/fondo-nubes-1.avif")
-              }
-              className="w-full h-32 mb-4 rounded-t-xl"
-              resizeMode="cover"
-            />
-            <View className="px-4 pb-4 gap-1">
-              <Text className="text-lg font-semibold">
-                Predicción: {item.name}
-              </Text>
-              <Text>Fecha: {item.created_at}</Text>
-              <Text className="mt-1">Pronóstico: {item.forecast}</Text>
-              <Text className="mt-1">Probabilidad: {item.probability}%</Text>
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={7}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View className="py-4">
+              <ActivityIndicator />
             </View>
-          </View>
-        )}
+          ) : null
+        }
+        renderItem={({ item, index }) => {
+          const { texto } = formatDateTimeWithWeekday(item.created_at);
+
+          return (
+            <Link href={`/${item.id}`} asChild>
+              <Pressable className="active:opacity-80">
+                <View className="flex bg-white rounded-xl shadow-sm">
+                  <Image
+                    source={
+                      item.signedUrl
+                        ? { uri: item.signedUrl }
+                        : require("@/assets/images/fondo-nubes-1.avif")
+                    }
+                    className="w-full h-32 mb-4 rounded-t-xl"
+                    resizeMode="cover"
+                  />
+                  <View className="px-4 pb-4 gap-1">
+                    <Text className="text-lg font-semibold">
+                      Predicción: {item.name}
+                    </Text>
+                    <Text>Fecha: {texto} </Text>
+                    <Text className="mt-1">Pronóstico: {item.forecast}</Text>
+                    <Text className="mt-1">
+                      Probabilidad: {item.probability}%
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+            </Link>
+          );
+        }}
       />
     </View>
   );
 }
-
-/* 
-    <FlatList
-      data={data}
-      keyExtractor={(item) => String(item.id)}
-      renderItem={({ item, index }) => (
-        <View className="flex">
-          <Text className="text-lg font-semibold">Predicción {item.id}</Text>
-          <Text>Fecha: {item.Fecha}</Text>
-          <Text className="mt-1">Hora: {item.Hora}</Text>
-          <Text className="mt-1">
-            Probabilidad de Pronóstico: {item.ProbabilidadPronostico}%
-          </Text>
-          <Text className="mt-1">Pronóstico: {item.Pronostico}</Text>
-        </View>
-      )}
-    />
-
-
-
-
-
-    <View className="flex-auto p-4">
-      <Text className="text-lg">
-        Aquí encontrarás el historial de tus consultas de pronósticos
-      </Text>
-      <Link asChild href="/">
-        <Pressable className="mt-4 rounded bg-blue-500 px-4 py-2">
-          <IconoHome />
-        </Pressable>
-      </Link>
-    </View>
-     */
