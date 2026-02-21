@@ -20,3 +20,14 @@ export async function uploadPhoto({ uri, userId }) {
 
   return path; // <-- esto lo guardas en la tabla
 }
+
+export async function getSignedImageUrl(path, expiresIn = 60 * 10) {
+  if (!path) return null;
+
+  const { data, error } = await supabase.storage
+    .from("forecast-images")
+    .createSignedUrl(path, expiresIn);
+
+  if (error) throw error;
+  return data?.signedUrl ?? null;
+}
