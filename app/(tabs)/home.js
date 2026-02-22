@@ -1,8 +1,32 @@
 import { BotonCargarImagen, BotonTomarFoto } from "@/components/buttons";
 import DemoVideo from "@/components/videoComponent";
 import { Text, View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
 import "../../global.css";
+
+export default function Index() {
+  return (
+    <View className="flex-1 flex-grow justify-end bg-white">
+      <DemoVideo />
+
+      <View className=" bg-white rounded-t-3xl text-balance">
+        <View className="pt-8 pl-8 pb-12 pr-8 gap-3">
+          <Text className="font-bold text-3xl">Bienvenido a ClimaNuvem</Text>
+          <Text className="font-normal text-lg">
+            Saca una foto a las nubes que te preocupan y te daremos el
+            pronóstico{" "}
+          </Text>
+        </View>
+        <View className="items-center pb-12 gap-8">
+          <BotonTomarFoto />
+          <BotonCargarImagen />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/* 
+
 
 export default function Index() {
   return (
@@ -30,7 +54,8 @@ export default function Index() {
   );
 }
 
-/* 
+
+
       <Image
         source={require("../../assets/images/fondo-nubes-1.avif")}
         className="w-full h-full absolute z-0"

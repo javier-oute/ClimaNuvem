@@ -9,7 +9,7 @@ import "../global.css";
 export default function RootLayout() {
   return (
     <AuthBootstrap>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
