@@ -2,11 +2,16 @@ import ProfileField from "@/components/profile/profileField";
 import { useProfileForm } from "@/hooks/profile/useProfileForm";
 import { useAuthStore } from "@/stores/auth.store";
 //import { Redirect } from "expo-router";
+import {
+  CancelProfileButton,
+  EditProfileButton,
+  LogOutButton,
+  SaveProfileButton,
+} from "@/components/profile/profile-buttons";
 import { useEffect } from "react";
 import {
   ActivityIndicator,
   Platform,
-  Pressable,
   ScrollView,
   Text,
   View,
@@ -24,14 +29,12 @@ export default function Profile() {
   const userId = session?.user?.id ?? null;
   const email = session?.user?.email ?? "—";
 
-  // (igual que tenías) pedir profile si aún no está cargado
   useEffect(() => {
     if (session && profile === undefined) {
       refreshProfile();
     }
   }, [session, profile, refreshProfile]);
 
-  // TODO lo demás (estado/handlers/validación/saveSuccess) lo saca el hook
   const {
     isEditing,
     isSaving,
@@ -57,9 +60,14 @@ export default function Profile() {
 
   if (showFullScreenLoader) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <ScrollView
+        className="flex-1 bg-white pt-12"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+        automaticallyAdjustKeyboardInsets
+      >
         <ActivityIndicator />
-      </View>
+      </ScrollView>
     );
   }
 
@@ -69,7 +77,7 @@ export default function Profile() {
 
   return (
     <ScrollView
-      className="flex-1 bg-white pt-8"
+      className="flex-1 bg-white pt-12"
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
       automaticallyAdjustKeyboardInsets
@@ -135,48 +143,16 @@ export default function Profile() {
 
         <View className="mt-8">
           {!isEditing ? (
-            <Pressable
-              onPress={onEdit}
-              className="items-center rounded-xl bg-blue-900 py-4 active:opacity-50 "
-            >
-              <Text className="text-base font-semibold text-white">
-                Editar perfil
-              </Text>
-            </Pressable>
+            <EditProfileButton onPress={onEdit} />
           ) : (
             <View className="flex-row gap-3">
-              <Pressable
-                onPress={onCancel}
-                disabled={isSaving}
-                className="flex-1 items-center rounded-xl border border-slate-300 py-4 active:opacity-50"
-              >
-                <Text className="text-base font-semibold text-slate-900">
-                  Cancelar
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={onSave}
-                disabled={isSaving}
-                className="flex-1 items-center rounded-xl py-4 active:opacity-50 bg-blue-900"
-              >
-                <Text className="text-base font-semibold text-white">
-                  {isSaving ? "Guardando…" : "Guardar"}
-                </Text>
-              </Pressable>
+              <CancelProfileButton onCancel={onCancel} isSaving={isSaving} />
+              <SaveProfileButton onSave={onSave} isSaving={isSaving} />
             </View>
           )}
 
           <View className="h-px bg-slate-400 my-6" />
-
-          <Pressable
-            onPress={signOut}
-            className="items-center rounded-xl bg-black py-4 active:opacity-50 "
-          >
-            <Text className="text-base font-semibold text-white">
-              Cerrar sesión
-            </Text>
-          </Pressable>
+          <LogOutButton signOut={signOut} />
         </View>
       </View>
     </ScrollView>
