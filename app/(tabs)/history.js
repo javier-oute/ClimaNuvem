@@ -1,3 +1,4 @@
+import { HistoryHeader } from "@/components/history/history-header";
 import { fetchForecastHistoryWithSignedUrls } from "@/lib/forecastHistory";
 import { formatDateTimeWithWeekday } from "@/lib/format";
 import { Link } from "expo-router";
@@ -10,6 +11,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import "../../global.css";
 
 const PAGE_SIZE = 15;
@@ -23,12 +25,26 @@ export default function Historial() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadPage = useCallback(async (pageIndex) => {
-    const from = pageIndex * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
+  const [day, setDay] = useState(null);
+  const [showPicker, setShowPicker] = useState(false);
 
-    return await fetchForecastHistoryWithSignedUrls(from, to);
-  }, []);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const loadPage = useCallback(
+    async (pageIndex) => {
+      const from = pageIndex * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      return await fetchForecastHistoryWithSignedUrls(
+        from,
+        to,
+        debouncedSearch,
+        day,
+      );
+    },
+    [debouncedSearch, day],
+  );
 
   const loadInitial = useCallback(async () => {
     try {
@@ -74,19 +90,29 @@ export default function Historial() {
 
   useEffect(() => {
     loadInitial();
-  }, [loadInitial]);
+  }, [loadInitial, debouncedSearch, day]);
 
   const onRefresh = useCallback(() => {
     setIsRefreshing(true);
     loadInitial();
   }, [loadInitial]);
 
+  // DEBOUNCE SIMPLE
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
   return (
-    <View className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <FlatList
         data={items}
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 32, gap: 24 }}
+        contentContainerStyle={{
+          paddingHorizontal: 32,
+          paddingTop: 24,
+          gap: 24,
+        }}
         keyExtractor={(item) => String(item.id)}
         refreshing={isRefreshing}
         /* FLATLIST TIENE UN MONTON DE OPCIONES, SEGUIR MIRANDO */
@@ -96,9 +122,14 @@ export default function Historial() {
         }
         stickyHeaderIndices={[0]}
         ListHeaderComponent={
-          <View className="flex items-start justify-start pb-4">
-            <Text className="font-bold text-lg">Historial</Text>
-          </View>
+          <HistoryHeader
+            day={day}
+            setDay={setDay}
+            setShowPicker={setShowPicker}
+            showPicker={showPicker}
+            search={search}
+            setSearch={setSearch}
+          />
         }
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
@@ -144,6 +175,6 @@ export default function Historial() {
           );
         }}
       />
-    </View>
+    </SafeAreaView>
   );
 }

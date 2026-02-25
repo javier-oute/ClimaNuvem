@@ -27,7 +27,7 @@ export default function useTomarFoto() {
     const result = await ImagePicker.launchCameraAsync({
       allowsMultipleSelection: false,
       quality: 1,
-      exif: true,
+      exif: false,
     });
     if (result.canceled) return;
 

@@ -9,15 +9,36 @@ import "../global.css";
 export default function RootLayout() {
   return (
     <AuthBootstrap>
-      <GestureHandlerRootView>
+      <GestureHandlerRootView className="flex-1">
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              title: "",
+            }}
+          />
           <Stack.Screen
             name="[id]"
             options={{
-              headerTitle: `Item`,
+              headerBackTitleVisible: false,
+              headerShown: true,
+              headerTitle: "",
+              headerBackTitle: "",
+              headerTransparent: true,
+              headerShadowVisible: false,
+            }}
+          />
+          <Stack.Screen
+            name="forecast-screen"
+            options={{
+              headerBackTitleVisible: false,
+              headerShown: true,
+              headerTitle: "",
+              headerBackTitle: "",
+              headerTransparent: true,
+              headerShadowVisible: false,
             }}
           />
         </Stack>

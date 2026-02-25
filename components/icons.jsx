@@ -1,6 +1,10 @@
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+
 import "../global.css";
 
 export const IconoHome = (props) => (
@@ -17,6 +21,44 @@ export const IconoImage = () => (
   <FontAwesome6 name="image" size={24} color="white" />
 );
 
-export const IconoUser = (props) => (
-  <Feather name="user" color="black" {...props} />
+export const UserIcon = (props) => (
+  <Feather name="user" color="white" {...props} />
+);
+
+export const EditIcon = () => <Feather name="edit" size={24} color="white" />;
+
+export const CancelIcon = () => (
+  <MaterialCommunityIcons name="cancel" size={24} color="white" />
+);
+
+export const SaveIcon = () => (
+  <FontAwesome5 name="save" size={24} color="white" />
+);
+
+export const SignOutIcon = () => (
+  <MaterialIcons name="logout" size={24} color="white" />
+);
+
+export const SearchIcon = () => (
+  <Feather name="search" size={16} color="black" />
+);
+
+export const CrossIcon = () => (
+  <Entypo name="circle-with-cross" size={24} color="black" />
+);
+
+export const CalendarIcon = () => (
+  <FontAwesome5 name="calendar-alt" size={24} color="black" />
+);
+
+export const ChevronUpIcon = () => (
+  <Entypo name="chevron-up" size={24} color="black" />
+);
+
+export const ChevronDownIcon = () => (
+  <Entypo name="chevron-down" size={24} color="black" />
+);
+
+export const ChevronLeftIcon = () => (
+  <Entypo name="chevron-left" size={24} color="white" />
 );

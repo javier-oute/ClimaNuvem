@@ -1,4 +1,5 @@
-import { router } from "expo-router";
+import { UserIcon } from "@/components/icons";
+import { Link } from "expo-router";
 import { Pressable, Text } from "react-native";
 
 export default function GuestButton({
@@ -6,22 +7,19 @@ export default function GuestButton({
   label = "Entrar como invitado",
 }) {
   return (
-    <Pressable
-      onPress={() => {
-        router.replace(href);
-      }}
-      className={[
-        "self-center flex-row items-center justify-center",
-        "rounded-full border border-white bg-blue-900",
-        "px-4 py-2",
-      ].join(" ")}
-    >
-      <Text className="text-white text-sm font-semibold">{label}</Text>
-    </Pressable>
+    <Link href={href} replace asChild>
+      <Pressable className="flex flex-row justify-between items-center w-52 rounded-3xl bg-[#b0aeaf] px-5 py-2 shadow-sm active:opacity-75">
+        <UserIcon />
+        <Text className="text-white text-sm font-semibold">{label}</Text>
+      </Pressable>
+    </Link>
   );
 }
 
+//
+
 /*
+
 export default function GuestButton({
   href = "/(tabs)/home",
   label = "Entrar como invitado",

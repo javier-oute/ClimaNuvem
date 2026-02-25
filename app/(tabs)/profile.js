@@ -1,4 +1,4 @@
-import ProfileField from "@/components/profile/profileField";
+import EditableField from "@/components/editableField";
 import { useProfileForm } from "@/hooks/profile/useProfileForm";
 import { useAuthStore } from "@/stores/auth.store";
 //import { Redirect } from "expo-router";
@@ -6,7 +6,6 @@ import {
   CancelProfileButton,
   EditProfileButton,
   LogOutButton,
-  SaveProfileButton,
 } from "@/components/profile/profile-buttons";
 import { useEffect } from "react";
 import {
@@ -16,7 +15,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { IconoUser } from "../../components/icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { SaveButton } from "../../components/buttons";
+import { UserIcon } from "../../components/icons";
 import "../../global.css";
 
 export default function Profile() {
@@ -76,86 +77,92 @@ export default function Profile() {
   }
 
   return (
-    <ScrollView
-      className="flex-1 bg-white pt-12"
-      keyboardShouldPersistTaps="handled"
-      keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-      automaticallyAdjustKeyboardInsets
-    >
-      {/* Header */}
-      <View className="items-center mb-8">
-        <View className="rounded-full bg-slate-400 p-6">
-          <IconoUser size={64} />
+    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+      <ScrollView
+        className="pt-10"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+        automaticallyAdjustKeyboardInsets
+      >
+        {/* Header */}
+        <View className="items-center mb-6">
+          <View className="rounded-full bg-slate-400 p-6">
+            <UserIcon size={64} />
+          </View>
+
+          <Text className="mt-4 text-3xl font-bold">{displayName}</Text>
+          <Text className="mt-1 mb-2 text-slate-500">{email}</Text>
+
+          {isEditing ? (
+            <Text className="absolute -bottom-4 text-xs  text-slate-500">
+              Editando perfil…
+            </Text>
+          ) : null}
+
+          {isSaveSuccess && !isEditing ? (
+            <Text className="absolute -bottom-4 text-xs  text-green-500">
+              Cambios guardados con éxito ✅
+            </Text>
+          ) : null}
         </View>
 
-        <Text className="mt-4 text-3xl font-bold">{displayName}</Text>
-        <Text className="mt-1 mb-2 text-slate-500">{email}</Text>
+        <View className="flex items-center">
+          {/* Contenido */}
+          <View className="gap-4">
+            <EditableField
+              label="Nombre completo"
+              value={fullName}
+              onChangeText={setFullName}
+              isEditing={isEditing}
+              returnKeyType="next"
+              autoComplete="name"
+              textContentType="name"
+              autoCapitalize="words"
+              maxLength={20}
+              placeholder="Ej: Javier Oute"
+            />
+            <EditableField
+              label="Teléfono"
+              value={phone}
+              onChangeText={setPhone}
+              isEditing={isEditing}
+              keyboardType="phone-pad"
+              textContentType="telephoneNumber"
+              autoComplete="tel"
+              returnKeyType="next"
+              placeholder="+34 612 345 678"
+            />
+            <EditableField
+              label="Nombre de usuario"
+              value={username}
+              onChangeText={setUsername}
+              isEditing={isEditing}
+              returnKeyType="done"
+              autoComplete="username"
+              textContentType="username"
+              autoCapitalize="none"
+              maxLength={15}
+              placeholder="Ej: sara_garcia"
+            />
+          </View>
 
-        {isEditing ? (
-          <Text className="absolute -bottom-4 text-xs  text-slate-500">
-            Editando perfil…
-          </Text>
-        ) : null}
+          <View className="flex w-80 items-center justify-center mt-8">
+            {!isEditing ? (
+              <EditProfileButton onPress={onEdit} />
+            ) : (
+              <View className="flex-row gap-3">
+                <CancelProfileButton onCancel={onCancel} isSaving={isSaving} />
+                <SaveButton onSave={onSave} isSaving={isSaving} />
+              </View>
+            )}
 
-        {isSaveSuccess && !isEditing ? (
-          <Text className="absolute -bottom-4 text-xs  text-green-500">
-            Cambios guardados con éxito ✅
-          </Text>
-        ) : null}
-      </View>
+            <View className="h-px w-56 bg-slate-400 my-6" />
 
-      <View className="px-10">
-        {/* Contenido */}
-        <View className="gap-4">
-          <ProfileField
-            label="Nombre completo"
-            value={fullName}
-            onChangeText={setFullName}
-            isEditing={isEditing}
-            returnKeyType="next"
-            autoComplete="name"
-            textContentType="name"
-            autoCapitalize="words"
-            maxLength={20}
-          />
-          <ProfileField
-            label="Teléfono"
-            value={phone}
-            onChangeText={setPhone}
-            isEditing={isEditing}
-            keyboardType="phone-pad"
-            textContentType="telephoneNumber"
-            autoComplete="tel"
-            returnKeyType="next"
-          />
-          <ProfileField
-            label="Nombre de usuario"
-            value={username}
-            onChangeText={setUsername}
-            isEditing={isEditing}
-            returnKeyType="done"
-            autoComplete="username"
-            textContentType="username"
-            autoCapitalize="none"
-            maxLength={15}
-          />
+            <LogOutButton signOut={signOut} />
+          </View>
         </View>
-
-        <View className="mt-8">
-          {!isEditing ? (
-            <EditProfileButton onPress={onEdit} />
-          ) : (
-            <View className="flex-row gap-3">
-              <CancelProfileButton onCancel={onCancel} isSaving={isSaving} />
-              <SaveProfileButton onSave={onSave} isSaving={isSaving} />
-            </View>
-          )}
-
-          <View className="h-px bg-slate-400 my-6" />
-          <LogOutButton signOut={signOut} />
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 /*

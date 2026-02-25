@@ -1,29 +1,40 @@
-import { saveForecastWithPhoto } from "@/stores/forecast.store";
-import { useState } from "react";
+import { router } from "expo-router";
+import { useCallback } from "react";
 import { Pressable, Text, View } from "react-native";
 import CargarImagen from "../hooks/useCargarImagen";
 import useTomarFoto from "../hooks/useTomarFoto";
-import { IconoCamera, IconoImage } from "./icons";
+import { tryGetCoordsAndPlace } from "../lib/location";
+import { IconoCamera, IconoImage, SaveIcon } from "./icons";
 
 export function BotonTomarFoto() {
   const { abrirCamara } = useTomarFoto();
-  const [photo, setPhoto] = useState(null);
+  //const [photo, setPhoto] = useState(null);
+
+  const onPress = useCallback(async () => {
+    try {
+      const foto = await abrirCamara();
+      if (!foto) return;
+
+      const loc = await tryGetCoordsAndPlace();
+
+      router.push({
+        pathname: "/forecast-screen",
+        params: {
+          imageUri: foto.uri,
+          source: "camera",
+          lat: loc ? String(loc.coords.latitude) : "",
+          lon: loc ? String(loc.coords.longitude) : "",
+          placeNameAuto: loc?.placeNameAuto ?? "",
+        },
+      });
+    } catch (e) {
+      console.error("Error al tomar la foto:", e);
+    }
+  }, [abrirCamara]);
 
   return (
     <Pressable
-      onPress={() => {
-        abrirCamara().then(async (foto) => {
-          if (foto) {
-            console.log("foto tomada: ", foto);
-          }
-          await saveForecastWithPhoto({
-            asset: foto, // el asset que devuelve abrirCamara()
-            name: "eyou",
-            forecast: "choiva",
-            probability: 0.8,
-          });
-        });
-      }}
+      onPress={onPress}
       className="flex flex-row items-center justify-between w-56 rounded-3xl bg-[#314468] px-6 py-4 shadow-sm active:opacity-75"
     >
       <View>
@@ -36,16 +47,56 @@ export function BotonTomarFoto() {
   );
 }
 
-export function BotonCargarImagen() {
+export function SaveButton({ onSave, isSaving }) {
   return (
     <Pressable
-      onPress={() => {
-        CargarImagen().then((imagen) => {
-          if (imagen) {
-            console.log("imagen cargada: ", imagen);
-          }
-        });
-      }}
+      onPress={onSave}
+      //className="flex-1 items-center rounded-xl py-4 active:opacity-50 bg-blue-900"
+      className="flex-1 flex-row items-center justify-between rounded-3xl bg-[#314468] px-6 py-4 shadow-sm active:opacity-75"
+    >
+      <SaveIcon />
+      <Text className="text-base font-semibold text-white">
+        {isSaving ? "Guardando…" : "Guardar"}
+      </Text>
+    </Pressable>
+  );
+}
+
+/* 
+
+          await saveForecastWithPhoto({
+            asset: foto, // el asset que devuelve abrirCamara()
+            name: "eyou",
+            forecast: "choiva",
+            probability: 0.8,
+          });
+
+*/
+
+export function BotonCargarImagen() {
+  const onPress = useCallback(async () => {
+    try {
+      const imagen = await CargarImagen();
+      if (!imagen) return;
+
+      router.push({
+        pathname: "/forecast-screen",
+        params: {
+          imageUri: imagen.uri,
+          source: "gallery",
+          lat: "",
+          lon: "",
+          placeNameAuto: "",
+        },
+      });
+    } catch (e) {
+      console.error("Error al cargar imagen:", e);
+    }
+  }, []);
+
+  return (
+    <Pressable
+      onPress={onPress}
       className="flex flex-row items-center justify-between w-56 rounded-3xl bg-[#b0aeaf] px-6 py-4 shadow-sm active:opacity-75"
     >
       <View>
@@ -57,7 +108,7 @@ export function BotonCargarImagen() {
     </Pressable>
   );
 }
-/* 
+/*
 export function BotonTomarFoto() {
   const { abrirCamara } = useTomarFoto();
   const [photo, setPhoto] = useState(null);
