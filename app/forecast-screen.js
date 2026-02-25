@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SaveButton } from "../components/buttons";
 import "../global.css";
+import { formatProbability } from "../lib/format";
 import { saveForecastWithPhoto } from "../stores/forecast.store";
 
 export default function ConfirmForecast() {
@@ -41,8 +42,7 @@ export default function ConfirmForecast() {
   const forecast = "Posible lluvia en 2 horas. Nubes densas y oscuras.";
   const probability = 0.78;
 
-  const prob01 = Math.max(0, Math.min(1, Number(probability) || 0));
-  const p = Math.round(prob01 * 100); // 0..100
+  const p = formatProbability(probability);
 
   const onDiscard = useCallback(() => {
     router.back();
@@ -167,12 +167,12 @@ export default function ConfirmForecast() {
                 {forecast || "-"}
               </Text>
               <View className="flex w-full items-center gap-2">
-                <Text className="font-bold text-center text-2xl rounded-full bg-[#314468] px-3 py-1 text-white">
+                <Text className="font-bold text-center text-2xl rounded-2xl bg-[#314468] px-3 py-1 text-white">
                   Probabilidad: {p ?? "-"}%
                 </Text>
-                <View className="h-2 w-80 rounded-full bg-slate-200 overflow-hidden">
+                <View className="h-2 w-80 rounded-2xl bg-slate-200 overflow-hidden">
                   <View
-                    className="h-2 rounded-full bg-[#314468]"
+                    className="h-2 rounded-2xl bg-[#314468]"
                     style={{ width: `${p}%` }}
                   />
                 </View>

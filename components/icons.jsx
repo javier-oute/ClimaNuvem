@@ -62,3 +62,11 @@ export const ChevronDownIcon = () => (
 export const ChevronLeftIcon = () => (
   <Entypo name="chevron-left" size={24} color="white" />
 );
+
+export const TrashIcon = () => (
+  <Feather name="trash-2" size={24} color="black" />
+);
+
+export const BookmarckIcon = () => (
+  <Feather name="bookmark" size={24} color="white" />
+);

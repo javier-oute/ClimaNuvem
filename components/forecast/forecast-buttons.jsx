@@ -1,5 +1,5 @@
 import { Pressable, Text } from "react-native";
-import { ChevronLeftIcon, SaveIcon } from "../icons";
+import { ChevronLeftIcon, SaveIcon, TrashIcon } from "../icons";
 
 export function DiscardForecastButton({ onDiscard }) {
   return (
@@ -25,6 +25,19 @@ export function SaveForecastButton({ onSave, isSaving }) {
       <Text className="text-base font-semibold text-white">
         {isSaving ? "Guardando…" : "Guardar"}
       </Text>
+    </Pressable>
+  );
+}
+
+export function DeleteForecastButton({ onDelete }) {
+  return (
+    <Pressable
+      onPress={onDelete}
+      //className="flex-1 items-center rounded-xl border border-slate-300 py-4 active:opacity-50"
+      className="flex-1 flex-row items-center justify-between rounded-3xl bg-red-600 px-6 py-4 shadow-sm active:opacity-75"
+    >
+      <TrashIcon />
+      <Text className="text-base font-semibold text-white">Eliminar</Text>
     </Pressable>
   );
 }
