@@ -204,7 +204,7 @@ export default function ConfirmForecast() {
                 source === "camera" ? "Lugar detectado..." : "Lugar (opcional)"
               }
               autoCapitalize="words"
-              maxLength={20}
+              maxLength={50}
             />
           </View>
           {/* Botones */}

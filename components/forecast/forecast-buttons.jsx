@@ -1,5 +1,5 @@
 import { Pressable, Text } from "react-native";
-import { ChevronLeftIcon, SaveIcon, TrashIcon } from "../icons";
+import { ChevronLeftIcon, SaveIcon, ShareIcon, TrashIcon } from "../icons";
 
 export function DiscardForecastButton({ onDiscard }) {
   return (
@@ -29,15 +29,30 @@ export function SaveForecastButton({ onSave, isSaving }) {
   );
 }
 
-export function DeleteForecastButton({ onDelete }) {
+export function DeleteForecastButton({ isDeleting, onDelete }) {
   return (
     <Pressable
       onPress={onDelete}
       //className="flex-1 items-center rounded-xl border border-slate-300 py-4 active:opacity-50"
-      className="flex-1 flex-row items-center justify-between rounded-3xl bg-red-600 px-6 py-4 shadow-sm active:opacity-75"
+      className="flex-1 flex-row items-center justify-between rounded-3xl bg-black px-6 py-4 shadow-sm active:opacity-75"
     >
       <TrashIcon />
-      <Text className="text-base font-semibold text-white">Eliminar</Text>
+      <Text className="text-base font-semibold text-white">
+        {isDeleting ? "Eliminando..." : "Eliminar"}
+      </Text>
+    </Pressable>
+  );
+}
+
+export function ShareForecastButton({ onShare }) {
+  return (
+    <Pressable
+      onPress={onShare}
+      //className="flex-1 items-center rounded-xl border border-slate-300 py-4 active:opacity-50"
+      className="flex-1 flex-row items-center justify-between rounded-3xl bg-[#314468] px-6 py-4 shadow-sm active:opacity-75"
+    >
+      <ShareIcon />
+      <Text className="text-base font-semibold text-white">Compartir</Text>
     </Pressable>
   );
 }

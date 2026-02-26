@@ -1,11 +1,15 @@
-import { fetchForecast } from "@/lib/forecastHistory";
+import { deleteForecast, fetchForecast } from "@/lib/forecastHistory";
 import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Image, Text, View } from "react-native";
-import { DeleteForecastButton } from "../components/forecast/forecast-buttons";
+import { router, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Alert, Image, Text, View } from "react-native";
+import {
+  DeleteForecastButton,
+  ShareForecastButton,
+} from "../components/forecast/forecast-buttons";
 import "../global.css";
+import { useShareForecast } from "../hooks/useShareForecast";
 
 export default function ItemDetail() {
   const { id } = useLocalSearchParams();
@@ -13,7 +17,9 @@ export default function ItemDetail() {
   const [item, setItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const snapPoints = useMemo(() => ["20%", "65%"], []);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const snapPoints = useMemo(() => ["20%", "50%"], []);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,6 +40,63 @@ export default function ItemDetail() {
       cancelled = true;
     };
   }, [id]);
+
+  const onDelete = useCallback(async () => {
+    if (isDeleting) return;
+    if (!id || typeof id !== "string") {
+      Alert.alert("Error", "ID inválida.");
+      return;
+    }
+
+    Alert.alert(
+      "Eliminar predicción",
+      "¿Seguro que quieres eliminarla? Esta acción no se puede deshacer.",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+          onPress: () => setIsDeleting(false),
+        },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              await deleteForecast({ id, imagePath: item?.image_path });
+              router.replace("/(tabs)/history");
+            } catch (e) {
+              Alert.alert("No se pudo eliminar", e?.message ?? "Error");
+            } finally {
+              setIsDeleting(false);
+            }
+          },
+        },
+      ],
+    );
+
+    /*
+    try {
+      await deleteForecast({
+        id: id,
+      });
+
+      router.replace("/(tabs)/history");
+    } catch (e) {
+      Alert.alert("No se pudo guardar", e?.message ?? "Error");
+    } finally {
+      setIsDeleting(false);
+    }
+      */
+  }, [id, item?.image_path, isDeleting]);
+
+  const { onShare } = useShareForecast({
+    name: item?.name,
+    placeName: item?.place_name,
+    forecast: item?.forecast,
+    probability: item?.probability,
+    uri: item?.signedUrl,
+  });
 
   if (isLoading) {
     return (
@@ -120,7 +183,13 @@ export default function ItemDetail() {
                 </Text>
               ) : null}
             </View>
-            <DeleteForecastButton />
+            <View className="flex-row gap-3">
+              <DeleteForecastButton
+                isDeleting={isDeleting}
+                onDelete={onDelete}
+              />
+              <ShareForecastButton onShare={onShare} />
+            </View>
           </View>
         </BottomSheetView>
       </BottomSheet>

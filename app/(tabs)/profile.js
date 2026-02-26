@@ -1,12 +1,12 @@
 import EditableField from "@/components/editableField";
-import { useProfileForm } from "@/hooks/profile/useProfileForm";
-import { useAuthStore } from "@/stores/auth.store";
-//import { Redirect } from "expo-router";
 import {
   CancelProfileButton,
   EditProfileButton,
   LogOutButton,
 } from "@/components/profile/profile-buttons";
+import { useProfileForm } from "@/hooks/profile/useProfileForm";
+import { useAuthStore } from "@/stores/auth.store";
+import { Redirect } from "expo-router";
 import { useEffect } from "react";
 import {
   ActivityIndicator,
@@ -73,7 +73,7 @@ export default function Profile() {
   }
 
   if (!session) {
-    //return <Redirect href="/(auth)/login" />;
+    return <Redirect href="/(auth)/login" />;
   }
 
   return (

@@ -18,7 +18,7 @@ export async function uploadPhoto({ uri, userId }) {
 
   if (error) throw error;
 
-  return path; // <-- esto lo guardas en la tabla
+  return path;
 }
 
 export async function getSignedImageUrl(path, expiresIn = 60 * 10) {
@@ -30,4 +30,14 @@ export async function getSignedImageUrl(path, expiresIn = 60 * 10) {
 
   if (error) throw error;
   return data?.signedUrl ?? null;
+}
+
+export async function deleteImage(path) {
+  if (!path) return;
+
+  const bucket = "forecast-images";
+
+  const { error } = await supabase.storage.from(bucket).remove([path]);
+
+  if (error) throw error;
 }

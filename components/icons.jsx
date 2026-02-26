@@ -64,9 +64,11 @@ export const ChevronLeftIcon = () => (
 );
 
 export const TrashIcon = () => (
-  <Feather name="trash-2" size={24} color="black" />
+  <Feather name="trash-2" size={24} color="white" />
 );
 
 export const BookmarckIcon = () => (
   <Feather name="bookmark" size={24} color="white" />
 );
+
+export const ShareIcon = () => <Feather name="share" size={24} color="white" />;
