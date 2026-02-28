@@ -4,7 +4,8 @@ import { Pressable, Text, View } from "react-native";
 import CargarImagen from "../hooks/useCargarImagen";
 import useTomarFoto from "../hooks/useTomarFoto";
 import { tryGetCoordsAndPlace } from "../lib/location";
-import { IconoCamera, IconoImage, SaveIcon } from "./icons";
+import { useSavePhoto, useSaveSupabasePhoto } from "../lib/savePhotos";
+import { DownloadIcon, IconoCamera, IconoImage, SaveIcon } from "./icons";
 
 export function BotonTomarFoto() {
   const { abrirCamara } = useTomarFoto();
@@ -35,13 +36,13 @@ export function BotonTomarFoto() {
   return (
     <Pressable
       onPress={onPress}
-      className="flex flex-row items-center justify-between w-56 rounded-3xl bg-[#314468] px-6 py-4 shadow-sm active:opacity-75"
+      className="flex flex-row items-center justify-between w-60 rounded-3xl bg-[#314468] px-6 py-4 shadow-sm active:opacity-75"
     >
-      <View>
-        <Text className="text-lg font-semibold text-white">Tomar foto</Text>
-      </View>
       <View className="h-10 w-10 items-center justify-center rounded-full">
         <IconoCamera />
+      </View>
+      <View>
+        <Text className="text-lg font-semibold text-white">Tomar foto</Text>
       </View>
     </Pressable>
   );
@@ -58,6 +59,49 @@ export function SaveButton({ onSave, isSaving }) {
       <Text className="text-base font-semibold text-white">
         {isSaving ? "Guardando…" : "Guardar"}
       </Text>
+    </Pressable>
+  );
+}
+
+export function DownloadPhotoButton({ uri }) {
+  const { saveCameraPhoto } = useSavePhoto();
+
+  const handleDownload = useCallback(async () => {
+    try {
+      await saveCameraPhoto(uri);
+    } catch (e) {
+      console.error("Error al guardar la foto:", e);
+    }
+  }, [uri, saveCameraPhoto]);
+
+  return (
+    <Pressable
+      onPress={handleDownload}
+      className="flex p-2 items-center justify-center"
+    >
+      <DownloadIcon />
+    </Pressable>
+  );
+}
+
+export function DownloadSupabaseImageButton({ uri }) {
+  const { saveSupabasePhoto } = useSaveSupabasePhoto();
+
+  const handleDownload = useCallback(async () => {
+    try {
+      await saveSupabasePhoto(uri);
+    } catch (e) {
+      console.error("Error al guardar la foto:", e);
+    }
+  }, [uri, saveSupabasePhoto]);
+
+  return (
+    <Pressable
+      onPress={handleDownload}
+      disabled={!uri}
+      className="flex p-2 items-center justify-center"
+    >
+      <DownloadIcon />
     </Pressable>
   );
 }
@@ -97,13 +141,13 @@ export function BotonCargarImagen() {
   return (
     <Pressable
       onPress={onPress}
-      className="flex flex-row items-center justify-between w-56 rounded-3xl bg-[#b0aeaf] px-6 py-4 shadow-sm active:opacity-75"
+      className="flex flex-row items-center justify-between w-60 rounded-3xl bg-[#b0aeaf] px-6 py-4 shadow-sm active:opacity-75"
     >
-      <View>
-        <Text className="text-lg font-semibold text-white">Cargar imagen</Text>
-      </View>
       <View className="h-10 w-10 items-center justify-center rounded-full">
         <IconoImage />
+      </View>
+      <View>
+        <Text className="text-lg font-semibold text-white">Cargar imagen</Text>
       </View>
     </Pressable>
   );

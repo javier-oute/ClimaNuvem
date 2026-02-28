@@ -1,5 +1,7 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { View } from "react-native";
+import { useCallback, useEffect } from "react";
+import { AppState, View } from "react-native";
 import "../global.css";
 
 const videoNubes = require("@/assets/images/videoNubes.mp4");
@@ -10,6 +12,22 @@ export default function DemoVideo() {
     p.muted = true;
     p.play();
   });
+
+  // Reproducir cuando la pantalla está enfocada
+  useFocusEffect(
+    useCallback(() => {
+      player.play();
+      return () => player.pause();
+    }, [player]),
+  );
+
+  // Reanudar al volver a "active" (por ejemplo tras bloqueo)
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") player.play();
+    });
+    return () => sub.remove();
+  }, [player]);
 
   return (
     <View className="absolute inset-0">

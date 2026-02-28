@@ -1,7 +1,7 @@
 import EditableField from "@/components/editableField";
-import { DiscardForecastButton } from "@/components/forecast/forecast-buttons";
+import { ShareForecastButton } from "@/components/forecast/forecast-buttons";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,8 +11,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { SaveButton } from "../components/buttons";
+import { DownloadPhotoButton, SaveButton } from "../components/buttons";
 import "../global.css";
+import { useShareForecast } from "../hooks/useShareForecast";
 import { formatProbability } from "../lib/format";
 import { saveForecastWithPhoto } from "../stores/forecast.store";
 
@@ -31,7 +32,7 @@ export default function ConfirmForecast() {
       ? { latitude: Number(latStr), longitude: Number(lonStr) }
       : null;
 
-  const snapPoints = useMemo(() => ["15%", "65%"], []);
+  const snapPoints = useMemo(() => ["15%", "57%"], []);
 
   const [name, setName] = useState("");
   const [placeName, setPlaceName] = useState(placeNameAuto);
@@ -99,6 +100,12 @@ export default function ConfirmForecast() {
     probability,
   ]);
 
+  const { onShare } = useShareForecast({
+    placeName: placeName.trim() || null,
+    forecast: forecast,
+    probability: probability,
+  });
+
   /*
     if (isLoading) {
     return (
@@ -120,6 +127,18 @@ export default function ConfirmForecast() {
 
   return (
     <View className="flex-1">
+      <Stack.Screen
+        options={{
+          headerBackTitleVisible: false,
+          headerShown: true,
+          headerTitle: "",
+          headerBackTitle: "",
+          headerTransparent: true,
+          headerShadowVisible: false,
+          headerRight: () =>
+            source === "gallery" ? null : <DownloadPhotoButton uri={image} />,
+        }}
+      />
       <Image
         source={{ uri: image }}
         className="absolute inset-0 w-full h-full"
@@ -208,8 +227,8 @@ export default function ConfirmForecast() {
             />
           </View>
           {/* Botones */}
-          <View className="flex-row gap-3 mt-16">
-            <DiscardForecastButton onDiscard={onDiscard} />
+          <View className="flex-row gap-3 mt-10">
+            <ShareForecastButton onShare={onShare} />
             <SaveButton onSave={onSave} isSaving={isSaving} />
           </View>
         </BottomSheetScrollView>
@@ -219,6 +238,12 @@ export default function ConfirmForecast() {
 }
 
 /* 
+
+<DiscardForecastButton onDiscard={onDiscard} />
+          <View className="flex-row mt-4">
+            <SaveButton onSave={onSave} isSaving={isSaving} />
+          </View>
+
 
           <Text className="mt-4 text-sm text-slate-500">Lugar</Text>
           <TextInput

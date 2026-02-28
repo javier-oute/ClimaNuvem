@@ -1,4 +1,3 @@
-import { HistoryHeader } from "@/components/history/history-header";
 import { fetchForecastHistoryWithSignedUrls } from "@/lib/forecastHistory";
 import { formatDateTimeWithWeekday } from "@/lib/format";
 import { Link } from "expo-router";
@@ -12,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HistoryHeader } from "../../components/history/history-header";
 import "../../global.css";
 
 const PAGE_SIZE = 15;
@@ -113,6 +113,7 @@ export default function Historial() {
           paddingTop: 24,
           gap: 24,
         }}
+        contentInsetAdjustmentBehavior="automatic"
         keyExtractor={(item) => String(item.id)}
         refreshing={isRefreshing}
         /* FLATLIST TIENE UN MONTON DE OPCIONES, SEGUIR MIRANDO */

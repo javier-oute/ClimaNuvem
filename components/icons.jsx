@@ -1,3 +1,4 @@
+import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -72,3 +73,7 @@ export const BookmarckIcon = () => (
 );
 
 export const ShareIcon = () => <Feather name="share" size={24} color="white" />;
+
+export const DownloadIcon = () => (
+  <AntDesign name="cloud-download" size={24} color="black" />
+);

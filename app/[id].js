@@ -1,9 +1,10 @@
 import { deleteForecast, fetchForecast } from "@/lib/forecastHistory";
 import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Image, Text, View } from "react-native";
+import { DownloadSupabaseImageButton } from "../components/buttons";
 import {
   DeleteForecastButton,
   ShareForecastButton,
@@ -88,14 +89,13 @@ export default function ItemDetail() {
       setIsDeleting(false);
     }
       */
-  }, [id, item?.image_path, isDeleting]);
+  }, [id, item, isDeleting]);
 
   const { onShare } = useShareForecast({
     name: item?.name,
     placeName: item?.place_name,
     forecast: item?.forecast,
     probability: item?.probability,
-    uri: item?.signedUrl,
   });
 
   if (isLoading) {
@@ -123,6 +123,19 @@ export default function ItemDetail() {
 
   return (
     <View className="flex-1">
+      <Stack.Screen
+        options={{
+          headerBackTitleVisible: false,
+          headerShown: true,
+          headerTitle: "",
+          headerBackTitle: "",
+          headerTransparent: true,
+          headerShadowVisible: false,
+          headerRight: () => (
+            <DownloadSupabaseImageButton uri={item?.signedUrl} />
+          ),
+        }}
+      />
       <Image
         source={
           item?.signedUrl

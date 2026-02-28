@@ -61,14 +61,18 @@ export default function Profile() {
 
   if (showFullScreenLoader) {
     return (
-      <ScrollView
-        className="flex-1 bg-white pt-12"
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-        automaticallyAdjustKeyboardInsets
-      >
-        <ActivityIndicator />
-      </ScrollView>
+      <SafeAreaView className="flex-1 bg-white mt-10" edges={["top"]}>
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ActivityIndicator />
+        </ScrollView>
+      </SafeAreaView>
     );
   }
 
@@ -77,9 +81,9 @@ export default function Profile() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white mt-10" edges={["top"]}>
       <ScrollView
-        className="pt-10"
+        className="flex-1"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
         automaticallyAdjustKeyboardInsets

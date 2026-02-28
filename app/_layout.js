@@ -1,6 +1,7 @@
 import AuthBootstrap from "@/providers/AuthBootstrap";
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 //import SplashScreenController from "../components/splash-screen-controller";
 import "../global.css";
 
@@ -8,42 +9,44 @@ import "../global.css";
 
 export default function RootLayout() {
   return (
-    <AuthBootstrap>
-      <GestureHandlerRootView className="flex-1">
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              title: "",
-            }}
-          />
-          <Stack.Screen
-            name="[id]"
-            options={{
-              headerBackTitleVisible: false,
-              headerShown: true,
-              headerTitle: "",
-              headerBackTitle: "",
-              headerTransparent: true,
-              headerShadowVisible: false,
-            }}
-          />
-          <Stack.Screen
-            name="forecast-screen"
-            options={{
-              headerBackTitleVisible: false,
-              headerShown: true,
-              headerTitle: "",
-              headerBackTitle: "",
-              headerTransparent: true,
-              headerShadowVisible: false,
-            }}
-          />
-        </Stack>
-      </GestureHandlerRootView>
-    </AuthBootstrap>
+    <SafeAreaProvider>
+      <AuthBootstrap>
+        <GestureHandlerRootView className="flex-1">
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                title: "",
+              }}
+            />
+            <Stack.Screen
+              name="[id]"
+              options={{
+                headerBackTitleVisible: false,
+                headerShown: true,
+                headerTitle: "",
+                headerBackTitle: "",
+                headerTransparent: true,
+                headerShadowVisible: false,
+              }}
+            />
+            <Stack.Screen
+              name="forecast-screen"
+              options={{
+                headerBackTitleVisible: false,
+                headerShown: true,
+                headerTitle: "",
+                headerBackTitle: "",
+                headerTransparent: true,
+                headerShadowVisible: false,
+              }}
+            />
+          </Stack>
+        </GestureHandlerRootView>
+      </AuthBootstrap>
+    </SafeAreaProvider>
   );
 }
 

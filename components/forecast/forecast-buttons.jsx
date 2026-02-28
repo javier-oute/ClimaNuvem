@@ -49,7 +49,7 @@ export function ShareForecastButton({ onShare }) {
     <Pressable
       onPress={onShare}
       //className="flex-1 items-center rounded-xl border border-slate-300 py-4 active:opacity-50"
-      className="flex-1 flex-row items-center justify-between rounded-3xl bg-[#314468] px-6 py-4 shadow-sm active:opacity-75"
+      className="flex-1 flex-row items-center justify-between rounded-3xl bg-[#b0aeaf] px-6 py-4 shadow-sm active:opacity-75"
     >
       <ShareIcon />
       <Text className="text-base font-semibold text-white">Compartir</Text>

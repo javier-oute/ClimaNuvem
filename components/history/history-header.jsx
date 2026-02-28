@@ -13,7 +13,7 @@ export function HistoryHeader({
   return (
     <View className="flex bg-white w-full gap-4">
       <Text className="font-bold text-4xl">Historial</Text>
-      <View className="flex-row items-center justify-between w-full rounded-3xl bg-zinc-100 px-6 py-1 shadow-sm">
+      <View className="flex-row items-center justify-between w-full rounded-2xl bg-zinc-100 px-6 py-1 shadow-sm">
         <SearchIcon />
         <TextInput
           value={search}
@@ -38,7 +38,7 @@ export function HistoryHeader({
           {day && (
             <View>
               {/* Clear day */}
-              <Pressable onPress={() => setDay(null)} className="self-start">
+              <Pressable onPress={() => setDay(null)}>
                 <CrossIcon />
               </Pressable>
             </View>
