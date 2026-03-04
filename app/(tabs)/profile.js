@@ -1,4 +1,4 @@
-import EditableField from "@/components/editableField";
+import { EditableField } from "@/components/editableField";
 import {
   CancelProfileButton,
   EditProfileButton,
@@ -10,12 +10,11 @@ import { Redirect } from "expo-router";
 import { useEffect } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Platform,
-  ScrollView,
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { SaveButton } from "../../components/buttons";
 import { UserIcon } from "../../components/icons";
 import "../../global.css";
@@ -29,6 +28,13 @@ export default function Profile() {
 
   const userId = session?.user?.id ?? null;
   const email = session?.user?.email ?? "—";
+
+  //const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    console.log("[Profile] MOUNT");
+    return () => console.log("[Profile] UNMOUNT");
+  }, []);
 
   useEffect(() => {
     if (session && profile === undefined) {
@@ -59,20 +65,29 @@ export default function Profile() {
   const showFullScreenLoader =
     isLoading || session === undefined || profile === undefined;
 
+  console.log("[Profile]", {
+    isLoading,
+    sessionState:
+      session === undefined ? "undefined" : session ? "set" : "null",
+    profileState:
+      profile === undefined ? "undefined" : profile ? "set" : "null",
+  });
+
   if (showFullScreenLoader) {
     return (
-      <SafeAreaView className="flex-1 bg-white mt-10" edges={["top"]}>
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{
-            flexGrow: 1,
+      <View className="flex-1 bg-white">
+        <KeyboardAvoidingView
+          style={{
+            flex: 1,
             justifyContent: "center",
             alignItems: "center",
+            backgroundColor: "white",
           }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <ActivityIndicator />
-        </ScrollView>
-      </SafeAreaView>
+        </KeyboardAvoidingView>
+      </View>
     );
   }
 
@@ -81,15 +96,13 @@ export default function Profile() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white mt-10" edges={["top"]}>
-      <ScrollView
-        className="flex-1"
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-        automaticallyAdjustKeyboardInsets
+    <View className="flex-1">
+      <KeyboardAvoidingView
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {/* Header */}
-        <View className="items-center mb-6">
+        <View className="flex items-center mb-6">
           <View className="rounded-full bg-slate-400 p-6">
             <UserIcon size={64} />
           </View>
@@ -134,7 +147,7 @@ export default function Profile() {
               textContentType="telephoneNumber"
               autoComplete="tel"
               returnKeyType="next"
-              placeholder="+34 612 345 678"
+              placeholder="Ej: +34 612 345 678"
             />
             <EditableField
               label="Nombre de usuario"
@@ -145,7 +158,7 @@ export default function Profile() {
               autoComplete="username"
               textContentType="username"
               autoCapitalize="none"
-              maxLength={15}
+              maxLength={30}
               placeholder="Ej: sara_garcia"
             />
           </View>
@@ -165,11 +178,27 @@ export default function Profile() {
             <LogOutButton signOut={signOut} />
           </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 /*
+
+<SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{
+        paddingTop: 24,
+        paddingBottom: 24,
+      }}
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="never"
+      keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+      //automaticallyAdjustKeyboardInsets
+    >
+
+      </ScrollView>
+
 import { IconoUser } from "@/components/icons";
 import { ProfileField } from "@/components/profile/profileField";
 import { upsertProfile } from "@/features/profile/profile-api";

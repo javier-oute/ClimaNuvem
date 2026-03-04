@@ -1,5 +1,7 @@
 import { hardResetSupabaseAuth } from "@/lib/resetSupabaseAuth";
 import type { Session } from "@supabase/supabase-js";
+import { router } from "expo-router";
+import { AppState } from "react-native";
 import { create } from "zustand";
 import { supabase } from "../lib/supabase";
 
@@ -26,12 +28,14 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
   // Para evitar flicker en isLoading por operaciones solapadas
   let loadingCount = 0;
-  const beginLoading = () => {
+  const beginLoading = (reason: string) => {
     loadingCount++;
+    console.log("[loading] +", loadingCount, reason);
     set({ isLoading: true });
   };
-  const endLoading = () => {
+  const endLoading = (reason: string) => {
     loadingCount = Math.max(0, loadingCount - 1);
+    console.log("[loading] -", loadingCount, reason);
     if (loadingCount === 0) set({ isLoading: false });
   };
 
@@ -83,14 +87,22 @@ export const useAuthStore = create<AuthState>((set, get) => {
   return {
     session: undefined,
     profile: undefined,
-    isLoading: true,
+    isLoading: false,
 
     initialize: () => {
       const { safeSet, kill, isAlive } = makeSafeSet();
 
+      // Auto-refresh controlado por AppState (registrar SOLO una vez)
+      const onAppState = (state: string) => {
+        if (state === "active") supabase.auth.startAutoRefresh();
+        else supabase.auth.stopAutoRefresh();
+      };
+      const appStateSub = AppState.addEventListener("change", onAppState);
+      onAppState(AppState.currentState);
+
       // 1) sesión inicial (async, pero cleanup sync)
       (async () => {
-        beginLoading();
+        beginLoading("initializa: getSession");
         try {
           const {
             data: { session },
@@ -115,10 +127,10 @@ export const useAuthStore = create<AuthState>((set, get) => {
           safeSet({ session: session ?? null });
           await loadProfileForSession(session ?? null, safeSet, isAlive);
         } finally {
-          endLoading();
+          endLoading("initializa: getSession");
         }
       })();
-
+      /*
       // 2) suscripción (sync)
       const { data } = supabase.auth.onAuthStateChange(
         async (event, session) => {
@@ -136,27 +148,55 @@ export const useAuthStore = create<AuthState>((set, get) => {
             event === "SIGNED_IN" ||
             event === "USER_UPDATED"
           ) {
-            beginLoading();
+            beginLoading(`auth:${event}`);
             try {
               await loadProfileForSession(session ?? null, safeSet, isAlive);
             } finally {
-              endLoading();
+              endLoading(`auth:${event}`);
             }
           } else if (!session) {
             safeSet({ profile: null });
           }
         },
       );
+*/
+
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth event:", event, "hasSession:", !!session);
+
+        const prevUserId = get().session?.user?.id;
+        const nextUserId = session?.user?.id;
+
+        safeSet({ session: session ?? null });
+
+        const userChanged = prevUserId !== nextUserId;
+
+        if (userChanged || event === "SIGNED_IN" || event === "USER_UPDATED") {
+          // IMPORTANTÍSIMO: difiere la carga del perfil fuera del callback
+          setTimeout(() => {
+            beginLoading(`auth:${event}:profile`);
+            loadProfileForSession(session ?? null, safeSet, isAlive)
+              .catch((e) =>
+                console.warn("loadProfileForSession:", e?.message ?? e),
+              )
+              .finally(() => endLoading(`auth:${event}:profile`));
+          }, 0);
+        } else if (!session) {
+          safeSet({ profile: null });
+        }
+      });
 
       // cleanup
       return () => {
         kill();
         data.subscription.unsubscribe();
+        appStateSub.remove();
+        supabase.auth.stopAutoRefresh();
       };
     },
 
     refreshProfile: async () => {
-      beginLoading();
+      beginLoading("refreshProfile");
       try {
         const session = get().session ?? null;
         // safeSet “normal” aquí porque no hay un lifecycle de cleanup
@@ -184,12 +224,12 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
         set({ profile: data ?? null });
       } finally {
-        endLoading();
+        endLoading("refreshProfile");
       }
     },
 
     signIn: async (email, password) => {
-      beginLoading();
+      beginLoading("sign-in");
       try {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -197,28 +237,29 @@ export const useAuthStore = create<AuthState>((set, get) => {
         });
         if (error) throw new Error(error.message);
       } finally {
-        endLoading();
+        endLoading("sign-in");
       }
     },
 
     signUp: async (email, password) => {
-      beginLoading();
+      beginLoading("sign-up");
       try {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw new Error(error.message);
       } finally {
-        endLoading();
+        endLoading("sign-up");
       }
     },
 
     signOut: async () => {
-      beginLoading();
+      beginLoading("sign-out");
       try {
         const { error } = await supabase.auth.signOut();
         if (error) throw new Error(error.message);
         set({ session: null, profile: null });
+        router.replace("/(auth)/login");
       } finally {
-        endLoading();
+        endLoading("sign-out");
       }
     },
   };

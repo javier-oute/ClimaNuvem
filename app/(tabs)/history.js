@@ -86,7 +86,15 @@ export default function Historial() {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [pageIndex, hasMore, isLoadingMore, isLoading, isRefreshing, loadPage]);
+  }, [
+    pageIndex,
+    hasMore,
+    isLoadingMore,
+    isLoading,
+    isRefreshing,
+    loadPage,
+    items,
+  ]);
 
   useEffect(() => {
     loadInitial();
@@ -109,7 +117,7 @@ export default function Historial() {
         data={items}
         style={{ flex: 1 }}
         contentContainerStyle={{
-          paddingHorizontal: 32,
+          paddingHorizontal: 24,
           paddingTop: 24,
           gap: 24,
         }}

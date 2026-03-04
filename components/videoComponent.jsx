@@ -16,26 +16,42 @@ export default function DemoVideo() {
   // Reproducir cuando la pantalla está enfocada
   useFocusEffect(
     useCallback(() => {
-      player.play();
-      return () => player.pause();
+      try {
+        player.play();
+      } catch (e) {
+        console.log("Salto el catch en player.play, ", e);
+      }
+      return () => {
+        try {
+          player.pause();
+        } catch (e) {
+          console.log("Salto el catch en player.play, ", e);
+        }
+      };
     }, [player]),
   );
 
   // Reanudar al volver a "active" (por ejemplo tras bloqueo)
   useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => {
-      if (state === "active") player.play();
+      if (state === "active")
+        try {
+          player.play();
+        } catch (e) {
+          console.log("Salto el catch en player.play, ", e);
+        }
     });
     return () => sub.remove();
   }, [player]);
 
   return (
-    <View className="absolute inset-0">
+    <View className="absolute inset-0" pointerEvents="none">
       <VideoView
         player={player}
         style={{ width: "100%", height: "100%" }}
         contentFit="cover"
-        pointerEvents="none"
+        nativeControls={false}
+        requiresLinearPlayback
       />
     </View>
   );

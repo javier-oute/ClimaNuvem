@@ -1,4 +1,4 @@
-import EditableField from "@/components/editableField";
+import { EditableBottomSheetField } from "@/components/editableField";
 import { ShareForecastButton } from "@/components/forecast/forecast-buttons";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { router, Stack, useLocalSearchParams } from "expo-router";
@@ -44,12 +44,12 @@ export default function ConfirmForecast() {
   const probability = 0.78;
 
   const p = formatProbability(probability);
-
+  /*
   const onDiscard = useCallback(() => {
     router.back();
-    router.replace("/(tabs)/home");
+    //router.replace("/(tabs)/home");
   }, []);
-
+*/
   const onSave = useCallback(async () => {
     setIsSaving(true);
 
@@ -159,10 +159,18 @@ export default function ConfirmForecast() {
           borderRadius: 999,
           backgroundColor: "#CBD5E1", // slate-300
         }}
+        /*
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         enableBlurKeyboardOnGesture
-        android_keyboardInputMode="adjustResize"
+        android_keyboardInputMode="adjustPan"
+        */
+        keyboardBehavior={Platform.OS === "android" ? "interactive" : "none"}
+        keyboardBlurBehavior={Platform.OS === "android" ? "restore" : "none"}
+        enableBlurKeyboardOnGesture={Platform.OS === "android"}
+        android_keyboardInputMode={
+          Platform.OS === "android" ? "adjustPan" : undefined
+        }
       >
         <BottomSheetScrollView
           className="pt-5 px-8"
@@ -171,7 +179,7 @@ export default function ConfirmForecast() {
           keyboardDismissMode={
             Platform.OS === "ios" ? "interactive" : "on-drag"
           }
-          automaticallyAdjustKeyboardInsets
+          automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
           showsVerticalScrollIndicator={false}
         >
           {/* Resultado */}
@@ -200,7 +208,7 @@ export default function ConfirmForecast() {
           )}
 
           <View className="mt-8 w-80 self-center gap-4">
-            <EditableField
+            <EditableBottomSheetField
               label="Nombre completo"
               value={name}
               onChangeText={setName}
@@ -212,7 +220,7 @@ export default function ConfirmForecast() {
               maxLength={20}
             />
 
-            <EditableField
+            <EditableBottomSheetField
               label="Nombre completo"
               value={placeName}
               onChangeText={setPlaceName}

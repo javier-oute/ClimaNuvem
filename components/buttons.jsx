@@ -84,8 +84,9 @@ export function DownloadPhotoButton({ uri }) {
   );
 }
 
-export function DownloadSupabaseImageButton({ uri }) {
+export function DownloadSupabaseImageButton({ uri, color }) {
   const { saveSupabasePhoto } = useSaveSupabasePhoto();
+  console.log("Color: ", color);
 
   const handleDownload = useCallback(async () => {
     try {
@@ -101,7 +102,7 @@ export function DownloadSupabaseImageButton({ uri }) {
       disabled={!uri}
       className="flex p-2 items-center justify-center"
     >
-      <DownloadIcon />
+      <DownloadIcon color={color} />
     </Pressable>
   );
 }

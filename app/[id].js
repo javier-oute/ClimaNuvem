@@ -130,9 +130,13 @@ export default function ItemDetail() {
           headerTitle: "",
           headerBackTitle: "",
           headerTransparent: true,
-          headerShadowVisible: false,
-          headerRight: () => (
-            <DownloadSupabaseImageButton uri={item?.signedUrl} />
+          headerShadowVisible: true,
+          headerTintColor: "#FFFFFF",
+          headerRight: ({ tintColor }) => (
+            <DownloadSupabaseImageButton
+              uri={item?.signedUrl}
+              //color={tintColor}
+            />
           ),
         }}
       />

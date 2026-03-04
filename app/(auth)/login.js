@@ -3,6 +3,10 @@ import { Image, Text, View } from "react-native";
 import AppleSignInButton from "../../components/social-auth-buttons/apple/apple-sign-in-button";
 import GuestButton from "../../components/social-auth-buttons/apple/guest-button";
 //import DemoVideo from "../../components/videoComponent";
+import { useAuthStore } from "@/stores/auth.store";
+import { router } from "expo-router";
+import { useEffect } from "react";
+import GoogleSignInButton from "../../components/social-auth-buttons/google-sign-in-button";
 
 export default function LoginScreen() {
   const appleProps = {
@@ -11,6 +15,15 @@ export default function LoginScreen() {
     cornerRadius: 6,
     style: { width: 200, height: 44 }, // w: 200 h: 44
   };
+
+  const session = useAuthStore((s) => s.session);
+
+  useEffect(() => {
+    if (session) {
+      console.log("Para home con session: ", session);
+      router.replace("/(tabs)/home");
+    }
+  }, [session]);
 
   return (
     <View className="flex-1 justify-start bg-white">
@@ -31,6 +44,7 @@ export default function LoginScreen() {
         </View>
         <View className="items-center pt-8 gap-8">
           <AppleSignInButton {...appleProps} />
+          <GoogleSignInButton />
           <GuestButton />
         </View>
       </View>

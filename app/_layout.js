@@ -1,7 +1,10 @@
 import AuthBootstrap from "@/providers/AuthBootstrap";
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import {
+  SafeAreaProvider,
+  initialWindowMetrics,
+} from "react-native-safe-area-context";
 //import SplashScreenController from "../components/splash-screen-controller";
 import "../global.css";
 
@@ -9,9 +12,9 @@ import "../global.css";
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <AuthBootstrap>
-        <GestureHandlerRootView className="flex-1">
+    <GestureHandlerRootView className="flex-1">
+      <SafeAreaProvider initialMetrics={initialWindowMetrics ?? undefined}>
+        <AuthBootstrap>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)" />
@@ -44,9 +47,9 @@ export default function RootLayout() {
               }}
             />
           </Stack>
-        </GestureHandlerRootView>
-      </AuthBootstrap>
-    </SafeAreaProvider>
+        </AuthBootstrap>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

@@ -4,7 +4,6 @@ import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import "../global.css";
 
@@ -37,15 +36,15 @@ export const SaveIcon = () => (
 );
 
 export const SignOutIcon = () => (
-  <MaterialIcons name="logout" size={24} color="white" />
+  <Feather name="log-out" size={24} color="white" />
 );
 
 export const SearchIcon = () => (
   <Feather name="search" size={16} color="black" />
 );
 
-export const CrossIcon = () => (
-  <Entypo name="circle-with-cross" size={24} color="black" />
+export const CrossIcon = ({ color = "#A1A1AA" }) => (
+  <Entypo name="circle-with-cross" size={24} color={color} />
 );
 
 export const CalendarIcon = () => (
@@ -74,6 +73,10 @@ export const BookmarckIcon = () => (
 
 export const ShareIcon = () => <Feather name="share" size={24} color="white" />;
 
-export const DownloadIcon = () => (
-  <AntDesign name="cloud-download" size={24} color="black" />
+export const DownloadIcon = ({ color }) => (
+  <AntDesign name="cloud-download" size={24} color={color ?? "black"} />
+);
+
+export const ClockIcon = (props) => (
+  <AntDesign name="clock-circle" size={24} {...props} />
 );

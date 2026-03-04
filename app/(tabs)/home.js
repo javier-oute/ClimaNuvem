@@ -1,15 +1,18 @@
 import { BotonCargarImagen, BotonTomarFoto } from "@/components/buttons";
 import DemoVideo from "@/components/videoComponent";
+import { makeRedirectUri } from "expo-auth-session";
 import { Text, View } from "react-native";
 import "../../global.css";
 
 export default function Index() {
+  const redirectTo = makeRedirectUri({ useProxy: true });
+  console.log("REDIRECT:", redirectTo);
   return (
     <View className="flex-1 flex-grow justify-end bg-white">
       <DemoVideo />
 
       <View className=" bg-white rounded-t-3xl text-balance">
-        <View className="pt-8 pl-8 pb-12 pr-8 gap-3">
+        <View className="pt-8 pb-12 px-8 gap-3">
           <Text className="font-bold text-3xl">Bienvenido a ClimaNuvem</Text>
           <Text className="font-normal text-lg">
             Saca una foto a las nubes que te preocupan y te daremos el
