@@ -1,9 +1,19 @@
 import { deleteForecast, fetchForecast } from "@/lib/forecastHistory";
 import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, {
+  BottomSheetView,
+  useBottomSheetSpringConfigs,
+} from "@gorhom/bottom-sheet";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Image, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Platform,
+  Text,
+  View,
+} from "react-native";
 import { DownloadSupabaseImageButton } from "../components/buttons";
 import {
   DeleteForecastButton,
@@ -20,7 +30,28 @@ export default function ItemDetail() {
 
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const snapPoints = useMemo(() => ["20%", "50%"], []);
+  const [topBlockH, setTopBlockH] = useState(0);
+  const [bottomBlockH, setBottomBlockH] = useState(0);
+
+  const animationConfigs = useBottomSheetSpringConfigs({
+    stiffness: 300,
+    damping: 35,
+    mass: 1,
+    overshootClamping: false,
+    restDisplacementThreshold: 0.5,
+    restSpeedThreshold: 0.5,
+  });
+
+  const bottomConstant = Platform.OS === "ios" ? 70 : 120; // 48 3-button ?
+  const topConstant = Platform.OS === "ios" ? 90 : 140;
+
+  const snapPoints = useMemo(() => {
+    const collapsed = bottomBlockH + bottomConstant;
+    const expanded = topBlockH + topConstant;
+    return [collapsed, expanded];
+  }, [bottomBlockH, topBlockH, bottomConstant, topConstant]);
+
+  //const snapPoints = useMemo(() => ["20%", "50%"], []);
 
   useEffect(() => {
     let cancelled = false;
@@ -159,6 +190,7 @@ export default function ItemDetail() {
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
         }}
+        animationConfigs={animationConfigs}
         handleIndicatorStyle={{
           width: 44,
           height: 5,
@@ -167,8 +199,20 @@ export default function ItemDetail() {
         }}
       >
         <BottomSheetView className="pt-5 px-8">
-          <View className="flex gap-8">
-            <View className="flex gap-4">
+          <View
+            className="flex gap-8"
+            onLayout={(event) => {
+              const h = Math.ceil(event.nativeEvent.layout.height);
+              setTopBlockH((prev) => (prev === h ? prev : h));
+            }}
+          >
+            <View
+              className="flex gap-4"
+              onLayout={(event) => {
+                const h = Math.ceil(event.nativeEvent.layout.height);
+                setBottomBlockH((prev) => (prev === h ? prev : h));
+              }}
+            >
               <Text className="font-bold text-left text-2xl">
                 Predicción guardada:
               </Text>

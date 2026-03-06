@@ -95,8 +95,9 @@ export default function Profile() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  // El pb-20 para que tenga en cuenta el tab bar
   return (
-    <View className="flex-1">
+    <View className={`flex-1 ${Platform.OS === "ios" ? "pb-20" : "pb-0"}`}>
       <KeyboardAvoidingView
         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

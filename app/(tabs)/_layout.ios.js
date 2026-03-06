@@ -1,40 +1,39 @@
 import { useAuthStore } from "@/stores/auth.store";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
-import { View } from "react-native";
+import { Platform } from "react-native";
 //import { useSafeAreaInsets } from "react-native-safe-area-context";
 import "../../global.css";
 
 export default function TabsLayout() {
   //const insets = useSafeAreaInsets();
-  const TAB_BAR_SPACE = 80;
   const session = useAuthStore((s) => s.session);
 
   return (
-    <View
-      className="flex-1"
-      style={{
-        paddingBottom: TAB_BAR_SPACE,
-      }}
+    <NativeTabs
+      //minimizeBehavior="onScrollDown"
+      tintColor="#314468" // color activo
+      iconColor="#314468"
+      backgroundColor="transparent"
+      blurEffect={Platform.OS === "ios" ? "none" : undefined} // ✅ sin blur en iOS
+      shadowColor={Platform.OS === "ios" ? "transparent" : undefined} // ✅ sin línea/sombra arriba
     >
-      <NativeTabs
-        //minimizeBehavior="onScrollDown"
-        tintColor="#314468" // color activo
-        iconColor="#314468"
+      <NativeTabs.Trigger name="home">
+        <Label>Home</Label>
+        <Icon sf="house.fill" md="home" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger
+        name="history"
+        contentStyle={{ backgroundColor: "transparent" }}
+        hidden={!session}
       >
-        <NativeTabs.Trigger name="home">
-          <Label>Home</Label>
-          <Icon sf="house.fill" md="home" />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="history" hidden={!session}>
-          <Label>Historial</Label>
-          <Icon sf="clock.fill" md="history" />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="profile" hidden={!session}>
-          <Label>Perfil</Label>
-          <Icon sf="person.fill" md="account" />
-        </NativeTabs.Trigger>
-      </NativeTabs>
-    </View>
+        <Label>Historial</Label>
+        <Icon sf="clock.fill" md="history" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="profile" hidden={!session}>
+        <Label>Perfil</Label>
+        <Icon sf="person.fill" md="account" />
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
 

@@ -1,17 +1,22 @@
 import { BotonCargarImagen, BotonTomarFoto } from "@/components/buttons";
 import DemoVideo from "@/components/videoComponent";
 import { makeRedirectUri } from "expo-auth-session";
-import { Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 import "../../global.css";
 
 export default function Index() {
+  //const TAB_BAR_SPACE = 80; // => implica 20 en nativewind
+
   const redirectTo = makeRedirectUri({ useProxy: true });
   console.log("REDIRECT:", redirectTo);
   return (
     <View className="flex-1 flex-grow justify-end bg-white">
       <DemoVideo />
-
-      <View className=" bg-white rounded-t-3xl text-balance">
+      <View
+        className={`bg-white rounded-t-3xl text-balance ${
+          Platform.OS === "ios" ? "pb-20" : "pb-0"
+        }`}
+      >
         <View className="pt-8 pb-12 px-8 gap-3">
           <Text className="font-bold text-3xl">Bienvenido a ClimaNuvem</Text>
           <Text className="font-normal text-lg">

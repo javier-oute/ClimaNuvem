@@ -39,13 +39,40 @@ export function HistoryHeader({
       </View>
 
       <SearchBar
+        platform={Platform.OS === "ios" ? "ios" : "android"}
         placeholder="Buscar..."
-        platform="ios"
         value={search}
         onChangeText={setSearch}
-        mode="bar"
-        elevation={0}
-        style={{ borderRadius: 16 }}
+        autoCorrect={false}
+        autoCapitalize="none"
+        returnKeyType="search"
+        showCancel={false}
+        lightTheme
+        round
+        // Contenedor exterior (donde “vive” la searchbar)
+        containerStyle={{
+          backgroundColor: "transparent",
+          paddingHorizontal: 0,
+          paddingVertical: 0,
+          borderTopWidth: 0,
+          borderBottomWidth: 0,
+          marginTop: 16,
+        }}
+        // Caja principal (la pastilla)
+        inputContainerStyle={{
+          backgroundColor: "#F1F5F9", // slate-100
+          borderRadius: 18,
+          height: 44,
+          paddingHorizontal: 10,
+        }}
+        // Texto dentro
+        inputStyle={{
+          fontSize: 16,
+          color: "#0F172A", // slate-900
+        }}
+        // Iconos
+        searchIcon={{ size: 18, color: "#64748B" }} // slate-500
+        clearIcon={{ size: 18, color: "#64748B" }}
       />
     </View>
   );
