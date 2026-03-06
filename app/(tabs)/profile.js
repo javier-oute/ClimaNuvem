@@ -136,7 +136,7 @@ export default function Profile() {
               autoComplete="name"
               textContentType="name"
               autoCapitalize="words"
-              maxLength={20}
+              maxLength={50}
               placeholder="Ej: Javier Oute"
             />
             <EditableField
