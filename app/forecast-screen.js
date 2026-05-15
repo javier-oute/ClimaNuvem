@@ -5,7 +5,7 @@ import BottomSheet, {
   useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { DownloadPhotoButton, SaveButton } from "../components/buttons";
 import "../global.css";
+import { useModel } from "../hooks/useModel";
 import { useShareForecast } from "../hooks/useShareForecast";
 import { formatProbability } from "../lib/format";
 import { saveForecastWithPhoto } from "../stores/forecast.store";
@@ -46,10 +47,13 @@ export default function ConfirmForecast() {
     restSpeedThreshold: 0.5,
   });
 
-  const coords =
-    latStr && lonStr
-      ? { latitude: Number(latStr), longitude: Number(lonStr) }
-      : null;
+  const coords = useMemo(
+    () =>
+      latStr && lonStr
+        ? { latitude: Number(latStr), longitude: Number(lonStr) }
+        : null,
+    [latStr, lonStr],
+  );
 
   const bottomConstant = Platform.OS === "ios" ? 70 : 120; // 48 3-button ?
   const topConstant = Platform.OS === "ios" ? 90 : 140;
@@ -66,8 +70,15 @@ export default function ConfirmForecast() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  /*
   const forecast = "Posible lluvia en 2 horas. Nubes densas y oscuras.";
   const probability = 0.78;
+  */
+
+  const { resultado, cargando } = useModel(image);
+
+  const forecast = resultado?.alerta?.mensaje ?? null;
+  const probability = resultado?.confianza ?? 0;
 
   const p = formatProbability(probability);
   /*
@@ -132,8 +143,11 @@ export default function ConfirmForecast() {
     probability: probability,
   });
 
-  /*
-    if (isLoading) {
+  useEffect(() => {
+    setIsLoading(cargando);
+  }, [cargando]);
+
+  if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator />
@@ -141,7 +155,6 @@ export default function ConfirmForecast() {
       </View>
     );
   }
-*/
 
   if (!image) {
     return (
