@@ -3,6 +3,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 import "../global.css";
@@ -47,8 +48,8 @@ export const CrossIcon = ({ color = "#A1A1AA" }) => (
   <Entypo name="circle-with-cross" size={24} color={color} />
 );
 
-export const CalendarIcon = () => (
-  <FontAwesome5 name="calendar-alt" size={24} color="black" />
+export const CalendarIcon = ({ color = "black" }) => (
+  <FontAwesome5 name="calendar-alt" size={24} color={color} />
 );
 
 export const ChevronUpIcon = () => (
@@ -79,4 +80,12 @@ export const DownloadIcon = ({ color }) => (
 
 export const ClockIcon = (props) => (
   <AntDesign name="clock-circle" size={24} {...props} />
+);
+
+export const CloudIcon = ({ color = "black", ...props }) => (
+  <Feather name="cloud" size={24} color={color} {...props} />
+);
+
+export const HelpIcon = ({ color = "black" }) => (
+  <Ionicons name="help" size={24} color={color} />
 );

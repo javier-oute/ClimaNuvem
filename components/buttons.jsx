@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n";
 import { router } from "expo-router";
 import { useCallback } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -8,8 +9,8 @@ import { useSavePhoto, useSaveSupabasePhoto } from "../lib/savePhotos";
 import { DownloadIcon, IconoCamera, IconoImage, SaveIcon } from "./icons";
 
 export function BotonTomarFoto() {
+  const t = useT();
   const { abrirCamara } = useTomarFoto();
-  //const [photo, setPhoto] = useState(null);
 
   const onPress = useCallback(async () => {
     try {
@@ -42,28 +43,30 @@ export function BotonTomarFoto() {
         <IconoCamera />
       </View>
       <View>
-        <Text className="text-lg font-semibold text-white">Tomar foto</Text>
+        <Text className="text-lg font-semibold text-white">
+          {t("buttons.takePhoto")}
+        </Text>
       </View>
     </Pressable>
   );
 }
 
 export function SaveButton({ onSave, isSaving }) {
+  const t = useT();
   return (
     <Pressable
       onPress={onSave}
-      //className="flex-1 items-center rounded-xl py-4 active:opacity-50 bg-blue-900"
       className="flex-1 flex-row items-center justify-between rounded-3xl bg-[#314468] px-6 py-4 shadow-sm active:opacity-75"
     >
       <SaveIcon />
       <Text className="text-base font-semibold text-white">
-        {isSaving ? "Guardando…" : "Guardar"}
+        {isSaving ? t("buttons.saving") : t("buttons.save")}
       </Text>
     </Pressable>
   );
 }
 
-export function DownloadPhotoButton({ uri }) {
+export function DownloadPhotoButton({ uri, color }) {
   const { saveCameraPhoto } = useSavePhoto();
 
   const handleDownload = useCallback(async () => {
@@ -79,14 +82,13 @@ export function DownloadPhotoButton({ uri }) {
       onPress={handleDownload}
       className="flex p-2 items-center justify-center"
     >
-      <DownloadIcon />
+      <DownloadIcon color={color} />
     </Pressable>
   );
 }
 
 export function DownloadSupabaseImageButton({ uri, color }) {
   const { saveSupabasePhoto } = useSaveSupabasePhoto();
-  console.log("Color: ", color);
 
   const handleDownload = useCallback(async () => {
     try {
@@ -119,6 +121,8 @@ export function DownloadSupabaseImageButton({ uri, color }) {
 */
 
 export function BotonCargarImagen() {
+  const t = useT();
+
   const onPress = useCallback(async () => {
     try {
       const imagen = await CargarImagen();
@@ -148,7 +152,9 @@ export function BotonCargarImagen() {
         <IconoImage />
       </View>
       <View>
-        <Text className="text-lg font-semibold text-white">Cargar imagen</Text>
+        <Text className="text-lg font-semibold text-white">
+          {t("buttons.loadImage")}
+        </Text>
       </View>
     </Pressable>
   );

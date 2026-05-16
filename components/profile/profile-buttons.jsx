@@ -1,29 +1,34 @@
+import { useT } from "@/lib/i18n";
 import { Pressable, Text } from "react-native";
 import { CancelIcon, EditIcon, SignOutIcon } from "../icons";
 
 export function EditProfileButton({ onPress }) {
+  const t = useT();
   return (
     <Pressable
       onPress={onPress}
-      //className="items-center rounded-xl bg-blue-900 py-4 active:opacity-50 "
       className="flex-row items-center justify-between w-full rounded-3xl bg-[#314468] px-6 py-4 shadow-sm active:opacity-75"
     >
       <EditIcon />
-      <Text className="text-base font-semibold text-white">Editar perfil</Text>
+      <Text className="text-base font-semibold text-white">
+        {t("buttons.editProfile")}
+      </Text>
     </Pressable>
   );
 }
 
 export function CancelProfileButton({ onCancel, isSaving }) {
+  const t = useT();
   return (
     <Pressable
       onPress={onCancel}
       disabled={isSaving}
-      //className="flex-1 items-center rounded-xl border border-slate-300 py-4 active:opacity-50"
       className="flex-1 flex-row items-center justify-between rounded-3xl bg-[#b0aeaf] px-6 py-4 shadow-sm active:opacity-75"
     >
       <CancelIcon />
-      <Text className="text-base font-semibold text-white">Cancelar</Text>
+      <Text className="text-base font-semibold text-white">
+        {t("buttons.cancel")}
+      </Text>
     </Pressable>
   );
 }
@@ -45,14 +50,16 @@ export function SaveProfileButton({ onSave, isSaving }) {
 }
 */
 export function LogOutButton({ signOut }) {
+  const t = useT();
   return (
     <Pressable
       onPress={signOut}
-      //className="items-center rounded-xl bg-black py-4 active:opacity-50 "
-      className="flex-row items-center justify-between w-full rounded-3xl bg-black px-6 py-4 shadow-sm active:opacity-75"
+      className="flex-row items-center justify-between w-full rounded-3xl bg-black dark:bg-zinc-800 px-6 py-4 shadow-sm active:opacity-75"
     >
       <SignOutIcon />
-      <Text className="text-base font-semibold text-white">Cerrar sesión</Text>
+      <Text className="text-base font-semibold text-white">
+        {t("buttons.signOut")}
+      </Text>
     </Pressable>
   );
 }

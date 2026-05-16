@@ -1,5 +1,6 @@
 // features/profile/useProfileForm.js
 import { upsertProfile } from "@/features/profile/profile-api";
+import { t } from "@/lib/i18n";
 import { isValidPhoneSimple, normalizePhone } from "@/utils/phone";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Keyboard } from "react-native";
@@ -40,7 +41,7 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
 
   const displayName = useMemo(() => {
     const name = (profile?.full_name ?? "").trim();
-    return name.length ? name : "Sin nombre";
+    return name.length ? name : t("profile.noName");
   }, [profile]);
 
   const onEdit = useCallback(() => {
@@ -61,7 +62,7 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
     try {
       // Validación simple de teléfono
       if (phone.trim() && !isValidPhoneSimple(phone)) {
-        Alert.alert("Teléfono inválido", "Usa formato tipo +34 600 123 456");
+        Alert.alert(t("profile.invalidPhone"), t("profile.invalidPhoneMsg"));
         return;
       }
 
@@ -79,7 +80,7 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
       Keyboard.dismiss();
       setIsSaveSuccess(true);
     } catch (e) {
-      Alert.alert("No se pudo guardar", e?.message ?? "Error");
+      Alert.alert(t("profile.saveError"), e?.message ?? "Error");
     } finally {
       setIsSaving(false);
     }

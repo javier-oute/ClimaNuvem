@@ -1,0 +1,41 @@
+/** @type {import('jest').Config} */
+module.exports = {
+  preset: 'jest-expo',
+
+  // Node es suficiente para tests de funciones puras e integración con mocks.
+  testEnvironment: 'node',
+
+  testMatch: [
+    '**/__tests__/**/*.test.[jt]s',
+    '**/__tests__/**/*.test.[jt]sx',
+  ],
+
+  // Resolver el alias @/ -> raíz del proyecto (igual que tsconfig paths)
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1',
+  },
+
+  // Extendemos el transformIgnorePatterns de jest-expo para incluir módulos
+  // adicionales que pueden publicarse como ESM (nativewind, zustand v5).
+  // El patrón de jest-expo ya incluye expo, @expo, react-native, @react-native.
+  transformIgnorePatterns: [
+    '/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|nativewind|zustand|@supabase))',
+    '/node_modules/react-native-reanimated/plugin/',
+  ],
+
+  // Archivos que se ejecutan DESPUÉS de que Jest inicializa el entorno de test.
+  // Nota: jest-expo usa `setupFiles` (ANTES del entorno) para su propia config.
+  // Nosotros usamos `setupFilesAfterEnv` para mocks globales de módulos nativos.
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+
+  // Cobertura solo sobre archivos críticos de Fase 1
+  collectCoverageFrom: [
+    'lib/format.js',
+    'lib/mlNormalize.js',
+    'utils/phone.js',
+    'lib/forecastHistory.js',
+    'stores/forecast.store.js',
+  ],
+
+  verbose: true,
+};

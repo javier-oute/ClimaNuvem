@@ -1,6 +1,8 @@
 import "@/global.css";
 import { fetchForecastHistoryWithSignedUrls } from "@/lib/forecastHistory";
 import { formatDateTimeWithWeekday } from "@/lib/format";
+import { LOCALE_MAP, useT } from "@/lib/i18n";
+import { useSettingsStore } from "@/stores/settings.store";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Link, Stack } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -8,6 +10,7 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Modal,
   Platform,
   Pressable,
   Text,
@@ -15,7 +18,7 @@ import {
 } from "react-native";
 //import { SearchBar } from "@rneui/themed";
 import { CalendarIcon, CrossIcon } from "@/components/icons";
-import { Modal } from "react-native";
+import { useColorScheme } from "nativewind";
 
 const PAGE_SIZE = 15;
 
@@ -36,11 +39,15 @@ export default function Historial() {
 
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
+  const t = useT();
+  const { colorScheme } = useColorScheme();
+  const language = useSettingsStore((s) => s.language);
+  const locale = LOCALE_MAP[language];
+
   const openDateFilter = useCallback(() => {
     if (Platform.OS === "android") {
       setShowPicker(true);
     } else {
-      //setTempDay(day ?? new Date());
       setIsDateModalOpen(true);
     }
   }, [setShowPicker]);
@@ -137,15 +144,15 @@ export default function Historial() {
         options={{
           headerShown: true,
           headerLargeTitle: false,
-          headerTitle: "Historial",
+          headerTitle: t("history.title"),
           headerTransparent: Platform.OS === "ios",
           //headerShadowVisible: false,
           //headerLargeTitleShadowVisible: false,
           headerTitleStyle: {
             fontSize: 30,
             lineHeight: 36,
-            fontWeight: "700", // si quieres equivalente a font-bold
-            color: "#0F172A",
+            fontWeight: "700",
+            color: colorScheme === "dark" ? "#FFFFFF" : "#0F172A",
           },
           headerRight: () => (
             <Pressable
@@ -153,12 +160,12 @@ export default function Historial() {
               hitSlop={10}
               className="w-10 h-10 rounded-full items-center justify-center"
             >
-              <CalendarIcon />
+              <CalendarIcon color={colorScheme === "dark" ? "white" : "black"} />
             </Pressable>
           ),
 
           headerSearchBarOptions: {
-            placeholder: "Buscar...",
+            placeholder: t("history.search"),
             onChangeText: (e) => setSearch(e.nativeEvent.text),
 
             // iOS look
@@ -184,7 +191,7 @@ export default function Historial() {
       />
       <FlatList
         data={items}
-        style={{ flex: 1 }}
+        className="flex-1 bg-white dark:bg-zinc-900"
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingTop: 24,
@@ -214,7 +221,13 @@ export default function Historial() {
         /* FLATLIST TIENE UN MONTON DE OPCIONES, SEGUIR MIRANDO */
         onRefresh={onRefresh}
         ListEmptyComponent={
-          isLoading ? <ActivityIndicator /> : <Text>No hay datos</Text>
+          isLoading ? (
+            <ActivityIndicator />
+          ) : (
+            <Text className="text-slate-600 dark:text-zinc-400">
+              {t("history.empty")}
+            </Text>
+          )
         }
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
@@ -228,13 +241,17 @@ export default function Historial() {
             </View>
           ) : null
         }
-        renderItem={({ item, index }) => {
-          const { texto } = formatDateTimeWithWeekday(item.created_at);
+        renderItem={({ item }) => {
+          const { texto } = formatDateTimeWithWeekday(item.created_at, locale);
+          const forecastTitle = t(`alerts.${item.forecast}.titulo`);
+          const forecastDisplay = forecastTitle.startsWith("alerts.")
+            ? item.forecast
+            : forecastTitle;
 
           return (
             <Link href={`/${item.id}`} asChild>
               <Pressable className="active:opacity-80">
-                <View className="flex bg-white rounded-xl shadow-sm">
+                <View className="flex bg-white dark:bg-zinc-800 rounded-xl shadow-sm">
                   <Image
                     source={
                       item.signedUrl
@@ -245,13 +262,17 @@ export default function Historial() {
                     resizeMode="cover"
                   />
                   <View className="px-4 pb-4 gap-1">
-                    <Text className="text-lg font-semibold">
-                      Predicción: {item.name}
+                    <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
+                      {t("history.prediction")}: {item.name}
                     </Text>
-                    <Text>Fecha: {texto} </Text>
-                    <Text className="mt-1">Pronóstico: {item.forecast}</Text>
-                    <Text className="mt-1">
-                      Probabilidad: {item.probability}%
+                    <Text className="text-slate-600 dark:text-zinc-400">
+                      {t("history.date")}: {texto}
+                    </Text>
+                    <Text className="mt-1 text-slate-600 dark:text-zinc-400">
+                      {t("history.forecast")}: {forecastDisplay}
+                    </Text>
+                    <Text className="mt-1 text-slate-600 dark:text-zinc-400">
+                      {t("history.probability")}: {item.probability}%
                     </Text>
                   </View>
                 </View>
@@ -521,9 +542,11 @@ export default function Historial() {
                     <Text className="text-lg font-semibold">
                       Predicción: {item.name}
                     </Text>
-                    <Text>Fecha: {texto} </Text>
-                    <Text className="mt-1">Pronóstico: {item.forecast}</Text>
-                    <Text className="mt-1">
+                    <Text className="text-slate-600">Fecha: {texto} </Text>
+                    <Text className="mt-1 text-slate-600">
+                      Pronóstico: {item.forecast}
+                    </Text>
+                    <Text className="mt-1 text-slate-600">
                       Probabilidad: {item.probability}%
                     </Text>
                   </View>

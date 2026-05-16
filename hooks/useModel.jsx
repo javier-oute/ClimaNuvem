@@ -2,6 +2,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as jpeg from "jpeg-js";
 import { useEffect, useState } from "react";
 import { useTensorflowModel } from "react-native-fast-tflite";
+import { normalizeRGBA } from "@/lib/mlNormalize";
 
 // Orden exacto del climanuvem_labels.txt generado por el modelo
 const CLASES = [
@@ -16,51 +17,17 @@ const CLASES = [
 ];
 
 const ALERTAS = {
-  cielo_despejado: {
-    color: "#1D9E75",
-    titulo: "Cielo despejado",
-    mensaje: "Sin riesgos meteorológicos. Buenas condiciones.",
-  },
-  nubes_altas_medias: {
-    color: "#378ADD",
-    titulo: "Nubes altas o medias",
-    mensaje: "Posible cambio de tiempo. Monitoriza el cielo.",
-  },
-  lenticular_viento: {
-    color: "#EF9F27",
-    titulo: "Viento fuerte en altura",
-    mensaje: "Nubes lenticulares detectadas. Viento intenso en cumbres.",
-  },
-  cubierto_precipitacion: {
-    color: "#EF9F27",
-    titulo: "Riesgo de precipitación",
-    mensaje: "Cielo cubierto. Posible lluvia o nieve próxima.",
-  },
-  niebla_stratus: {
-    color: "#E24B4A",
-    titulo: "Niebla o stratus bajo",
-    mensaje: "Visibilidad reducida. Riesgo de desorientación.",
-  },
-  conveccion_desarrollo: {
-    color: "#E24B4A",
-    titulo: "Convección en desarrollo",
-    mensaje: "Nubes de tormenta formándose. Considera descender.",
-  },
-  tormenta: {
-    color: "#7F77DD",
-    titulo: "⚠️ PELIGRO — Tormenta",
-    mensaje: "Tormenta activa. Busca refugio inmediatamente.",
-  },
-  foto_invalida: {
-    color: "#888888",
-    titulo: "Foto no válida",
-    mensaje: "No se puede analizar esta imagen. Intenta con otra foto.",
-  },
+  cielo_despejado: { color: "#1D9E75" },
+  nubes_altas_medias: { color: "#378ADD" },
+  lenticular_viento: { color: "#EF9F27" },
+  cubierto_precipitacion: { color: "#EF9F27" },
+  niebla_stratus: { color: "#E24B4A" },
+  conveccion_desarrollo: { color: "#E24B4A" },
+  tormenta: { color: "#7F77DD" },
+  foto_invalida: { color: "#888888" },
 };
 
-// Normalización ImageNet — igual que durante el entrenamiento
-const MEAN = [0.485, 0.456, 0.406];
-const STD = [0.229, 0.224, 0.225];
+// Normalización ImageNet — constantes y función en lib/mlNormalize.js
 
 export function useModel(imageUri) {
   const tflite = useTensorflowModel(
@@ -92,14 +59,8 @@ export function useModel(imageUri) {
         const { data } = jpeg.decode(bytes, { useTArray: true });
 
         // 3. RGBA → Float32 con normalización ImageNet
-        // El modelo fue entrenado con mean=[0.485,0.456,0.406] std=[0.229,0.224,0.225]
-        // Sin esta normalización las predicciones serán incorrectas
-        const input = new Float32Array(224 * 224 * 3);
-        for (let i = 0; i < 224 * 224; i++) {
-          input[i * 3 + 0] = (data[i * 4 + 0] / 255.0 - MEAN[0]) / STD[0];
-          input[i * 3 + 1] = (data[i * 4 + 1] / 255.0 - MEAN[1]) / STD[1];
-          input[i * 3 + 2] = (data[i * 4 + 2] / 255.0 - MEAN[2]) / STD[2];
-        }
+        // Constantes IMAGENET_MEAN y IMAGENET_STD definidas en lib/mlNormalize.js
+        const input = normalizeRGBA(data, 224, 224);
 
         // 4. Inferencia
         const outputs = await tflite.model.run([input]);

@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import * as ImagePicker from "expo-image-picker";
 import { Alert, Linking } from "react-native";
 
@@ -11,14 +12,13 @@ export default function useTomarFoto() {
       const res = await requestPermission();
       if (!res.granted) {
         if (res.canAskAgain === false) {
-          Alert.alert(
-            "Permiso de cámara",
-            "Activa la cámara en Ajustes para poder tomar fotos.",
-            [
-              { text: "Cancelar", style: "cancel" },
-              { text: "Abrir Ajustes", onPress: () => Linking.openSettings() },
-            ],
-          );
+          Alert.alert(t("camera.permissionTitle"), t("camera.permissionMsg"), [
+            { text: t("camera.cancel"), style: "cancel" },
+            {
+              text: t("camera.openSettings"),
+              onPress: () => Linking.openSettings(),
+            },
+          ]);
         }
         return;
       }

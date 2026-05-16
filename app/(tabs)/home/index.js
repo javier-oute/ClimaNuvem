@@ -1,27 +1,50 @@
 import { BotonCargarImagen, BotonTomarFoto } from "@/components/buttons";
+import { HelpIcon } from "@/components/icons";
 import DemoVideo from "@/components/videoComponent";
+import { useT } from "@/lib/i18n";
 import { makeRedirectUri } from "expo-auth-session";
-import { Platform, Text, View } from "react-native";
-import "../../global.css";
+import { router, Stack } from "expo-router";
+import { useColorScheme } from "nativewind";
+import { Platform, Pressable, Text, View } from "react-native";
+import "../../../global.css";
 
 export default function Index() {
-  //const TAB_BAR_SPACE = 80; // => implica 20 en nativewind
+  const t = useT();
+  const { colorScheme } = useColorScheme();
 
   const redirectTo = makeRedirectUri({ useProxy: true });
   console.log("REDIRECT:", redirectTo);
   return (
-    <View className="flex-1 flex-grow justify-end bg-white">
+    <View className="flex-1 flex-grow justify-end bg-white dark:bg-zinc-900">
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          headerTransparent: true,
+          headerTitle: "",
+          headerBackTitle: "",
+          headerRight: () => (
+            <Pressable
+              onPress={() => router.push("/help")}
+              hitSlop={10}
+              className="p-2"
+            >
+              <HelpIcon color={colorScheme === "dark" ? "white" : "black"} />
+            </Pressable>
+          ),
+        }}
+      />
       <DemoVideo />
       <View
-        className={`bg-white rounded-t-3xl text-balance ${
+        className={`bg-white dark:bg-zinc-900 rounded-t-3xl text-balance ${
           Platform.OS === "ios" ? "pb-20" : "pb-0"
         }`}
       >
         <View className="pt-8 pb-12 px-8 gap-3">
-          <Text className="font-bold text-3xl">Bienvenido a ClimaNuvem</Text>
-          <Text className="font-normal text-lg">
-            Saca una foto a las nubes que te preocupan y te daremos el
-            pronóstico{" "}
+          <Text className="font-bold text-3xl text-slate-900 dark:text-zinc-100">
+            {t("home.title")}
+          </Text>
+          <Text className="font-normal text-lg text-slate-600 dark:text-zinc-400">
+            {t("home.subtitle")}
           </Text>
         </View>
         <View className="items-center pb-12 gap-8">
@@ -33,7 +56,7 @@ export default function Index() {
   );
 }
 
-/* 
+/*
 
 
 export default function Index() {
@@ -65,7 +88,7 @@ export default function Index() {
 
 
       <Image
-        source={require("../../assets/images/fondo-nubes-1.avif")}
+        source={require("../../../assets/images/fondo-nubes-1.avif")}
         className="w-full h-full absolute z-0"
         resizeMode="cover"
       />
@@ -101,27 +124,6 @@ export default function Index() {
             </Pressable>
 
 
-
-
-
-
-        {({ pressed }) =>
-          pressed ? (
-            <Text className="font-semibold text-xl">Tomar foto</Text>
-          ) : (
-            <Text className="font-semibold text-xl">Tomar foto</Text>
-          )
-        }
-
-
-          <Link href={`/${prueba.id}`} asChild>
-            <Text className="mt-4 text-black underline">
-              Go to Item Detail Page
-            </Text>
-          </Link>
-          <Link href="/profile" className="mt-4 text-black underline">
-            Go to Profile Page
-          </Link>
 
 
  */

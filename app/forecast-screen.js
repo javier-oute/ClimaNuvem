@@ -1,5 +1,6 @@
 import { EditableBottomSheetField } from "@/components/editableField";
 import { ShareForecastButton } from "@/components/forecast/forecast-buttons";
+import { useT } from "@/lib/i18n";
 import BottomSheet, {
   BottomSheetScrollView,
   useBottomSheetSpringConfigs,
@@ -12,9 +13,9 @@ import {
   Image,
   Platform,
   Text,
-  //useWindowDimensions,
   View,
 } from "react-native";
+import { useColorScheme } from "nativewind";
 import { DownloadPhotoButton, SaveButton } from "../components/buttons";
 import "../global.css";
 import { useModel } from "../hooks/useModel";
@@ -31,6 +32,9 @@ export default function ConfirmForecast() {
 
   const [topBlockH, setTopBlockH] = useState(0);
   const [bottomBlockH, setBottomBlockH] = useState(0);
+
+  const t = useT();
+  const { colorScheme } = useColorScheme();
 
   //const insets = useSafeAreaInsets();
   //const { height: windowH } = useWindowDimensions();
@@ -77,21 +81,17 @@ export default function ConfirmForecast() {
 
   const { resultado, cargando } = useModel(image);
 
-  const forecast = resultado?.alerta?.mensaje ?? null;
+  // Guardamos la clase (e.g. "tormenta") para i18n; el display se resuelve con t()
+  const forecastClase = resultado?.clase ?? null;
   const probability = resultado?.confianza ?? 0;
 
   const p = formatProbability(probability);
-  /*
-  const onDiscard = useCallback(() => {
-    router.back();
-    //router.replace("/(tabs)/home");
-  }, []);
-*/
+
   const onSave = useCallback(async () => {
     setIsSaving(true);
 
     try {
-      const finalName = name.trim() || "Predicción";
+      const finalName = name.trim() || t("forecast.defaultName");
       const finalPlace = placeName.trim();
 
       let placeNameSource = "none";
@@ -102,27 +102,18 @@ export default function ConfirmForecast() {
       }
 
       await saveForecastWithPhoto({
-        asset: { uri: image }, // image = imageUri string
+        asset: { uri: image },
         name: finalName,
-        forecast,
+        forecast: forecastClase, // clase, no el mensaje traducido
         probability,
         coords: source === "camera" ? coords : null,
         placeName: finalPlace || null,
         placeNameSource,
       });
 
-      console.log({
-        finalName,
-        forecast,
-        probability,
-        coordsToSave: source === "camera" ? coords : null,
-        place_name: finalPlace || null,
-        place_name_source: placeNameSource,
-      });
-
       router.replace("/(tabs)/home");
     } catch (e) {
-      Alert.alert("No se pudo guardar", e?.message ?? "Error");
+      Alert.alert(t("forecast.saveError"), e?.message ?? "Error");
     } finally {
       setIsSaving(false);
     }
@@ -133,13 +124,18 @@ export default function ConfirmForecast() {
     source,
     coords,
     image,
-    forecast,
+    forecastClase,
     probability,
+    t,
   ]);
+
+  const forecastDisplay = forecastClase
+    ? t(`alerts.${forecastClase}.titulo`)
+    : null;
 
   const { onShare } = useShareForecast({
     placeName: placeName.trim() || null,
-    forecast: forecast,
+    forecast: forecastDisplay,
     probability: probability,
   });
 
@@ -149,17 +145,21 @@ export default function ConfirmForecast() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
         <ActivityIndicator />
-        <Text className="mt-2 text-slate-500">Cargando...</Text>
+        <Text className="mt-2 text-slate-500 dark:text-zinc-400">
+          {t("forecast.loading")}
+        </Text>
       </View>
     );
   }
 
   if (!image) {
     return (
-      <View className="flex-1 items-center justify-center bg-white p-6">
-        <Text className="text-lg font-semibold">No se encontró la imagen</Text>
+      <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900 p-6">
+        <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
+          {t("forecast.notFound")}
+        </Text>
       </View>
     );
   }
@@ -175,7 +175,12 @@ export default function ConfirmForecast() {
           headerTransparent: true,
           headerShadowVisible: false,
           headerRight: () =>
-            source === "gallery" ? null : <DownloadPhotoButton uri={image} />,
+            source === "gallery" ? null : (
+              <DownloadPhotoButton
+                uri={image}
+                color={colorScheme === "dark" ? "white" : "black"}
+              />
+            ),
         }}
       />
       <Image
@@ -188,7 +193,7 @@ export default function ConfirmForecast() {
         snapPoints={snapPoints}
         enableDynamicSizing={false} // Mas estable
         backgroundStyle={{
-          backgroundColor: "white",
+          backgroundColor: colorScheme === "dark" ? "#27272a" : "white",
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
         }}
@@ -231,8 +236,8 @@ export default function ConfirmForecast() {
             {isLoading ? (
               <View className="items-center">
                 <ActivityIndicator />
-                <Text className="mt-2 text-slate-500">
-                  Generando pronóstico…
+                <Text className="mt-2 text-slate-500 dark:text-zinc-400">
+                  {t("forecast.generating")}
                 </Text>
               </View>
             ) : (
@@ -243,15 +248,15 @@ export default function ConfirmForecast() {
                     setBottomBlockH((prev) => (prev === h ? prev : h));
                   }}
                 >
-                  <Text className="font-bold text-center text-3xl">
-                    {forecast || "-"}
+                  <Text className="font-bold text-center text-3xl text-slate-900 dark:text-zinc-100">
+                    {forecastDisplay || "-"}
                   </Text>
                 </View>
                 <View className="flex w-full items-center gap-2">
                   <Text className="font-bold text-center text-2xl rounded-2xl bg-[#314468] px-3 py-1 text-white">
-                    Probabilidad: {p ?? "-"}%
+                    {t("forecast.probability")}: {p ?? "-"}%
                   </Text>
-                  <View className="h-2 w-80 rounded-2xl bg-slate-200 overflow-hidden">
+                  <View className="h-2 w-80 rounded-2xl bg-slate-200 dark:bg-zinc-700 overflow-hidden">
                     <View
                       className="h-2 rounded-2xl bg-[#314468]"
                       style={{ width: `${p}%` }}
@@ -263,26 +268,26 @@ export default function ConfirmForecast() {
             <View>
               <View className="mt-8 w-80 self-center gap-4">
                 <EditableBottomSheetField
-                  label="Nombre completo"
+                  label={t("forecast.name")}
                   value={name}
                   onChangeText={setName}
                   returnKeyType="next"
                   autoComplete="name"
                   textContentType="name"
-                  placeholder="Ej: Nubes negras en casa"
+                  placeholder={t("forecast.namePlaceholder")}
                   autoCapitalize="words"
                   maxLength={20}
                 />
 
                 <EditableBottomSheetField
-                  label="Lugar"
+                  label={t("forecast.place")}
                   value={placeName}
                   onChangeText={setPlaceName}
                   returnKeyType="done"
                   placeholder={
                     source === "camera"
-                      ? "Lugar detectado..."
-                      : "Lugar (opcional)"
+                      ? t("forecast.placeCamera")
+                      : t("forecast.placeGallery")
                   }
                   autoCapitalize="words"
                   maxLength={50}
@@ -488,7 +493,12 @@ export default function ConfirmForecast() {
           headerTransparent: true,
           headerShadowVisible: false,
           headerRight: () =>
-            source === "gallery" ? null : <DownloadPhotoButton uri={image} />,
+            source === "gallery" ? null : (
+              <DownloadPhotoButton
+                uri={image}
+                color={colorScheme === "dark" ? "white" : "black"}
+              />
+            ),
         }}
       />
       <Image

@@ -1,10 +1,12 @@
 import { useAuthStore } from "@/stores/auth.store";
+import { useT } from "@/lib/i18n";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { Platform } from "react-native";
 //import { useSafeAreaInsets } from "react-native-safe-area-context";
 import "../../global.css";
 
 export default function TabsLayout() {
+  const t = useT();
   //const insets = useSafeAreaInsets();
   const session = useAuthStore((s) => s.session);
 
@@ -18,19 +20,23 @@ export default function TabsLayout() {
       shadowColor={Platform.OS === "ios" ? "transparent" : undefined} // ✅ sin línea/sombra arriba
     >
       <NativeTabs.Trigger name="home">
-        <Label>Home</Label>
+        <Label>{t("tabs.home")}</Label>
         <Icon sf="house.fill" md="home" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="guide">
+        <Label>{t("tabs.guide")}</Label>
+        <Icon sf="cloud.fill" md="cloud" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
         name="history"
         contentStyle={{ backgroundColor: "transparent" }}
         hidden={!session}
       >
-        <Label>Historial</Label>
+        <Label>{t("tabs.history")}</Label>
         <Icon sf="clock.fill" md="history" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile" hidden={!session}>
-        <Label>Perfil</Label>
+        <Label>{t("tabs.profile")}</Label>
         <Icon sf="person.fill" md="account" />
       </NativeTabs.Trigger>
     </NativeTabs>

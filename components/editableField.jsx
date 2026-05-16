@@ -17,7 +17,7 @@ export function EditableField({
         editable={isEditing}
         showSoftInputOnFocus={isEditing}
         placeholderTextColor="#94a3b8"
-        className={`rounded-xl border w-80 px-4 pb-3 pt-3 ${
+        className={`rounded-xl border w-full px-4 pb-3 pt-3 ${
           isEditing
             ? "border-slate-200 bg-white text-slate-900"
             : "border-slate-200 bg-gray-200 text-slate-500"

@@ -1,10 +1,13 @@
 import { deleteForecast, fetchForecast } from "@/lib/forecastHistory";
 import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
+import { LOCALE_MAP, useT } from "@/lib/i18n";
+import { useSettingsStore } from "@/stores/settings.store";
 import BottomSheet, {
   BottomSheetView,
   useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useColorScheme } from "nativewind";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -23,6 +26,11 @@ import "../global.css";
 import { useShareForecast } from "../hooks/useShareForecast";
 
 export default function ItemDetail() {
+  const t = useT();
+  const { colorScheme } = useColorScheme();
+  const language = useSettingsStore((s) => s.language);
+  const locale = LOCALE_MAP[language];
+
   const { id } = useLocalSearchParams();
 
   const [item, setItem] = useState(null);
@@ -76,36 +84,32 @@ export default function ItemDetail() {
   const onDelete = useCallback(async () => {
     if (isDeleting) return;
     if (!id || typeof id !== "string") {
-      Alert.alert("Error", "ID inválida.");
+      Alert.alert(t("detail.error"), t("detail.invalidId"));
       return;
     }
 
-    Alert.alert(
-      "Eliminar predicción",
-      "¿Seguro que quieres eliminarla? Esta acción no se puede deshacer.",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-          onPress: () => setIsDeleting(false),
+    Alert.alert(t("detail.deleteTitle"), t("detail.deleteMsg"), [
+      {
+        text: t("detail.cancel"),
+        style: "cancel",
+        onPress: () => setIsDeleting(false),
+      },
+      {
+        text: t("detail.deleteConfirm"),
+        style: "destructive",
+        onPress: async () => {
+          setIsDeleting(true);
+          try {
+            await deleteForecast({ id, imagePath: item?.image_path });
+            router.replace("/(tabs)/history");
+          } catch (e) {
+            Alert.alert(t("detail.deleteError"), e?.message ?? "Error");
+          } finally {
+            setIsDeleting(false);
+          }
         },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: async () => {
-            setIsDeleting(true);
-            try {
-              await deleteForecast({ id, imagePath: item?.image_path });
-              router.replace("/(tabs)/history");
-            } catch (e) {
-              Alert.alert("No se pudo eliminar", e?.message ?? "Error");
-            } finally {
-              setIsDeleting(false);
-            }
-          },
-        },
-      ],
-    );
+      },
+    ]);
 
     /*
     try {
@@ -120,7 +124,7 @@ export default function ItemDetail() {
       setIsDeleting(false);
     }
       */
-  }, [id, item, isDeleting]);
+  }, [id, item, isDeleting, t]);
 
   const { onShare } = useShareForecast({
     name: item?.name,
@@ -131,24 +135,30 @@ export default function ItemDetail() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
         <ActivityIndicator />
-        <Text className="mt-2 text-slate-500">Cargando...</Text>
+        <Text className="mt-2 text-slate-500 dark:text-zinc-400">
+          {t("detail.loading")}
+        </Text>
       </View>
     );
   }
 
   if (!item) {
     return (
-      <View className="flex-1 items-center justify-center bg-white p-6">
-        <Text className="text-lg font-semibold">
-          No se encontró la predicción
+      <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900 p-6">
+        <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
+          {t("detail.notFound")}
         </Text>
       </View>
     );
   }
 
-  const { texto } = formatDateTimeWithWeekday(item.created_at);
+  const { texto } = formatDateTimeWithWeekday(item.created_at, locale);
+  const forecastTitle = t(`alerts.${item.forecast}.titulo`);
+  const forecastDisplay = forecastTitle.startsWith("alerts.")
+    ? item.forecast
+    : forecastTitle;
 
   const p = formatProbability(item.probability);
 
@@ -163,10 +173,10 @@ export default function ItemDetail() {
           headerTransparent: true,
           headerShadowVisible: true,
           headerTintColor: "#FFFFFF",
-          headerRight: ({ tintColor }) => (
+          headerRight: () => (
             <DownloadSupabaseImageButton
               uri={item?.signedUrl}
-              //color={tintColor}
+              color={colorScheme === "dark" ? "white" : "black"}
             />
           ),
         }}
@@ -186,7 +196,7 @@ export default function ItemDetail() {
         snapPoints={snapPoints}
         enableDynamicSizing={false} // Mas estable
         backgroundStyle={{
-          backgroundColor: "white",
+          backgroundColor: colorScheme === "dark" ? "#27272a" : "white",
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
         }}
@@ -213,18 +223,18 @@ export default function ItemDetail() {
                 setBottomBlockH((prev) => (prev === h ? prev : h));
               }}
             >
-              <Text className="font-bold text-left text-2xl">
-                Predicción guardada:
+              <Text className="font-bold text-left text-2xl text-slate-900 dark:text-zinc-100">
+                {t("detail.saved")}
               </Text>
-              <Text className="font-bold text-center text-3xl">
-                {item.forecast || "-"}
+              <Text className="font-bold text-center text-3xl text-slate-900 dark:text-zinc-100">
+                {forecastDisplay || "-"}
               </Text>
             </View>
             <View className="flex w-full items-center gap-2">
               <Text className="font-bold text-center text-2xl rounded-2xl bg-[#314468] px-3 py-1 text-white">
-                Probabilidad: {p ?? "-"}%
+                {t("detail.probability")}: {p ?? "-"}%
               </Text>
-              <View className="h-2 w-80 rounded-2xl bg-slate-200 overflow-hidden">
+              <View className="h-2 w-80 rounded-2xl bg-slate-200 dark:bg-zinc-700 overflow-hidden">
                 <View
                   className="h-2 rounded-2xl bg-[#314468]"
                   style={{ width: `${p}%` }}
@@ -235,7 +245,7 @@ export default function ItemDetail() {
             <View className="flex gap-1">
               {item.place_name ? (
                 <Text className="text-lg text-[#b0aeaf] text-center">
-                  Lugar: {item.place_name}
+                  {t("detail.place")}: {item.place_name}
                 </Text>
               ) : null}
               {texto ? (

@@ -5,36 +5,69 @@ import {
   LogOutButton,
 } from "@/components/profile/profile-buttons";
 import { useProfileForm } from "@/hooks/profile/useProfileForm";
+import { useT } from "@/lib/i18n";
 import { useAuthStore } from "@/stores/auth.store";
+import { useSettingsStore } from "@/stores/settings.store";
 import { Redirect } from "expo-router";
 import { useEffect } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  ScrollView,
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SaveButton } from "../../components/buttons";
 import { UserIcon } from "../../components/icons";
 import "../../global.css";
 
+function SettingRow({ label, options, value, onChange }) {
+  return (
+    <View className="rounded-2xl shadow-sm">
+      <View className="flex-row items-center justify-between bg-white dark:bg-zinc-800 rounded-2xl overflow-hidden px-4 py-3">
+        <Text className="text-base font-medium text-slate-700 dark:text-zinc-300">
+          {label}
+        </Text>
+        <View className="flex-row bg-slate-200 dark:bg-zinc-700 rounded-xl p-1 gap-1">
+          {options.map(({ key, label: optLabel }) => (
+            <Pressable
+              key={key}
+              onPress={() => onChange(key)}
+              className={`px-3 py-1.5 rounded-lg active:opacity-75 ${value === key ? "bg-[#314468]" : ""}`}
+            >
+              <Text
+                className={`text-sm font-medium ${value === key ? "text-white" : "text-slate-600 dark:text-zinc-400"}`}
+              >
+                {optLabel}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+}
+
 export default function Profile() {
+  const t = useT();
+  const insets = useSafeAreaInsets();
+
   const session = useAuthStore((s) => s.session);
   const profile = useAuthStore((s) => s.profile);
   const isLoading = useAuthStore((s) => s.isLoading);
   const refreshProfile = useAuthStore((s) => s.refreshProfile);
   const signOut = useAuthStore((s) => s.signOut);
 
+  const language = useSettingsStore((s) => s.language);
+  const theme = useSettingsStore((s) => s.theme);
+  const setLanguage = useSettingsStore((s) => s.setLanguage);
+  const setTheme = useSettingsStore((s) => s.setTheme);
+
   const userId = session?.user?.id ?? null;
   const email = session?.user?.email ?? "—";
-
-  //const insets = useSafeAreaInsets();
-
-  useEffect(() => {
-    console.log("[Profile] MOUNT");
-    return () => console.log("[Profile] UNMOUNT");
-  }, []);
 
   useEffect(() => {
     if (session && profile === undefined) {
@@ -65,28 +98,10 @@ export default function Profile() {
   const showFullScreenLoader =
     isLoading || session === undefined || profile === undefined;
 
-  console.log("[Profile]", {
-    isLoading,
-    sessionState:
-      session === undefined ? "undefined" : session ? "set" : "null",
-    profileState:
-      profile === undefined ? "undefined" : profile ? "set" : "null",
-  });
-
   if (showFullScreenLoader) {
     return (
-      <View className="flex-1 bg-white">
-        <KeyboardAvoidingView
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "white",
-          }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <ActivityIndicator />
-        </KeyboardAvoidingView>
+      <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
+        <ActivityIndicator />
       </View>
     );
   }
@@ -95,92 +110,137 @@ export default function Profile() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  // El pb-20 para que tenga en cuenta el tab bar
   return (
-    <View className={`flex-1 ${Platform.OS === "ios" ? "pb-20" : "pb-0"}`}>
-      <KeyboardAvoidingView
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="bg-white dark:bg-zinc-900"
+    >
+      {/* Header fijo — no forma parte del scroll */}
+      <View
+        className="items-center bg-white dark:bg-zinc-900"
+        style={{
+          paddingTop: Math.max(insets.top, 24) + 16,
+          paddingHorizontal: 32,
+          paddingBottom: 24,
+        }}
       >
-        {/* Header */}
-        <View className="flex items-center mb-6">
-          <View className="rounded-full bg-slate-400 p-6">
-            <UserIcon size={64} />
-          </View>
+        <View className="rounded-full bg-slate-400 p-6">
+          <UserIcon size={64} />
+        </View>
+        <Text className="mt-4 text-3xl font-bold text-slate-900 dark:text-zinc-100">
+          {displayName}
+        </Text>
+        <Text className="mt-1 text-slate-500 dark:text-zinc-400">
+          {email}
+        </Text>
+        {isEditing && (
+          <Text className="mt-2 text-xs text-slate-500 dark:text-zinc-400">
+            {t("profile.editing")}
+          </Text>
+        )}
+        {isSaveSuccess && !isEditing && (
+          <Text className="mt-2 text-xs text-green-500">
+            {t("profile.saved")}
+          </Text>
+        )}
+      </View>
 
-          <Text className="mt-4 text-3xl font-bold">{displayName}</Text>
-          <Text className="mt-1 mb-2 text-slate-500">{email}</Text>
-
-          {isEditing ? (
-            <Text className="absolute -bottom-4 text-xs  text-slate-500">
-              Editando perfil…
-            </Text>
-          ) : null}
-
-          {isSaveSuccess && !isEditing ? (
-            <Text className="absolute -bottom-4 text-xs  text-green-500">
-              Cambios guardados con éxito ✅
-            </Text>
-          ) : null}
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{
+          paddingHorizontal: 32,
+          paddingBottom: Platform.OS === "ios" ? 24 : insets.bottom + 24,
+        }}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Campos de perfil */}
+        <View className="gap-4">
+          <EditableField
+            label={t("profile.fullName")}
+            value={fullName}
+            onChangeText={setFullName}
+            isEditing={isEditing}
+            returnKeyType="next"
+            autoComplete="name"
+            textContentType="name"
+            autoCapitalize="words"
+            maxLength={50}
+            placeholder={t("profile.fullNamePlaceholder")}
+          />
+          <EditableField
+            label={t("profile.phone")}
+            value={phone}
+            onChangeText={setPhone}
+            isEditing={isEditing}
+            keyboardType="phone-pad"
+            textContentType="telephoneNumber"
+            autoComplete="tel"
+            returnKeyType="next"
+            placeholder={t("profile.phonePlaceholder")}
+          />
+          <EditableField
+            label={t("profile.username")}
+            value={username}
+            onChangeText={setUsername}
+            isEditing={isEditing}
+            returnKeyType="done"
+            autoComplete="username"
+            textContentType="username"
+            autoCapitalize="none"
+            maxLength={30}
+            placeholder={t("profile.usernamePlaceholder")}
+          />
         </View>
 
-        <View className="flex items-center">
-          {/* Contenido */}
-          <View className="gap-4">
-            <EditableField
-              label="Nombre completo"
-              value={fullName}
-              onChangeText={setFullName}
-              isEditing={isEditing}
-              returnKeyType="next"
-              autoComplete="name"
-              textContentType="name"
-              autoCapitalize="words"
-              maxLength={50}
-              placeholder="Ej: Javier Oute"
-            />
-            <EditableField
-              label="Teléfono"
-              value={phone}
-              onChangeText={setPhone}
-              isEditing={isEditing}
-              keyboardType="phone-pad"
-              textContentType="telephoneNumber"
-              autoComplete="tel"
-              returnKeyType="next"
-              placeholder="Ej: +34 612 345 678"
-            />
-            <EditableField
-              label="Nombre de usuario"
-              value={username}
-              onChangeText={setUsername}
-              isEditing={isEditing}
-              returnKeyType="done"
-              autoComplete="username"
-              textContentType="username"
-              autoCapitalize="none"
-              maxLength={30}
-              placeholder="Ej: sara_garcia"
-            />
-          </View>
-
-          <View className="flex w-80 items-center justify-center mt-8">
-            {!isEditing ? (
-              <EditProfileButton onPress={onEdit} />
-            ) : (
-              <View className="flex-row gap-3">
-                <CancelProfileButton onCancel={onCancel} isSaving={isSaving} />
-                <SaveButton onSave={onSave} isSaving={isSaving} />
-              </View>
-            )}
-
-            <View className="h-px w-56 bg-slate-400 my-6" />
-
-            <LogOutButton signOut={signOut} />
-          </View>
+        {/* Botones editar / guardar */}
+        <View className="mt-8">
+          {!isEditing ? (
+            <EditProfileButton onPress={onEdit} />
+          ) : (
+            <View className="flex-row gap-3">
+              <CancelProfileButton onCancel={onCancel} isSaving={isSaving} />
+              <SaveButton onSave={onSave} isSaving={isSaving} />
+            </View>
+          )}
         </View>
-      </KeyboardAvoidingView>
-    </View>
+
+        {/* Preferencias */}
+        <View className="h-px bg-slate-200 dark:bg-zinc-700 my-8" />
+        <Text className="text-base font-semibold text-slate-900 dark:text-zinc-100 mb-4">
+          {t("settings.title")}
+        </Text>
+        <View className="gap-3">
+          <SettingRow
+            label={t("settings.language")}
+            value={language}
+            onChange={setLanguage}
+            options={[
+              { key: "es", label: t("settings.langEs") },
+              { key: "gl", label: t("settings.langGl") },
+              { key: "en", label: t("settings.langEn") },
+            ]}
+          />
+          <SettingRow
+            label={t("settings.theme")}
+            value={theme}
+            onChange={setTheme}
+            options={[
+              { key: "light", label: t("settings.themeLight") },
+              { key: "dark", label: t("settings.themeDark") },
+              { key: "system", label: t("settings.themeSystem") },
+            ]}
+          />
+        </View>
+
+        {/* Cerrar sesión */}
+        <View className="h-px bg-slate-200 dark:bg-zinc-700 my-8" />
+        <LogOutButton signOut={signOut} />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 /*
