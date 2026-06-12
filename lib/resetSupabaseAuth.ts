@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 
 // Cambia esto por el prefijo real de tu proyecto:
@@ -11,9 +12,14 @@ export async function hardResetSupabaseAuth() {
     await supabase.auth.signOut();
   } catch {}
 
-  // 2) Borrar el token persistido (clave principal)
+  // 2) Borrar el token persistido. LargeSecureStore guarda la clave AES en
+  // SecureStore y el valor cifrado en AsyncStorage, ambos bajo la misma clave;
+  // hay que borrar los dos o la sesión cifrada sobrevive al reset.
   try {
     await SecureStore.deleteItemAsync(SUPABASE_AUTH_KEY);
+  } catch {}
+  try {
+    await AsyncStorage.removeItem(SUPABASE_AUTH_KEY);
   } catch {}
 
   // Si en el futuro haces chunking, aquí borrarías también las partes.

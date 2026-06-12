@@ -131,9 +131,7 @@ export default function Profile() {
         <Text className="mt-4 text-3xl font-bold text-slate-900 dark:text-zinc-100">
           {displayName}
         </Text>
-        <Text className="mt-1 text-slate-500 dark:text-zinc-400">
-          {email}
-        </Text>
+        <Text className="mt-1 text-slate-500 dark:text-zinc-400">{email}</Text>
         {isEditing && (
           <Text className="mt-2 text-xs text-slate-500 dark:text-zinc-400">
             {t("profile.editing")}

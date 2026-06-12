@@ -1,13 +1,24 @@
 import "@/global.css";
-import { fetchForecastHistoryWithSignedUrls } from "@/lib/forecastHistory";
-import { formatDateTimeWithWeekday } from "@/lib/format";
+import { CalendarIcon, CrossIcon, TrashIcon } from "@/components/icons";
+import {
+  deleteForecast,
+  fetchForecastHistoryWithSignedUrls,
+} from "@/lib/forecastHistory";
+import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
 import { LOCALE_MAP, useT } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settings.store";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Link, Stack } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+} from "react-native-reanimated";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Modal,
@@ -17,8 +28,65 @@ import {
   View,
 } from "react-native";
 //import { SearchBar } from "@rneui/themed";
-import { CalendarIcon, CrossIcon } from "@/components/icons";
 import { useColorScheme } from "nativewind";
+
+function DeleteAction({
+  progress,
+  onPress,
+  title,
+  message,
+  cancelLabel,
+  confirmLabel,
+}) {
+  const { colorScheme } = useColorScheme();
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      progress.value,
+      [0, 1],
+      [0.3, 1],
+      Extrapolation.CLAMP,
+    );
+    return { transform: [{ scale }] };
+  });
+
+  return (
+    <View
+      style={{
+        width: 80,
+        backgroundColor: colorScheme === "dark" ? "#27272a" : "white",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Pressable
+        onPress={() =>
+          Alert.alert(title, message, [
+            { text: cancelLabel, style: "cancel" },
+            { text: confirmLabel, style: "destructive", onPress },
+          ])
+        }
+        hitSlop={8}
+      >
+        <Animated.View
+          style={[
+            {
+              width: 52,
+              height: 52,
+              borderRadius: 26,
+              backgroundColor: "#E24B4A",
+              alignItems: "center",
+              justifyContent: "center",
+            },
+            animatedStyle,
+          ]}
+        >
+          <TrashIcon />
+        </Animated.View>
+      </Pressable>
+    </View>
+  );
+}
 
 const PAGE_SIZE = 15;
 
@@ -38,6 +106,9 @@ export default function Historial() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+
+  // Mapa de refs para cerrar el swipeable abierto al abrir otro
+  const rowRefs = useRef(new Map());
 
   const t = useT();
   const { colorScheme } = useColorScheme();
@@ -132,6 +203,22 @@ export default function Historial() {
     loadInitial();
   }, [loadInitial]);
 
+  // Optimistic delete: elimina de la lista al instante y borra en Supabase en paralelo.
+  // Si falla el borrado en servidor, recarga la lista para restaurar el item.
+  const handleDeleteItem = useCallback(
+    async (item) => {
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
+      try {
+        await deleteForecast({ id: item.id, imagePath: item.image_path });
+      } catch (err) {
+        console.error("Error deleting forecast:", err);
+        setIsRefreshing(true);
+        loadInitial();
+      }
+    },
+    [loadInitial],
+  );
+
   // DEBOUNCE SIMPLE
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -160,7 +247,9 @@ export default function Historial() {
               hitSlop={10}
               className="w-10 h-10 rounded-full items-center justify-center"
             >
-              <CalendarIcon color={colorScheme === "dark" ? "white" : "black"} />
+              <CalendarIcon
+                color={colorScheme === "dark" ? "white" : "black"}
+              />
             </Pressable>
           ),
 
@@ -249,35 +338,61 @@ export default function Historial() {
             : forecastTitle;
 
           return (
-            <Link href={`/${item.id}`} asChild>
-              <Pressable className="active:opacity-80">
-                <View className="flex bg-white dark:bg-zinc-800 rounded-xl shadow-sm">
-                  <Image
-                    source={
-                      item.signedUrl
-                        ? { uri: item.signedUrl }
-                        : require("@/assets/images/fondo-nubes-1.avif")
-                    }
-                    className="w-full h-32 mb-4 rounded-t-xl"
-                    resizeMode="cover"
-                  />
-                  <View className="px-4 pb-4 gap-1">
-                    <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
-                      {t("history.prediction")}: {item.name}
-                    </Text>
-                    <Text className="text-slate-600 dark:text-zinc-400">
-                      {t("history.date")}: {texto}
-                    </Text>
-                    <Text className="mt-1 text-slate-600 dark:text-zinc-400">
-                      {t("history.forecast")}: {forecastDisplay}
-                    </Text>
-                    <Text className="mt-1 text-slate-600 dark:text-zinc-400">
-                      {t("history.probability")}: {item.probability}%
-                    </Text>
+            <Swipeable
+              ref={(ref) => {
+                if (ref) rowRefs.current.set(item.id, ref);
+                else rowRefs.current.delete(item.id);
+              }}
+              onSwipeableWillOpen={() => {
+                rowRefs.current.forEach((ref, id) => {
+                  if (id !== item.id) ref.close();
+                });
+              }}
+              renderRightActions={(progress) => (
+                <DeleteAction
+                  progress={progress}
+                  onPress={() => handleDeleteItem(item)}
+                  title={t("detail.deleteTitle")}
+                  message={t("detail.deleteMsg")}
+                  cancelLabel={t("buttons.cancel")}
+                  confirmLabel={t("buttons.delete")}
+                />
+              )}
+              friction={1}
+              rightThreshold={40}
+              containerStyle={{ borderRadius: 12, overflow: "hidden" }}
+            >
+              <Link href={`/${item.id}`} asChild>
+                <Pressable className="active:opacity-80">
+                  <View className="flex bg-white dark:bg-zinc-800 rounded-xl shadow-sm m-[3]">
+                    <Image
+                      source={
+                        item.signedUrl
+                          ? { uri: item.signedUrl }
+                          : require("@/assets/images/fondo-nubes-1.avif")
+                      }
+                      className="w-full h-32 mb-4 rounded-t-xl"
+                      resizeMode="cover"
+                    />
+                    <View className="px-4 pb-4 gap-1">
+                      <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
+                        {t("history.prediction")}: {item.name}
+                      </Text>
+                      <Text className="text-slate-600 dark:text-zinc-400">
+                        {t("history.date")}: {texto}
+                      </Text>
+                      <Text className="mt-1 text-slate-600 dark:text-zinc-400">
+                        {t("history.forecast")}: {forecastDisplay}
+                      </Text>
+                      <Text className="mt-1 text-slate-600 dark:text-zinc-400">
+                        {t("history.probability")}:{" "}
+                        {formatProbability(item.probability)}%
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </Pressable>
-            </Link>
+                </Pressable>
+              </Link>
+            </Swipeable>
           );
         }}
       />
@@ -630,90 +745,6 @@ export default function Historial() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      {Platform.OS === "ios" && (
-        <Modal
-          visible={isDateModalOpen}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={closeDateFilter}
-          presentationStyle="overFullScreen"
-        >
-          <View className="flex-1 justify-end bg-black/30">
-            <View className="bg-white rounded-t-3xl px-6 pt-4 pb-8">
-              <View className="flex-row items-center justify-between mb-2">
-                <Pressable onPress={closeDateFilter}>
-                  <Text className="text-slate-500">Cancelar</Text>
-                </Pressable>
-
-                <Text className="font-semibold text-slate-900">
-                  Filtrar por fecha
-                </Text>
-
-                <Pressable
-                  onPress={() => {
-                    setDay(tempDay);
-                    closeDateFilter();
-                  }}
-                >
-                  <Text className="font-semibold text-[#314468]">Aplicar</Text>
-                </Pressable>
-              </View>
-
-              <DateTimePicker
-                value={tempDay}
-                mode="date"
-                display="inline"
-                onChange={(e, selected) => {
-                  if (selected) setTempDay(selected);
-                }}
-              />
-
-              {day && (
-                <Pressable
-                  onPress={() => {
-                    setDay(null);
-                    closeDateFilter();
-                  }}
-                  className="mt-3 self-center px-4 py-2 rounded-2xl bg-slate-100"
-                >
-                  <Text className="text-slate-700">Quitar filtro</Text>
-                </Pressable>
-              )}
-            </View>
-          </View>
-        </Modal>
-      )}
-
-
-
-      
  <SafeAreaView className="flex-1 bg-white" edges={[""]}>
 </SafeAreaView>
           <HistoryHeader

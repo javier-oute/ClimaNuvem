@@ -250,28 +250,14 @@ describe("saveForecastWithPhoto — errores en INSERT de Supabase", () => {
     ).rejects.toBeDefined();
   });
 
-  // ─── Bug C01: variable imagePath shadowed ─────────────────────────────────
+  // ─── Bug C01 (CORREGIDO): limpieza de imagen huérfana ─────────────────────
   //
-  // DESCRIPCIÓN DEL BUG (Revision.md, hallazgo C01):
-  // En saveForecastWithPhoto(), línea 23 declara `let imagePath = null` (outer).
-  // Dentro del try, línea 27 declara `const imagePath = await uploadPhoto(...)` (inner).
-  // Esta declaración OCULTA (shadow) la outer. El bloque catch evalúa `if (imagePath)`
-  // sobre la outer — que siempre es null — por lo que el cleanup de Storage
-  // nunca se ejecuta.
-  //
-  // COMPORTAMIENTO ACTUAL (buggeado): cuando el INSERT falla tras subir la imagen,
-  // deleteImage NUNCA se llama → la imagen queda huérfana en Storage.
-  //
-  // FIX REQUERIDO:
-  //   Cambiar `const imagePath = await uploadPhoto(...)` por `imagePath = await uploadPhoto(...)`
-  //   para que use la variable outer (que el catch sí puede leer).
-  //   Y descomentar + corregir la llamada a deleteImage en el catch.
-  //
-  // Este test documenta el comportamiento ACTUAL (incorrecto) como regresión.
-  // Cuando se corrija C01, este test deberá actualizarse para verificar que
-  // deleteImage SÍ se llama.
+  // Antes, saveForecastWithPhoto() redeclaraba `const imagePath` dentro del try,
+  // ensombreciendo la `let imagePath = null` externa que el catch evalúa. El fix
+  // asigna a la variable externa y llama a deleteImage(imagePath) en el catch.
+  // Estos tests verifican el comportamiento correcto.
 
-  it("[C01-REGRESION] cuando el INSERT falla, la imagen huérfana NO se limpia de Storage", async () => {
+  it("[C01] cuando el INSERT falla tras subir la foto, deleteImage borra la imagen huérfana", async () => {
     mockSession();
     uploadPhoto.mockResolvedValue(MOCK_IMG_PATH);
     supabase.from.mockReturnValue(
@@ -290,11 +276,49 @@ describe("saveForecastWithPhoto — errores en INSERT de Supabase", () => {
       }),
     ).rejects.toBeDefined();
 
-    // COMPORTAMIENTO ACTUAL (bug C01): deleteImage NO se llama aunque la foto se subió.
-    // La foto queda huérfana en Supabase Storage.
-    expect(deleteImage).not.toHaveBeenCalled();
+    expect(deleteImage).toHaveBeenCalledWith(MOCK_IMG_PATH);
+  });
 
-    // Cuando se corrija C01, este expect debe cambiar a:
-    // expect(deleteImage).toHaveBeenCalledWith(MOCK_IMG_PATH);
+  it("[C01] si el INSERT falla y deleteImage también lanza, se relanza el error original del INSERT", async () => {
+    mockSession();
+    uploadPhoto.mockResolvedValue(MOCK_IMG_PATH);
+    supabase.from.mockReturnValue(
+      makeInsertBuilder({ data: null, error: { message: "RLS violation" } }),
+    );
+    deleteImage.mockRejectedValue(new Error("Storage unavailable"));
+
+    await expect(
+      saveForecastWithPhoto({
+        asset: MOCK_ASSET,
+        name: "X",
+        forecast: "tormenta",
+        probability: 0.9,
+        coords: null,
+        placeName: null,
+        placeNameSource: null,
+      }),
+    ).rejects.toEqual({ message: "RLS violation" });
+
+    expect(deleteImage).toHaveBeenCalledWith(MOCK_IMG_PATH);
+  });
+
+  it("[C01] en flujo exitoso NO se llama a deleteImage (no hay rollback)", async () => {
+    mockSession();
+    uploadPhoto.mockResolvedValue(MOCK_IMG_PATH);
+    supabase.from.mockReturnValue(
+      makeInsertBuilder({ data: { id: "row-ok" }, error: null }),
+    );
+
+    await saveForecastWithPhoto({
+      asset: MOCK_ASSET,
+      name: "X",
+      forecast: "tormenta",
+      probability: 0.9,
+      coords: null,
+      placeName: null,
+      placeNameSource: null,
+    });
+
+    expect(deleteImage).not.toHaveBeenCalled();
   });
 });

@@ -175,26 +175,34 @@ describe("dayRangeISO", () => {
     });
   });
 
-  // [DATE01] Bug potencial: dayRangeISO usa hora LOCAL no UTC.
-  // En España UTC+2 (verano), las 00:00 local = 22:00 UTC del día anterior.
-  // Esto puede hacer que predicciones de madrugada no aparezcan al filtrar por fecha.
-  describe("[DATE01-DOC] comportamiento de timezone documentado (bug potencial)", () => {
-    it("startISO tiene la forma de string ISO válido con sufijo Z (UTC)", () => {
+  // [DATE01] El rango se ancla a Europe/Madrid (consistente con cómo se muestran
+  // las fechas), no a la hora local del dispositivo. Resultado determinista
+  // independiente de la TZ donde corra Jest.
+  describe("[DATE01] rango anclado a Europe/Madrid", () => {
+    it("startISO siempre termina en Z (UTC)", () => {
       const { startISO } = dayRangeISO(new Date("2026-07-15"));
       expect(startISO).toMatch(/Z$/);
     });
 
-    it("NOTA: setHours(0,0,0,0) aplica hora local, no UTC — ver hallazgo DATE01", () => {
-      // Este test documenta el comportamiento, no que sea correcto.
-      // En un entorno con TZ=Europe/Madrid (UTC+2 verano), el resultado del
-      // startISO para el 15-Jul-2026 sería '2026-07-14T22:00:00.000Z', no
-      // '2026-07-15T00:00:00.000Z'. El filtro de Supabase perdería las
-      // predicciones hechas entre las 00:00 y las 01:59:59 hora local.
-      //
-      // FIX recomendado: construir el rango en UTC usando la zona horaria
-      // del usuario como referencia semántica (Temporal.PlainDate o similar).
-      const { startISO } = dayRangeISO(new Date("2026-07-15"));
-      expect(startISO).toBeTruthy(); // solo verifica que existe, sin asumir valor UTC
+    it("en verano (UTC+2) el día 2026-07-15 va de 22:00Z del día anterior a 22:00Z", () => {
+      const { startISO, endISO } = dayRangeISO(new Date("2026-07-15"));
+      expect(startISO).toBe("2026-07-14T22:00:00.000Z");
+      expect(endISO).toBe("2026-07-15T22:00:00.000Z");
+    });
+
+    it("en invierno (UTC+1) el día 2026-01-15 va de 23:00Z del día anterior a 23:00Z", () => {
+      const { startISO, endISO } = dayRangeISO(new Date("2026-01-15"));
+      expect(startISO).toBe("2026-01-14T23:00:00.000Z");
+      expect(endISO).toBe("2026-01-15T23:00:00.000Z");
+    });
+
+    it("incluye una predicción de la madrugada del día filtrado (hora Madrid)", () => {
+      // Predicción creada a las 01:00 hora Madrid del 15-Jul = 2026-07-14T23:00Z.
+      // Debe caer dentro del rango [start, end).
+      const { startISO, endISO } = dayRangeISO(new Date("2026-07-15"));
+      const madrugada = new Date("2026-07-14T23:00:00.000Z").getTime();
+      expect(madrugada).toBeGreaterThanOrEqual(new Date(startISO).getTime());
+      expect(madrugada).toBeLessThan(new Date(endISO).getTime());
     });
   });
 });

@@ -333,6 +333,11 @@ describe("fetchForecastHistoryWithSignedUrls", () => {
 // ─── fetchForecast ────────────────────────────────────────────────────────────
 
 describe("fetchForecast", () => {
+  // fetchForecast ahora resuelve el usuario autenticado (fix B01).
+  beforeEach(() => {
+    mockAuth();
+  });
+
   it("retorna el forecast con signedUrl cuando tiene image_path", async () => {
     const fakeData = {
       id: "abc",
@@ -422,6 +427,37 @@ describe("fetchForecast", () => {
     await fetchForecast({ id: "xyz" });
 
     expect(builder.eq).toHaveBeenCalledWith("id", "xyz");
+  });
+
+  // ─── Fix B01: defensa en profundidad con user_id ──────────────────────────
+  it("[B01] llama a supabase.auth.getUser() para obtener el usuario autenticado", async () => {
+    const builder = makeQueryBuilder({ data: null, error: null });
+    supabase.from.mockReturnValue(builder);
+
+    await fetchForecast({ id: "xyz" });
+
+    expect(supabase.auth.getUser).toHaveBeenCalled();
+  });
+
+  it('[B01] filtra también por .eq("user_id", userId) además de por id', async () => {
+    const builder = makeQueryBuilder({ data: null, error: null });
+    supabase.from.mockReturnValue(builder);
+
+    await fetchForecast({ id: "xyz" });
+
+    expect(builder.eq).toHaveBeenCalledWith("id", "xyz");
+    expect(builder.eq).toHaveBeenCalledWith("user_id", MOCK_USER_ID);
+  });
+
+  it("[B01] retorna null si no hay usuario autenticado", async () => {
+    supabase.auth.getUser.mockResolvedValue({
+      data: { user: null },
+      error: null,
+    });
+
+    const result = await fetchForecast({ id: "xyz" });
+
+    expect(result).toBeNull();
   });
 });
 

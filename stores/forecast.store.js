@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { uploadPhoto } from "@/stores/forecast.store.image";
+import { deleteImage, uploadPhoto } from "@/stores/forecast.store.image";
 
 export async function saveForecastWithPhoto({
   asset, // el asset que devuelve abrirCamara()
@@ -24,7 +24,7 @@ export async function saveForecastWithPhoto({
 
   try {
     // 3) subir foto
-    const imagePath = await uploadPhoto({ uri: asset.uri, userId });
+    imagePath = await uploadPhoto({ uri: asset.uri, userId });
 
     const locationWkt = coords
       ? `POINT(${coords.longitude} ${coords.latitude})`
@@ -52,9 +52,11 @@ export async function saveForecastWithPhoto({
 
     return data;
   } catch (err) {
+    // Si la foto ya se subió pero el INSERT falló, borramos la imagen
+    // huérfana de Storage para no acumular ficheros sin registro asociado.
     if (imagePath) {
       try {
-        //await deletePhoto({ path: imagePath, userId });
+        await deleteImage(imagePath);
       } catch (cleanupErr) {
         console.error(
           "No se pudo borrar la foto subida tras fallo:",
