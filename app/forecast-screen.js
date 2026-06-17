@@ -1,5 +1,6 @@
 import { EditableBottomSheetField } from "@/components/editableField";
 import { ShareForecastButton } from "@/components/forecast/forecast-buttons";
+import { forecastTitleKey, RISK_COLORS } from "@/lib/forecast/model-meta";
 import { useT } from "@/lib/i18n";
 import BottomSheet, {
   BottomSheetScrollView,
@@ -12,6 +13,7 @@ import {
   Alert,
   Image,
   Platform,
+  Pressable,
   Text,
   View,
 } from "react-native";
@@ -81,11 +83,27 @@ export default function ConfirmForecast() {
 
   const { resultado, cargando } = useModel(image);
 
-  // Guardamos la clase (e.g. "tormenta") para i18n; el display se resuelve con t()
-  const forecastClase = resultado?.clase ?? null;
-  const probability = resultado?.confianza ?? 0;
+  // El top-1 siempre manda (sin escalado). El tono/banda solo modulan el mensaje y la UI.
+  const tone = resultado?.tone ?? null;
+  const isRetake = resultado?.action === "retake";
+  const clase = resultado?.clase ?? null;
+  const confianza = resultado?.confianza ?? 0;
+  const reliability = resultado?.reliability ?? null;
+  const messageBand = resultado?.messageBand ?? reliability;
+  const isLowBand = reliability === "baja";
 
-  const p = formatProbability(probability);
+  const p = formatProbability(confianza);
+
+  // Color de la clase; atenuado a gris cuando la detección es poco fiable (banda baja).
+  const accentColor = isLowBand
+    ? "#9CA3AF"
+    : clase
+      ? RISK_COLORS[clase]
+      : "#314468";
+
+  // Recomendación graduada por banda (la descripción la da el título).
+  const recommendation =
+    clase && messageBand ? t(`alerts.${clase}.mensaje.${messageBand}`) : null;
 
   const onSave = useCallback(async () => {
     setIsSaving(true);
@@ -104,8 +122,8 @@ export default function ConfirmForecast() {
       await saveForecastWithPhoto({
         asset: { uri: image },
         name: finalName,
-        forecast: forecastClase, // clase, no el mensaje traducido
-        probability,
+        forecast: clase, // clave de clase top-1, no el mensaje traducido
+        probability: confianza,
         coords: source === "camera" ? coords : null,
         placeName: finalPlace || null,
         placeNameSource,
@@ -124,19 +142,22 @@ export default function ConfirmForecast() {
     source,
     coords,
     image,
-    forecastClase,
-    probability,
+    clase,
+    confianza,
     t,
   ]);
 
-  const forecastDisplay = forecastClase
-    ? t(`alerts.${forecastClase}.titulo`)
+  // Título firme en alta confianza; dudoso (expresa incertidumbre) en media/baja.
+  const forecastDisplay = clase
+    ? t(forecastTitleKey(clase, reliability))
     : null;
 
   const { onShare } = useShareForecast({
     placeName: placeName.trim() || null,
     forecast: forecastDisplay,
-    probability: probability,
+    recommendation,
+    probability: confianza,
+    reliability,
   });
 
   useEffect(() => {
@@ -160,6 +181,55 @@ export default function ConfirmForecast() {
         <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
           {t("forecast.notFound")}
         </Text>
+      </View>
+    );
+  }
+
+  // Inferencia no fiable (foto inválida o incoherente): pedir repetir la foto en vez de
+  // mostrar una alerta engañosa. No se ofrece guardar.
+  if (isRetake) {
+    const retakeTitle =
+      tone === "invalida"
+        ? t("alerts.foto_invalida.titulo")
+        : t("alerts.tone.reintentarTitulo");
+    const retakeMsg =
+      tone === "invalida"
+        ? t("alerts.foto_invalida.mensaje")
+        : t("alerts.tone.reintentarMensaje");
+    return (
+      <View className="flex-1">
+        <Stack.Screen
+          options={{
+            headerShown: true,
+            headerTransparent: true,
+            headerTitle: "",
+            headerBackTitle: "",
+            headerShadowVisible: false,
+            headerTintColor: colorScheme === "dark" ? "white" : "black",
+          }}
+        />
+        <Image
+          source={{ uri: image }}
+          className="absolute inset-0 w-full h-full"
+        />
+        <View className="flex-1 justify-end">
+          <View className="m-4 gap-4 rounded-3xl bg-white p-6 dark:bg-zinc-800">
+            <Text className="text-center text-2xl font-bold text-slate-900 dark:text-zinc-100">
+              {retakeTitle}
+            </Text>
+            <Text className="text-center text-base text-slate-600 dark:text-zinc-400">
+              {retakeMsg}
+            </Text>
+            <Pressable
+              onPress={() => router.back()}
+              className="flex-row items-center justify-center rounded-3xl bg-[#314468] px-6 py-4 active:opacity-75"
+            >
+              <Text className="text-lg font-semibold text-white">
+                {t("alerts.tone.repetirFoto")}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
       </View>
     );
   }
@@ -241,8 +311,9 @@ export default function ConfirmForecast() {
                 </Text>
               </View>
             ) : (
-              <View className="flex gap-8 items-center">
+              <View className="flex gap-6 items-center">
                 <View
+                  className="items-center gap-3"
                   onLayout={(event) => {
                     const h = Math.ceil(event.nativeEvent.layout.height);
                     setBottomBlockH((prev) => (prev === h ? prev : h));
@@ -251,18 +322,53 @@ export default function ConfirmForecast() {
                   <Text className="font-bold text-center text-3xl text-slate-900 dark:text-zinc-100">
                     {forecastDisplay || "-"}
                   </Text>
+
+                  {/* Recomendación graduada por banda de confianza */}
+                  {recommendation ? (
+                    <Text className="text-center text-base text-slate-600 dark:text-zinc-300">
+                      {recommendation}
+                    </Text>
+                  ) : null}
+
+                  {/* Fiabilidad: banda de confianza, con punto de color de la clase */}
+                  {reliability ? (
+                    <View className="flex-row items-center gap-2">
+                      <View
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: accentColor }}
+                      />
+                      <Text className="text-sm text-slate-500 dark:text-zinc-400">
+                        {t("alerts.fiabilidad.label")}:{" "}
+                        {t(`alerts.fiabilidad.${reliability}`)}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {/* Aviso explícito cuando la detección es poco fiable (banda baja) */}
+                  {isLowBand ? (
+                    <Text className="text-center text-sm italic text-slate-500 dark:text-zinc-400">
+                      {t("alerts.tone.pocoFiable")}
+                    </Text>
+                  ) : null}
                 </View>
-                <View className="flex w-full items-center gap-2">
-                  <Text className="font-bold text-center text-2xl rounded-2xl bg-[#314468] px-3 py-1 text-white">
-                    {t("forecast.probability")}: {p ?? "-"}%
-                  </Text>
-                  <View className="h-2 w-80 rounded-2xl bg-slate-200 dark:bg-zinc-700 overflow-hidden">
-                    <View
-                      className="h-2 rounded-2xl bg-[#314468]"
-                      style={{ width: `${p}%` }}
-                    />
+
+                {/* Probabilidad: solo visible si la fiabilidad no es baja */}
+                {isLowBand ? null : (
+                  <View className="flex w-full items-center gap-2">
+                    <Text
+                      className="font-bold text-center text-2xl rounded-2xl px-3 py-1 text-white"
+                      style={{ backgroundColor: accentColor }}
+                    >
+                      {t("forecast.probability")}: {p ?? "-"}%
+                    </Text>
+                    <View className="h-2 w-80 rounded-2xl bg-slate-200 dark:bg-zinc-700 overflow-hidden">
+                      <View
+                        className="h-2 rounded-2xl"
+                        style={{ width: `${p}%`, backgroundColor: accentColor }}
+                      />
+                    </View>
                   </View>
-                </View>
+                )}
               </View>
             )}
             <View>

@@ -5,6 +5,7 @@ import {
   ClockIcon,
   CloudIcon,
   IconoHome,
+  MapIcon,
   UserIcon,
 } from "../../components/icons";
 import "../../global.css";
@@ -43,6 +44,14 @@ export default function TabsLayout() {
           options={{
             title: t("tabs.history"),
             tabBarIcon: ({ color }) => <ClockIcon color={color} />,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="map"
+          options={{
+            title: t("tabs.map"),
+            tabBarIcon: ({ color }) => <MapIcon color={color} />,
             headerShown: false,
           }}
         />

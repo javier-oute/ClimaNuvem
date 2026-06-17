@@ -1,7 +1,8 @@
 import { BotonCargarImagen, BotonTomarFoto } from "@/components/buttons";
-import { HelpIcon } from "@/components/icons";
+import { HelpIcon, UserIcon } from "@/components/icons";
 import DemoVideo from "@/components/videoComponent";
 import { useT } from "@/lib/i18n";
+import { useAuthStore } from "@/stores/auth.store";
 import { makeRedirectUri } from "expo-auth-session";
 import { router, Stack } from "expo-router";
 import { useColorScheme } from "nativewind";
@@ -11,6 +12,7 @@ import "../../../global.css";
 export default function Index() {
   const t = useT();
   const { colorScheme } = useColorScheme();
+  const session = useAuthStore((s) => s.session);
 
   const redirectTo = makeRedirectUri({ useProxy: true });
   console.log("REDIRECT:", redirectTo);
@@ -22,6 +24,22 @@ export default function Index() {
           headerTransparent: true,
           headerTitle: "",
           headerBackTitle: "",
+          // Solo en modo invitado (session === null): botón de perfil que lleva al login.
+          headerLeft:
+            session === null
+              ? () => (
+                  <Pressable
+                    onPress={() => router.replace("/(auth)/login")}
+                    hitSlop={10}
+                    className="p-2"
+                  >
+                    <UserIcon
+                      color={colorScheme === "dark" ? "white" : "black"}
+                      size={24}
+                    />
+                  </Pressable>
+                )
+              : undefined,
           headerRight: () => (
             <Pressable
               onPress={() => router.push("/help")}

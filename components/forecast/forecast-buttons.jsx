@@ -37,7 +37,7 @@ export function DeleteForecastButton({ isDeleting, onDelete }) {
   return (
     <Pressable
       onPress={onDelete}
-      className="flex-1 flex-row items-center justify-between rounded-3xl bg-black px-6 py-4 shadow-sm active:opacity-75"
+      className="flex-1 flex-row items-center justify-between rounded-3xl bg-[#E24B4A] px-6 py-4 shadow-sm active:opacity-75"
     >
       <TrashIcon />
       <Text className="text-base font-semibold text-white">

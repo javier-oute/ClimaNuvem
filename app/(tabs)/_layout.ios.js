@@ -35,6 +35,10 @@ export default function TabsLayout() {
         <Label>{t("tabs.history")}</Label>
         <Icon sf="clock.fill" md="history" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="map" hidden={!session}>
+        <Label>{t("tabs.map")}</Label>
+        <Icon sf="map.fill" md="map" />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile" hidden={!session}>
         <Label>{t("tabs.profile")}</Label>
         <Icon sf="person.fill" md="account" />

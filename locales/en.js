@@ -240,6 +240,7 @@ export default {
   alerts: {
     cielo_despejado: {
       titulo: "Clear sky",
+      tituloDudoso: "Possibly clear sky",
       mensaje: {
         alta: "No weather risks detected. Good conditions for your activity.",
         media: "The sky looks clear. Even so, check it now and then.",
@@ -248,6 +249,7 @@ export default {
     },
     nubes_altas_medias: {
       titulo: "High clouds, no immediate danger",
+      tituloDudoso: "Maybe high clouds",
       mensaje: {
         alta: "High clouds with no immediate risk. Keep an eye out in case they grow.",
         media:
@@ -257,6 +259,7 @@ export default {
     },
     lenticular_viento: {
       titulo: "Sign of strong wind aloft",
+      tituloDudoso: "Possible strong wind aloft",
       mensaje: {
         alta: "Lenticular clouds: strong wind on summits. Take care in exposed areas.",
         media:
@@ -266,6 +269,7 @@ export default {
     },
     cubierto_precipitacion: {
       titulo: "Overcast sky, possible rain",
+      tituloDudoso: "Possibly overcast",
       mensaje: {
         alta: "Overcast sky: rain or snow may arrive. Be ready in case it worsens.",
         media: "Overcast sky. Precipitation may be near; bring protection.",
@@ -274,6 +278,7 @@ export default {
     },
     niebla_stratus: {
       titulo: "Fog or low clouds",
+      tituloDudoso: "Maybe fog",
       mensaje: {
         alta: "Fog or low clouds: reduced visibility and risk of disorientation. Take extra care.",
         media:
@@ -283,6 +288,7 @@ export default {
     },
     conveccion_desarrollo: {
       titulo: "Storm clouds are forming",
+      tituloDudoso: "Storm clouds may be forming",
       mensaje: {
         alta: "Clouds are growing into a storm. Plan your descent and avoid ridges.",
         media:
@@ -292,6 +298,7 @@ export default {
     },
     tormenta: {
       titulo: "⚠️ Thunderstorm",
+      tituloDudoso: "Possible thunderstorm",
       mensaje: {
         alta: "Active storm. Seek shelter and leave ridges and summits immediately.",
         media:
@@ -304,7 +311,6 @@ export default {
       mensaje: "This image cannot be analysed. Try with another photo.",
     },
     tone: {
-      podriaSerTambien: "It could also be:",
       pocoFiable: "Low-confidence detection: use it only as guidance.",
       reintentarTitulo: "Unclear image",
       reintentarMensaje:

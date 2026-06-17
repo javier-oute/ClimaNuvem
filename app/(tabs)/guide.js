@@ -1,6 +1,7 @@
 import { useT } from "@/lib/i18n";
+import { Link } from "expo-router";
 import { useMemo } from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import "../../global.css";
 
 const IMAGENES = {
@@ -115,15 +116,18 @@ export default function Guide() {
               {cat.titulo}
             </Text>
             {cat.nubes.map((key) => (
-              <NubeCard
-                key={key}
-                nube={{
-                  nombre: t(`guide.clouds.${key}.nombre`),
-                  descripcion: t(`guide.clouds.${key}.descripcion`),
-                  abrev: ABREVIATURAS[key],
-                  imagen: IMAGENES[key],
-                }}
-              />
+              <Link key={key} href={`/cloud/${key}`} asChild>
+                <Pressable className="active:opacity-80">
+                  <NubeCard
+                    nube={{
+                      nombre: t(`guide.clouds.${key}.nombre`),
+                      descripcion: t(`guide.clouds.${key}.descripcion`),
+                      abrev: ABREVIATURAS[key],
+                      imagen: IMAGENES[key],
+                    }}
+                  />
+                </Pressable>
+              </Link>
             ))}
           </View>
         ))}

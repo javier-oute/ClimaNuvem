@@ -239,6 +239,7 @@ export default {
   alerts: {
     cielo_despejado: {
       titulo: "Ceo despexado",
+      tituloDudoso: "Talvez ceo despexado",
       mensaje: {
         alta: "Non se observan riscos meteorolóxicos. Boas condicións para a actividade.",
         media: "O ceo parece despexado. Aínda así, revísao de cando en vez.",
@@ -247,6 +248,7 @@ export default {
     },
     nubes_altas_medias: {
       titulo: "Nubes altas, sen perigo inmediato",
+      tituloDudoso: "Quizais haxa nubes altas",
       mensaje: {
         alta: "Nubes altas sen risco inmediato. Vixía por se van a máis.",
         media:
@@ -256,6 +258,7 @@ export default {
     },
     lenticular_viento: {
       titulo: "Sinal de vento forte en altura",
+      tituloDudoso: "Posible vento forte en altura",
       mensaje: {
         alta: "Nubes lenticulares: vento forte nas cumes. Precaución en zonas expostas.",
         media:
@@ -265,6 +268,7 @@ export default {
     },
     cubierto_precipitacion: {
       titulo: "Ceo cuberto, posible chuvia",
+      tituloDudoso: "Posible ceo cuberto",
       mensaje: {
         alta: "Ceo cuberto: pode chegar chuvia ou neve. Prepárate por se empeora.",
         media:
@@ -274,6 +278,7 @@ export default {
     },
     niebla_stratus: {
       titulo: "Néboa ou nubes baixas",
+      tituloDudoso: "Quizais haxa néboa",
       mensaje: {
         alta: "Néboa ou nubes baixas: visibilidade reducida e risco de desorientación. Extrema a precaución.",
         media:
@@ -283,6 +288,7 @@ export default {
     },
     conveccion_desarrollo: {
       titulo: "Estanse formando nubes de tormenta",
+      tituloDudoso: "Quizais se formen nubes de tormenta",
       mensaje: {
         alta: "As nubes medran cara a tormenta. Planifica o descenso e evita cristas.",
         media:
@@ -292,6 +298,7 @@ export default {
     },
     tormenta: {
       titulo: "⚠️ Tormenta",
+      tituloDudoso: "Posible tormenta",
       mensaje: {
         alta: "Tormenta activa. Busca refuxio e abandona cristas e cumes de inmediato.",
         media:
@@ -304,7 +311,6 @@ export default {
       mensaje: "Non se pode analizar esta imaxe. Intenta con outra foto.",
     },
     tone: {
-      podriaSerTambien: "Tamén podería ser:",
       pocoFiable: "Detección pouco fiable: tómaa como orientación.",
       reintentarTitulo: "Imaxe pouco clara",
       reintentarMensaje:

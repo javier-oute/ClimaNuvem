@@ -241,6 +241,7 @@ export default {
   alerts: {
     cielo_despejado: {
       titulo: "Cielo despejado",
+      tituloDudoso: "Tal vez cielo despejado",
       mensaje: {
         alta: "No se observan riesgos meteorológicos. Buenas condiciones para la actividad.",
         media:
@@ -250,6 +251,7 @@ export default {
     },
     nubes_altas_medias: {
       titulo: "Nubes altas, sin peligro inmediato",
+      tituloDudoso: "Quizá haya nubes altas",
       mensaje: {
         alta: "Nubes altas sin riesgo inmediato. Vigila por si van a más.",
         media:
@@ -259,6 +261,7 @@ export default {
     },
     lenticular_viento: {
       titulo: "Señal de viento fuerte en altura",
+      tituloDudoso: "Posible viento fuerte en altura",
       mensaje: {
         alta: "Nubes lenticulares: viento fuerte en cumbres. Precaución en zonas expuestas.",
         media:
@@ -268,6 +271,7 @@ export default {
     },
     cubierto_precipitacion: {
       titulo: "Cielo cubierto, posible lluvia",
+      tituloDudoso: "Posible cielo cubierto",
       mensaje: {
         alta: "Cielo cubierto: puede llegar lluvia o nieve. Prepárate por si empeora.",
         media:
@@ -277,6 +281,7 @@ export default {
     },
     niebla_stratus: {
       titulo: "Niebla o nubes bajas",
+      tituloDudoso: "Quizá haya niebla",
       mensaje: {
         alta: "Niebla o nubes bajas: visibilidad reducida y riesgo de desorientación. Extrema la precaución.",
         media:
@@ -286,6 +291,7 @@ export default {
     },
     conveccion_desarrollo: {
       titulo: "Se están formando nubes de tormenta",
+      tituloDudoso: "Quizá se formen nubes de tormenta",
       mensaje: {
         alta: "Las nubes crecen hacia tormenta. Planifica el descenso y evita crestas.",
         media:
@@ -295,6 +301,7 @@ export default {
     },
     tormenta: {
       titulo: "⚠️ Tormenta",
+      tituloDudoso: "Posible tormenta",
       mensaje: {
         alta: "Tormenta activa. Busca refugio y abandona crestas y cumbres de inmediato.",
         media:
@@ -307,7 +314,6 @@ export default {
       mensaje: "No se puede analizar esta imagen. Intenta con otra foto.",
     },
     tone: {
-      podriaSerTambien: "Podría ser también:",
       pocoFiable: "Detección poco fiable: tómala como orientación.",
       reintentarTitulo: "Imagen poco clara",
       reintentarMensaje:

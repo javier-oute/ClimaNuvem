@@ -1,37 +1,27 @@
+import { evaluateForecast } from "@/lib/forecast/evaluateForecast";
+import { normalizeRGBA } from "@/lib/mlNormalize";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as jpeg from "jpeg-js";
 import { useEffect, useState } from "react";
 import { useTensorflowModel } from "react-native-fast-tflite";
-import { normalizeRGBA } from "@/lib/mlNormalize";
 
-// Orden exacto del climanuvem_labels.txt generado por el modelo
-const CLASES = [
-  "cielo_despejado",
-  "conveccion_desarrollo",
-  "cubierto_precipitacion",
-  "foto_invalida",
-  "lenticular_viento",
-  "niebla_stratus",
-  "nubes_altas_medias",
-  "tormenta",
-];
+const IMG_SIZE = 224;
+const RESIZE_SHORT_SIDE = 256; // Resize(256) + CenterCrop(224), igual que el eval del notebook
 
-const ALERTAS = {
-  cielo_despejado: { color: "#1D9E75" },
-  nubes_altas_medias: { color: "#378ADD" },
-  lenticular_viento: { color: "#EF9F27" },
-  cubierto_precipitacion: { color: "#EF9F27" },
-  niebla_stratus: { color: "#E24B4A" },
-  conveccion_desarrollo: { color: "#E24B4A" },
-  tormenta: { color: "#7F77DD" },
-  foto_invalida: { color: "#888888" },
-};
-
-// Normalización ImageNet — constantes y función en lib/mlNormalize.js
+// Detecta el layout del tensor de entrada del modelo: [1,3,224,224] → NCHW (planar),
+// cualquier otro 4-D → NHWC (intercalado). El export del notebook (ai_edge_torch) conserva
+// la firma NCHW de PyTorch, mientras que un modelo TF clásico sería NHWC.
+function inputLayout(model) {
+  const shape = model?.inputs?.[0]?.shape;
+  if (Array.isArray(shape) && shape.length === 4 && shape[1] === 3) {
+    return "nchw";
+  }
+  return "nhwc";
+}
 
 export function useModel(imageUri) {
   const tflite = useTensorflowModel(
-    require("../assets/models/climanuvem_v2.tflite"),
+    require("../assets/models/climanuvem_v3.tflite"),
   );
 
   const [resultado, setResultado] = useState(null);
@@ -45,10 +35,20 @@ export function useModel(imageUri) {
 
     async function clasificar() {
       try {
-        // 1. Redimensionar a 224×224 y obtener base64
+        // 1. Replicar el preprocesado de evaluación: Resize(256 lado corto) + CenterCrop(224).
+        const probe = await ImageManipulator.manipulateAsync(imageUri, [], {});
+        const scale = RESIZE_SHORT_SIDE / Math.min(probe.width, probe.height);
+        const rw = Math.round(probe.width * scale);
+        const rh = Math.round(probe.height * scale);
+        const originX = Math.floor((rw - IMG_SIZE) / 2);
+        const originY = Math.floor((rh - IMG_SIZE) / 2);
+
         const resized = await ImageManipulator.manipulateAsync(
           imageUri,
-          [{ resize: { width: 224, height: 224 } }],
+          [
+            { resize: { width: rw, height: rh } },
+            { crop: { originX, originY, width: IMG_SIZE, height: IMG_SIZE } },
+          ],
           { format: ImageManipulator.SaveFormat.JPEG, base64: true },
         );
 
@@ -58,32 +58,17 @@ export function useModel(imageUri) {
         );
         const { data } = jpeg.decode(bytes, { useTArray: true });
 
-        // 3. RGBA → Float32 con normalización ImageNet
-        // Constantes IMAGENET_MEAN y IMAGENET_STD definidas en lib/mlNormalize.js
-        const input = normalizeRGBA(data, 224, 224);
+        // 3. RGBA → Float32 normalizado (ImageNet) en el layout que espera el modelo
+        const layout = inputLayout(tflite.model);
+        const input = normalizeRGBA(data, IMG_SIZE, IMG_SIZE, { layout });
 
-        // 4. Inferencia
+        // 4. Inferencia. El modelo ya incluye softmax + temperature scaling → probs calibradas.
         const outputs = await tflite.model.run([input]);
         const probs = Array.from(outputs[0]);
 
-        // 5. Clase ganadora y segunda mejor para mostrar al usuario
-        const indexados = probs.map((p, i) => ({ p, i }));
-        indexados.sort((a, b) => b.p - a.p);
-
-        const clase = CLASES[indexados[0].i];
-        const confianza = indexados[0].p;
-        const clase2 = CLASES[indexados[1].i];
-        const conf2 = indexados[1].p;
-
+        // 5. Decisión de alerta a partir de TODA la distribución (no solo el top-1).
         if (!cancelado) {
-          setResultado({
-            clase,
-            confianza,
-            clase2,
-            conf2,
-            alerta: ALERTAS[clase],
-            todasLasProbs: CLASES.map((c, i) => ({ clase: c, prob: probs[i] })),
-          });
+          setResultado(evaluateForecast(probs));
         }
       } catch (e) {
         if (!cancelado) setError(e.message);

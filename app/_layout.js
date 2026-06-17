@@ -8,10 +8,8 @@ import {
   SafeAreaProvider,
   initialWindowMetrics,
 } from "react-native-safe-area-context";
-//import SplashScreenController from "../components/splash-screen-controller";
+import AnimatedSplash from "@/components/animated-splash";
 import "../global.css";
-
-// añadir splash screen controller aquí para que se muestre en toda la app, incluso en la pantalla de login
 
 export default function RootLayout() {
   useEffect(() => {
@@ -87,15 +85,11 @@ export default function RootLayout() {
               />
             </Stack>
           </AuthBootstrap>
+          {/* Overlay de splash animada (zoom-in + fade). Sobre toda la app, incluido
+              el login. Toma el relevo de la splash nativa y se desmonta al cargar. */}
+          <AnimatedSplash />
         </BottomSheetModalProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
-
-// <Slot />
-
-/* 
-<SplashScreenController />
-<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-*/

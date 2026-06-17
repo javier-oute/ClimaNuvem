@@ -1,3 +1,4 @@
+import { bandForConfidence, forecastTitleKey } from "@/lib/forecast/model-meta";
 import { deleteForecast, fetchForecast } from "@/lib/forecastHistory";
 import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
 import { LOCALE_MAP, useT } from "@/lib/i18n";
@@ -155,12 +156,15 @@ export default function ItemDetail() {
   }
 
   const { texto } = formatDateTimeWithWeekday(item.created_at, locale);
-  const forecastTitle = t(`alerts.${item.forecast}.titulo`);
+  // Mismo criterio que en vivo: título dudoso y % oculto según la banda de la probabilidad guardada.
+  const band = bandForConfidence(item.probability ?? 0);
+  const forecastTitle = t(forecastTitleKey(item.forecast, band));
   const forecastDisplay = forecastTitle.startsWith("alerts.")
     ? item.forecast
     : forecastTitle;
 
   const p = formatProbability(item.probability);
+  const lowBand = band === "baja";
 
   return (
     <View className="flex-1">
@@ -230,17 +234,19 @@ export default function ItemDetail() {
                 {forecastDisplay || "-"}
               </Text>
             </View>
-            <View className="flex w-full items-center gap-2">
-              <Text className="font-bold text-center text-2xl rounded-2xl bg-[#314468] px-3 py-1 text-white">
-                {t("detail.probability")}: {p ?? "-"}%
-              </Text>
-              <View className="h-2 w-80 rounded-2xl bg-slate-200 dark:bg-zinc-700 overflow-hidden">
-                <View
-                  className="h-2 rounded-2xl bg-[#314468]"
-                  style={{ width: `${p}%` }}
-                />
+            {lowBand ? null : (
+              <View className="flex w-full items-center gap-2">
+                <Text className="font-bold text-center text-2xl rounded-2xl bg-[#314468] px-3 py-1 text-white">
+                  {t("detail.probability")}: {p ?? "-"}%
+                </Text>
+                <View className="h-2 w-80 rounded-2xl bg-slate-200 dark:bg-zinc-700 overflow-hidden">
+                  <View
+                    className="h-2 rounded-2xl bg-[#314468]"
+                    style={{ width: `${p}%` }}
+                  />
+                </View>
               </View>
-            </View>
+            )}
             {/* Detalles */}
             <View className="flex gap-1">
               {item.place_name ? (

@@ -4,6 +4,7 @@ import {
   deleteForecast,
   fetchForecastHistoryWithSignedUrls,
 } from "@/lib/forecastHistory";
+import { bandForConfidence, forecastTitleKey } from "@/lib/forecast/model-meta";
 import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
 import { LOCALE_MAP, useT } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settings.store";
@@ -332,10 +333,12 @@ export default function Historial() {
         }
         renderItem={({ item }) => {
           const { texto } = formatDateTimeWithWeekday(item.created_at, locale);
-          const forecastTitle = t(`alerts.${item.forecast}.titulo`);
+          const band = bandForConfidence(item.probability ?? 0);
+          const forecastTitle = t(forecastTitleKey(item.forecast, band));
           const forecastDisplay = forecastTitle.startsWith("alerts.")
             ? item.forecast
             : forecastTitle;
+          const lowBand = band === "baja";
 
           return (
             <Swipeable
@@ -384,10 +387,12 @@ export default function Historial() {
                       <Text className="mt-1 text-slate-600 dark:text-zinc-400">
                         {t("history.forecast")}: {forecastDisplay}
                       </Text>
-                      <Text className="mt-1 text-slate-600 dark:text-zinc-400">
-                        {t("history.probability")}:{" "}
-                        {formatProbability(item.probability)}%
-                      </Text>
+                      {lowBand ? null : (
+                        <Text className="mt-1 text-slate-600 dark:text-zinc-400">
+                          {t("history.probability")}:{" "}
+                          {formatProbability(item.probability)}%
+                        </Text>
+                      )}
                     </View>
                   </View>
                 </Pressable>
