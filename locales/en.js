@@ -13,56 +13,136 @@ export default {
       low: "Low Clouds",
       vertical: "Vertical Development",
     },
+    categoriesShort: {
+      high: "High",
+      mid: "Mid",
+      low: "Low",
+      vertical: "Vertical",
+    },
+    detail: {
+      categoria: "Category",
+      altitud: "Typical altitude",
+      abreviatura: "Abbreviation",
+      precipita: "Precipitation",
+      descripcionTitulo: "Description",
+      identificacionTitulo: "How to identify it",
+      montanaTitulo: "What it means in the mountains",
+      riesgoTitulo: "Risk",
+      riesgo: {
+        0: "No risk",
+        1: "Watch",
+        2: "Caution",
+        3: "High risk",
+        4: "Danger",
+      },
+    },
     clouds: {
       cirrus: {
         nombre: "Cirrus",
         descripcion:
           "Delicate white filaments of silky or fibrous appearance, formed by ice crystals at high altitude.",
+        altitud: "High (6–12 km)",
+        precipita: "No",
+        identificacion:
+          "Fine, separate white filaments, translucent and without shadows. Sometimes hooked (“mare's tails”).",
+        montana:
+          "Low risk. If they increase and thicken from the west, they herald rain within 12–24 h.",
       },
       cirrocumulus: {
         nombre: "Cirrocumulus",
         descripcion:
           "Thin layer of small white globules without shadows. Indicates jet streams and high-altitude turbulence.",
+        altitud: "High (6–12 km)",
+        precipita: "No",
+        identificacion:
+          "Tiny white grains aligned in ripples (a fine “mackerel sky”), without shadows.",
+        montana:
+          "A sign of unstable air aloft; usually precedes a change in the weather.",
       },
       cirrostratus: {
         nombre: "Cirrostratus",
         descripcion:
           "Transparent whitish veil covering the sky. Produces solar and lunar halos. Does not precipitate.",
+        altitud: "High (6–12 km)",
+        precipita: "No",
+        identificacion:
+          "Uniform milky veil with a 22° halo around the sun or moon.",
+        montana:
+          "The halo warns of a warm front: possible rain within 12–24 h.",
       },
       altostratus: {
         nombre: "Altostratus",
         descripcion:
           "Grey or bluish sheet covering the sky. The sun appears as through frosted glass.",
+        altitud: "Mid (2–7 km)",
+        precipita: "Sometimes, drizzle or light snow",
+        identificacion:
+          "Grey sheet that blurs the sun, “as if behind frosted glass”.",
+        montana: "A precursor to steady rain. The weather is worsening.",
       },
       altocumulus: {
         nombre: "Altocumulus",
         descripcion:
           "White or grey cloud bank in the form of tiles or rollers with their own shadows. Forms the popular 'mackerel sky'.",
+        altitud: "Mid (2–7 km)",
+        precipita: "Rarely",
+        identificacion:
+          "White and grey tiles or rollers with their own shadows (“mackerel sky”).",
+        montana:
+          "Generally stable; if turrets form in the morning, storms are possible in the afternoon.",
       },
       nimbostratus: {
         nombre: "Nimbostratus",
         descripcion:
           "Dark grey layer veiled by continuous rain or snow reaching the ground. Completely obscures the sun.",
+        altitud: "Mid to low (base 0.5–3 km)",
+        precipita: "Yes, continuous rain or snow",
+        identificacion:
+          "Dark, dense grey layer that hides the sun, with continuous rain or snow.",
+        montana:
+          "Prolonged precipitation and poor visibility: unsuitable for summits.",
       },
       stratus: {
         nombre: "Stratus",
         descripcion:
           "Very low, grey layer with a uniform base, between the ground and 800 m. Fog is stratus at ground level.",
+        altitud: "Low (0–2 km)",
+        precipita: "Light drizzle",
+        identificacion:
+          "Very low, uniform grey layer; at ground level it is fog.",
+        montana: "Very poor visibility: high risk of disorientation.",
       },
       stratocumulus: {
         nombre: "Stratocumulus",
         descripcion:
           "Sheet of grey or whitish clouds with dark patches, in the form of slabs or rollers. The most common low cloud.",
+        altitud: "Low (0–2 km)",
+        precipita: "Occasional and light",
+        identificacion:
+          "Grey and white slabs or rollers with gaps between them. The most common low cloud.",
+        montana: "Calm but overcast weather; it can cover the summits.",
       },
       cumulus: {
         nombre: "Cumulus",
         descripcion:
           "Isolated, dense clouds with cauliflower-shaped domes. Dark, flat base. Produce local showers.",
+        altitud: "Low base (0.5–2 km), vertical development",
+        precipita: "Showers if they grow (congestus)",
+        identificacion:
+          "Cottony clouds with cauliflower domes and a flat base. Watch if they grow taller.",
+        montana:
+          "If they swell and the tower exceeds its width, they turn into a storm. Plan your descent.",
       },
       cumulonimbus: {
         nombre: "Cumulonimbus",
         descripcion:
           "Dense and powerful cloud with anvil-shaped top. Tops up to 35 km. Source of storms, tornadoes and hail.",
+        altitud: "Low base; top up to 12–16 km",
+        precipita: "Yes, heavy: showers, hail and lightning",
+        identificacion:
+          "Huge, dark cloud with an anvil top. Often with lightning and hail.",
+        montana:
+          "DANGER: active storm. Leave ridges and seek shelter immediately.",
       },
     },
   },
@@ -88,6 +168,28 @@ export default {
     invalidPhoneMsg: "Use format like +34 600 123 456",
     saveError: "Could not save",
     noName: "No name",
+    avatar: {
+      sheetTitle: "Profile photo",
+      camera: "Take a photo",
+      gallery: "Choose from gallery",
+      remove: "Remove photo",
+      cancel: "Cancel",
+      edit: "Change photo",
+      uploadError: "Could not upload the image",
+    },
+    deleteAccount: {
+      button: "Delete account",
+      modalTitle: "Delete account",
+      modalWarning:
+        "This action is permanent and irreversible. Your profile, all your predictions, your images and your avatar will be deleted. Nothing can be recovered.",
+      confirmPrompt: "Type DELETE to confirm",
+      confirmWord: "DELETE",
+      placeholder: "DELETE",
+      cancel: "Cancel",
+      confirm: "Delete permanently",
+      deleting: "Deleting…",
+      error: "Could not delete the account. Please try again.",
+    },
   },
   forecast: {
     loading: "Loading...",
@@ -107,7 +209,8 @@ export default {
     notFound: "Prediction not found",
     invalidId: "Invalid ID.",
     deleteTitle: "Delete prediction",
-    deleteMsg: "Are you sure you want to delete it? This action cannot be undone.",
+    deleteMsg:
+      "Are you sure you want to delete it? This action cannot be undone.",
     deleteError: "Could not delete",
     deleteConfirm: "Delete",
     cancel: "Cancel",
@@ -118,8 +221,7 @@ export default {
   },
   login: {
     title: "Welcome to ClimaNuvem!",
-    subtitle:
-      "Sign in to save your predictions and access exclusive features",
+    subtitle: "Sign in to save your predictions and access exclusive features",
     guest: "Continue as guest",
   },
   buttons: {
@@ -138,41 +240,90 @@ export default {
   alerts: {
     cielo_despejado: {
       titulo: "Clear sky",
-      mensaje: "No weather risks. Good conditions.",
+      mensaje: {
+        alta: "No weather risks detected. Good conditions for your activity.",
+        media: "The sky looks clear. Even so, check it now and then.",
+        baja: "It looks clear, though the detection isn't certain. Take a look at the sky.",
+      },
     },
     nubes_altas_medias: {
-      titulo: "High or mid-level clouds",
-      mensaje: "Possible weather change. Monitor the sky.",
+      titulo: "High clouds, no immediate danger",
+      mensaje: {
+        alta: "High clouds with no immediate risk. Keep an eye out in case they grow.",
+        media:
+          "Possible high clouds. No short-term danger; stay alert to changes.",
+        baja: "There may be high clouds. Not certain; watch how the sky evolves.",
+      },
     },
     lenticular_viento: {
-      titulo: "Strong wind at altitude",
-      mensaje: "Lenticular clouds detected. Intense wind on summits.",
+      titulo: "Sign of strong wind aloft",
+      mensaje: {
+        alta: "Lenticular clouds: strong wind on summits. Take care in exposed areas.",
+        media:
+          "Possible signs of strong wind aloft. Be careful on the ridges.",
+        baja: "There may be strong wind on summits. Not certain; assess it before exposing yourself.",
+      },
     },
     cubierto_precipitacion: {
-      titulo: "Precipitation risk",
-      mensaje: "Overcast sky. Possible rain or snow approaching.",
+      titulo: "Overcast sky, possible rain",
+      mensaje: {
+        alta: "Overcast sky: rain or snow may arrive. Be ready in case it worsens.",
+        media: "Overcast sky. Precipitation may be near; bring protection.",
+        baja: "There may be overcast skies and rain ahead. Not certain; keep an eye on the weather.",
+      },
     },
     niebla_stratus: {
-      titulo: "Fog or low stratus",
-      mensaje: "Reduced visibility. Risk of disorientation.",
+      titulo: "Fog or low clouds",
+      mensaje: {
+        alta: "Fog or low clouds: reduced visibility and risk of disorientation. Take extra care.",
+        media:
+          "Possible fog or low clouds. Visibility may worsen; mind your orientation.",
+        baja: "There may be fog. Not certain; watch visibility before moving on.",
+      },
     },
     conveccion_desarrollo: {
-      titulo: "Developing convection",
-      mensaje: "Storm clouds forming. Consider descending.",
+      titulo: "Storm clouds are forming",
+      mensaje: {
+        alta: "Clouds are growing into a storm. Plan your descent and avoid ridges.",
+        media:
+          "The sky shows development that may end in a storm. Stay alert and get ready to descend.",
+        baja: "Possible developing storm clouds. Not certain; watch how the sky evolves.",
+      },
     },
     tormenta: {
-      titulo: "⚠️ DANGER — Thunderstorm",
-      mensaje: "Active storm. Seek shelter immediately.",
+      titulo: "⚠️ Thunderstorm",
+      mensaje: {
+        alta: "Active storm. Seek shelter and leave ridges and summits immediately.",
+        media:
+          "Clear signs of a storm. Move away from exposed areas and consider descending now.",
+        baja: "There may be storm activity, though it's not certain. Watch the sky and avoid exposed areas.",
+      },
     },
     foto_invalida: {
-      titulo: "Invalid photo",
+      titulo: "Can't analyse the photo",
       mensaje: "This image cannot be analysed. Try with another photo.",
+    },
+    tone: {
+      podriaSerTambien: "It could also be:",
+      pocoFiable: "Low-confidence detection: use it only as guidance.",
+      reintentarTitulo: "Unclear image",
+      reintentarMensaje:
+        "The model is unsure about this image. Retake the photo framing the sky well and avoiding obstacles.",
+      repetirFoto: "Retake photo",
+    },
+    fiabilidad: {
+      label: "Reliability",
+      alta: "High",
+      media: "Medium",
+      baja: "Low",
     },
   },
   share: {
     predictionPrefix: "🌤️ Prediction: ",
     locationPrefix: "📍 ",
     forecastLabel: "Forecast: ",
+    recommendationLabel: "Recommendation: ",
+    reliabilityLabel: "Reliability: ",
     probabilityLabel: "Probability: ",
     footer: "\n— Sent from ClimaNuvem",
     defaultTitle: "Prediction",
@@ -200,20 +351,38 @@ export default {
     guide: "Guide",
     history: "History",
     profile: "Profile",
+    map: "Map",
+  },
+  community: {
+    prediction: "Community prediction",
+    publishedAt: "Published",
+    expiresIn: "Expires in",
+    expired: "Expired",
+    by: "By",
+    anonymous: "Anonymous",
+    loading: "Loading...",
+    notFound: "Prediction not found",
   },
   help: {
     title: "Help",
     goodPhotos: {
       title: "How to take good photos",
-      body: "• Point directly at the sky, letting clouds fill the frame\n• Find good lighting and avoid shooting into the sun\n• Keep the phone steady to avoid blurry images\n• Include the horizon when there are few clouds for context",
+      body: "Hold the phone horizontally, with the sky up and without tilting it. Point directly at the sky and let the clouds fill the frame, with good lighting and without shooting into the sun. Keep the phone steady so the photo doesn't come out blurry and, if there are few clouds, include the horizon for context.",
     },
     avoidPhotos: {
       title: "Photos to avoid",
-      body: "• Blurry, very dark, or overexposed images\n• Photos with trees, buildings, or objects blocking the sky\n• Shots directly into the sun\n• Indoor images or photos without visible sky",
+      intro:
+        "These photos make analysis harder or impossible. Try to avoid them:",
+      objects:
+        "Aim well at the sky and avoid objects, trees, buildings, or people in the foreground as much as possible. Avoid portrait orientation too: hold the phone horizontally so the whole cloud fits.",
+      visibility:
+        "Avoid photos with poor visibility, such as at night or against the light. The model needs to see the sky and clouds clearly.",
+      blurry:
+        "Avoid blurry or shaky photos, and be careful not to cover the lens with your finger (the classic finger).",
     },
     howItWorks: {
       title: "How ClimaNuvem works",
-      body: "1. Take a photo of the sky or load one from your gallery\n2. The AI model analyses the type of clouds present\n3. The app classifies the meteorological risk into 8 categories\n4. Save your predictions to the history for later reference",
+      body: "1. Take a photo of the sky or pick one from your gallery.\n2. The AI analyses the type of clouds and how developed they are.\n3. ClimaNuvem classifies the risk into one of 8 categories and shows you an alert.\n4. Save the prediction to your history to check it whenever you want.",
     },
   },
 };

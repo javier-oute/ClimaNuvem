@@ -1,6 +1,11 @@
 // features/profile/useProfileForm.js
 import { upsertProfile } from "@/features/profile/profile-api";
 import { t } from "@/lib/i18n";
+import {
+  deleteAvatar,
+  isStorageAvatarPath,
+  uploadAvatar,
+} from "@/stores/profile.store.image";
 import { isValidPhoneSimple, normalizePhone } from "@/utils/phone";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Keyboard } from "react-native";
@@ -14,13 +19,35 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
   const [phone, setPhone] = useState("");
   const [username, setUsername] = useState("");
 
+  // Avatar staged (no se sube hasta "Guardar"):
+  // avatarUri = URI local de preview | null
+  // avatarAction = "none" (sin cambios) | "set" (nueva foto) | "remove" (quitar)
+  const [avatarUri, setAvatarUri] = useState(null);
+  const [avatarAction, setAvatarAction] = useState("none");
+
   const timeoutRef = useRef(null);
+
+  const resetAvatarStaging = useCallback(() => {
+    setAvatarUri(null);
+    setAvatarAction("none");
+  }, []);
+
+  const stageAvatar = useCallback((uri) => {
+    setAvatarUri(uri);
+    setAvatarAction("set");
+  }, []);
+
+  const stageRemoveAvatar = useCallback(() => {
+    setAvatarUri(null);
+    setAvatarAction("remove");
+  }, []);
 
   const loadFormFromProfile = useCallback(() => {
     setFullName(profile?.full_name ?? "");
     setPhone(profile?.phone ?? "");
     setUsername(profile?.username ?? "");
-  }, [profile]);
+    resetAvatarStaging();
+  }, [profile, resetAvatarStaging]);
 
   // Inicializa/actualiza el formulario cuando llega profile (si no editas)
   useEffect(() => {
@@ -68,14 +95,32 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
 
       const phoneToSave = phone.trim() ? normalizePhone(phone) : null;
 
+      // Resolver el avatar (diferido): solo se toca Storage al guardar.
+      let avatarUrl; // undefined = no tocar avatar_url
+      try {
+        if (avatarAction === "set" && avatarUri) {
+          avatarUrl = await uploadAvatar({ uri: avatarUri, userId });
+        } else if (avatarAction === "remove") {
+          if (isStorageAvatarPath(profile?.avatar_url)) {
+            await deleteAvatar(profile.avatar_url);
+          }
+          avatarUrl = null;
+        }
+      } catch (e) {
+        Alert.alert(t("profile.avatar.uploadError"), e?.message ?? "Error");
+        return;
+      }
+
       await upsertProfile({
         userId,
         fullName,
         phone: phoneToSave,
         username,
+        avatarUrl,
       });
 
       await refreshProfile();
+      resetAvatarStaging();
       setIsEditing(false);
       Keyboard.dismiss();
       setIsSaveSuccess(true);
@@ -84,7 +129,17 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
     } finally {
       setIsSaving(false);
     }
-  }, [userId, phone, fullName, username, refreshProfile]);
+  }, [
+    userId,
+    phone,
+    fullName,
+    username,
+    refreshProfile,
+    avatarAction,
+    avatarUri,
+    profile,
+    resetAvatarStaging,
+  ]);
 
   return {
     // estados UI
@@ -99,6 +154,12 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
     setFullName,
     setPhone,
     setUsername,
+
+    // avatar staged
+    avatarUri,
+    avatarAction,
+    stageAvatar,
+    stageRemoveAvatar,
 
     // computed
     displayName,

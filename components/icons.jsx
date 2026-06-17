@@ -28,6 +28,10 @@ export const UserIcon = (props) => (
 
 export const EditIcon = () => <Feather name="edit" size={24} color="white" />;
 
+export const PencilIcon = ({ size = 16, color = "white" }) => (
+  <Feather name="edit-2" size={size} color={color} />
+);
+
 export const CancelIcon = () => (
   <MaterialCommunityIcons name="cancel" size={24} color="white" />
 );
@@ -64,8 +68,8 @@ export const ChevronLeftIcon = () => (
   <Entypo name="chevron-left" size={24} color="white" />
 );
 
-export const TrashIcon = () => (
-  <Feather name="trash-2" size={24} color="white" />
+export const TrashIcon = ({ color = "white" }) => (
+  <Feather name="trash-2" size={24} color={color} />
 );
 
 export const BookmarckIcon = () => (
@@ -88,4 +92,8 @@ export const CloudIcon = ({ color = "black", ...props }) => (
 
 export const HelpIcon = ({ color = "black" }) => (
   <Ionicons name="help" size={24} color={color} />
+);
+
+export const MapIcon = ({ color = "black" }) => (
+  <Feather name="map" size={24} color={color} />
 );

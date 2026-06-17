@@ -1,5 +1,6 @@
 import AuthBootstrap from "@/providers/AuthBootstrap";
 import { applyStoredTheme } from "@/stores/settings.store";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -20,49 +21,73 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView className="flex-1 dark:bg-zinc-900">
       <SafeAreaProvider initialMetrics={initialWindowMetrics ?? undefined}>
-        <AuthBootstrap>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen
-              name="(tabs)"
-              options={{
-                title: "",
-              }}
-            />
-            <Stack.Screen
-              name="[id]"
-              options={{
-                headerBackTitleVisible: false,
-                headerShown: true,
-                headerTitle: "",
-                headerBackTitle: "",
-                headerTransparent: true,
-                headerShadowVisible: false,
-              }}
-            />
-            <Stack.Screen
-              name="forecast-screen"
-              options={{
-                headerBackTitleVisible: false,
-                headerShown: true,
-                headerTitle: "",
-                headerBackTitle: "",
-                headerTransparent: true,
-                headerShadowVisible: false,
-              }}
-            />
-            <Stack.Screen
-              name="help"
-              options={{
-                headerBackTitleVisible: false,
-                headerShown: true,
-                headerBackTitle: "",
-                headerShadowVisible: false,
-              }}
-            />
-          </Stack>
-        </AuthBootstrap>
+        <BottomSheetModalProvider>
+          <AuthBootstrap>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen
+                name="(tabs)"
+                options={{
+                  title: "",
+                }}
+              />
+              <Stack.Screen
+                name="[id]"
+                options={{
+                  headerBackTitleVisible: false,
+                  headerShown: true,
+                  headerTitle: "",
+                  headerBackTitle: "",
+                  headerTransparent: true,
+                  headerShadowVisible: false,
+                }}
+              />
+              <Stack.Screen
+                name="forecast-screen"
+                options={{
+                  headerBackTitleVisible: false,
+                  headerShown: true,
+                  headerTitle: "",
+                  headerBackTitle: "",
+                  headerTransparent: true,
+                  headerShadowVisible: false,
+                }}
+              />
+              <Stack.Screen
+                name="help"
+                options={{
+                  headerBackTitleVisible: false,
+                  headerShown: true,
+                  headerBackTitle: "",
+                  headerShadowVisible: false,
+                }}
+              />
+              <Stack.Screen
+                name="map-prediction/[id]"
+                options={{
+                  headerBackTitleVisible: false,
+                  headerShown: true,
+                  headerTitle: "",
+                  headerBackTitle: "",
+                  headerTransparent: true,
+                  headerShadowVisible: false,
+                }}
+              />
+              <Stack.Screen
+                name="cloud/[type]"
+                options={{
+                  headerBackTitleVisible: false,
+                  headerShown: true,
+                  headerTitle: "",
+                  headerBackTitle: "",
+                  headerTransparent: true,
+                  headerShadowVisible: false,
+                }}
+              />
+            </Stack>
+          </AuthBootstrap>
+        </BottomSheetModalProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

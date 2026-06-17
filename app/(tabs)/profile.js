@@ -1,15 +1,20 @@
 import { EditableField } from "@/components/editableField";
+import { AvatarSourceSheet } from "@/components/profile/avatar-source-sheet";
+import { DeleteAccountModal } from "@/components/profile/delete-account-modal";
 import {
   CancelProfileButton,
+  DeleteAccountButton,
   EditProfileButton,
   LogOutButton,
 } from "@/components/profile/profile-buttons";
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import usePickAvatar from "@/hooks/profile/usePickAvatar";
 import { useProfileForm } from "@/hooks/profile/useProfileForm";
 import { useT } from "@/lib/i18n";
 import { useAuthStore } from "@/stores/auth.store";
 import { useSettingsStore } from "@/stores/settings.store";
 import { Redirect } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -21,7 +26,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SaveButton } from "../../components/buttons";
-import { UserIcon } from "../../components/icons";
 import "../../global.css";
 
 function SettingRow({ label, options, value, onChange }) {
@@ -60,6 +64,9 @@ export default function Profile() {
   const isLoading = useAuthStore((s) => s.isLoading);
   const refreshProfile = useAuthStore((s) => s.refreshProfile);
   const signOut = useAuthStore((s) => s.signOut);
+  const deleteAccount = useAuthStore((s) => s.deleteAccount);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const language = useSettingsStore((s) => s.language);
   const theme = useSettingsStore((s) => s.theme);
@@ -85,6 +92,10 @@ export default function Profile() {
     setFullName,
     setPhone,
     setUsername,
+    avatarUri,
+    avatarAction,
+    stageAvatar,
+    stageRemoveAvatar,
     displayName,
     onEdit,
     onCancel,
@@ -94,6 +105,23 @@ export default function Profile() {
     profile,
     refreshProfile,
   });
+
+  const { pickFromCamera, pickFromGallery } = usePickAvatar();
+  const avatarSheetRef = useRef(null);
+
+  const onCamera = async () => {
+    const uri = await pickFromCamera();
+    if (uri) stageAvatar(uri);
+  };
+  const onGallery = async () => {
+    const uri = await pickFromGallery();
+    if (uri) stageAvatar(uri);
+  };
+
+  // ¿Hay algún avatar que mostrar/quitar? (staged nuevo, o guardado y no marcado para quitar)
+  const hasAvatar =
+    avatarAction === "set" ||
+    (avatarAction !== "remove" && !!profile?.avatar_url);
 
   const showFullScreenLoader =
     isLoading || session === undefined || profile === undefined;
@@ -125,9 +153,13 @@ export default function Profile() {
           paddingBottom: 24,
         }}
       >
-        <View className="rounded-full bg-slate-400 p-6">
-          <UserIcon size={64} />
-        </View>
+        <ProfileAvatar
+          avatarUrl={avatarAction === "remove" ? null : profile?.avatar_url}
+          stagedUri={avatarUri}
+          isEditing={isEditing}
+          isSaving={isSaving}
+          onPressEdit={() => avatarSheetRef.current?.present()}
+        />
         <Text className="mt-4 text-3xl font-bold text-slate-900 dark:text-zinc-100">
           {displayName}
         </Text>
@@ -237,7 +269,25 @@ export default function Profile() {
         {/* Cerrar sesión */}
         <View className="h-px bg-slate-200 dark:bg-zinc-700 my-8" />
         <LogOutButton signOut={signOut} />
+
+        {/* Eliminar cuenta */}
+        <View className="h-px bg-slate-200 dark:bg-zinc-700 my-8" />
+        <DeleteAccountButton onPress={() => setShowDeleteModal(true)} />
       </ScrollView>
+
+      <AvatarSourceSheet
+        ref={avatarSheetRef}
+        hasAvatar={hasAvatar}
+        onCamera={onCamera}
+        onGallery={onGallery}
+        onRemove={stageRemoveAvatar}
+      />
+
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={deleteAccount}
+      />
     </KeyboardAvoidingView>
   );
 }

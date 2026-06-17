@@ -1,4 +1,5 @@
 import { hardResetSupabaseAuth } from "@/lib/resetSupabaseAuth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Session } from "@supabase/supabase-js";
 import { router } from "expo-router";
 import { AppState } from "react-native";
@@ -16,6 +17,7 @@ type AuthState = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 };
 
 // Selector derivado (mejor que duplicar estado)
@@ -261,6 +263,26 @@ export const useAuthStore = create<AuthState>((set, get) => {
       } finally {
         endLoading("sign-out");
       }
+    },
+
+    // Borrado COMPLETO e irreversible de la cuenta. La Edge Function 'delete-account'
+    // elimina Storage + auth.users (cascada a profiles/forecast_history). Aquí solo
+    // limpiamos lo local y redirigimos. El modal gestiona su propio loading/error.
+    deleteAccount: async () => {
+      const { error } = await supabase.functions.invoke("delete-account");
+      if (error) throw new Error(error.message);
+
+      // Preferencias locales (idioma/tema) — no son datos de cuenta pero limpiamos por completo.
+      try {
+        await AsyncStorage.removeItem("climanuvem-settings");
+      } catch {
+        // no bloqueante
+      }
+
+      // Token de sesión cifrado + signOut local (puede fallar porque el usuario ya no existe).
+      await hardResetSupabaseAuth();
+      set({ session: null, profile: null });
+      router.replace("/(auth)/login");
     },
   };
 });
