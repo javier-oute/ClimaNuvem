@@ -13,6 +13,12 @@ import * as SplashScreen from "expo-splash-screen";
 
 // Mantener la splash NATIVA visible hasta que el overlay tome el relevo (evita parpadeo).
 SplashScreen.preventAutoHideAsync().catch(() => {});
+// La nativa se DESVANECE (cross-fade) sobre el overlay idéntico → relevo imperceptible.
+try {
+  SplashScreen.setOptions({ fade: true, duration: 250 });
+} catch {
+  // setOptions no disponible en versiones antiguas: no es bloqueante.
+}
 
 // Lockup completo (marca + "ClimaNuvem"). Es la MISMA imagen que la splash nativa
 // (app.json), por lo que el relevo nativa → overlay es pixel-idéntico.
@@ -20,16 +26,20 @@ const LOCKUP_LIGHT = require("../assets/images/splash.png");
 const LOCKUP_DARK = require("../assets/images/splash-dark.png");
 const LOCKUP_RATIO = 1024 / 1079; // ancho / alto del PNG
 
-// El zoom de entrada SIEMPRE se reproduce entero antes de salir, aunque la sesión cargue
-// al instante. La salida solo se adelanta una vez superado el mínimo visible.
-const ENTER_MS = 1000; // zoom-in lento y suave
-const MIN_VISIBLE_MS = 1300; // entrada + pequeño hold
+// El logo arranca EXACTAMENTE como la splash nativa (escala 1.0, mismo tamaño y centrado)
+// para que el relevo nativa → overlay sea invisible, y a partir de ahí hace un "push-in"
+// continuo que acelera hacia afuera (zoom-through) al dar paso a la app.
+const SCALE_START = 1.0; // idéntico a la splash nativa (sin salto)
+const SCALE_HOLD = 1.15; // crecimiento suave mientras se ve
+const SCALE_EXIT = 1.5; // zoom-through final (entrar en la app)
+
+const GROW_MS = 1700; // push-in lento y continuo
+const MIN_VISIBLE_MS = 1200; // tiempo mínimo en pantalla antes de poder salir
 const MAX_WAIT_MS = 2500; // tope: una red lenta no deja al usuario mirando el logo
-const EXIT_MS = 550;
+const EXIT_MS = 650;
 
-// Curva suave (ease-out tipo "expo") para una entrada fluida.
-const SMOOTH = Easing.bezier(0.22, 1, 0.36, 1);
-
+// IMPORTANTE: LOGO_WIDTH debe coincidir con imageWidth de la splash nativa (app.json) para
+// que la escala 1.0 sea pixel-idéntica al relevo.
 const LOGO_WIDTH = 200;
 
 const BG_LIGHT = "#ffffff";
@@ -51,13 +61,17 @@ export default function AnimatedSplash() {
   const [minElapsed, setMinElapsed] = useState(false);
   const [capReached, setCapReached] = useState(false);
 
-  // Contenedor arranca OPACO (relevo sin parpadeo). El logo escala de forma continua.
+  // Contenedor arranca OPACO (relevo sin parpadeo). El logo arranca a escala 1.0 (idéntico
+  // a la splash nativa) y crece de forma continua.
   const opacity = useSharedValue(1);
-  const scale = useSharedValue(0.9);
+  const scale = useSharedValue(SCALE_START);
 
-  // Entrada: zoom-in lento. Se reproduce entero (MIN_VISIBLE_MS > ENTER_MS).
+  // Push-in: crecimiento suave y continuo desde el tamaño exacto de la splash nativa.
   useEffect(() => {
-    scale.value = withTiming(1, { duration: ENTER_MS, easing: SMOOTH });
+    scale.value = withTiming(SCALE_HOLD, {
+      duration: GROW_MS,
+      easing: Easing.out(Easing.quad),
+    });
   }, [scale]);
 
   // Tiempo mínimo en pantalla y tope de seguridad.
@@ -76,22 +90,29 @@ export default function AnimatedSplash() {
   useEffect(() => {
     const shouldExit = (ready && minElapsed) || capReached;
     if (!shouldExit) return;
-    scale.value = withTiming(1.08, {
+    // Zoom-through: el logo sigue creciendo (acelerando) mientras se desvanece → "entrar" en la app.
+    scale.value = withTiming(SCALE_EXIT, {
       duration: EXIT_MS,
-      easing: Easing.inOut(Easing.ease),
+      easing: Easing.in(Easing.cubic),
     });
     opacity.value = withTiming(
       0,
-      { duration: EXIT_MS, easing: Easing.inOut(Easing.ease) },
+      { duration: EXIT_MS, easing: Easing.in(Easing.cubic) },
       (finished) => {
         if (finished) runOnJS(hide)();
       },
     );
   }, [ready, minElapsed, capReached, opacity, scale, hide]);
 
-  // Ocultar la splash nativa en cuanto el overlay (idéntico) está pintado.
-  const onLayout = useCallback(() => {
-    SplashScreen.hideAsync().catch(() => {});
+  // Ocultar la splash nativa SOLO cuando la imagen del overlay ya está pintada (onLoadEnd) y
+  // tras un doble requestAnimationFrame (frame ya volcado a pantalla). Así no hay hueco entre
+  // que la nativa desaparece y el overlay se ve → sin pantallazo blanco.
+  const hideNative = useCallback(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        SplashScreen.hideAsync().catch(() => {});
+      });
+    });
   }, []);
 
   const containerStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
@@ -103,7 +124,6 @@ export default function AnimatedSplash() {
 
   return (
     <Animated.View
-      onLayout={onLayout}
       pointerEvents="none"
       style={[
         StyleSheet.absoluteFill,
@@ -115,6 +135,8 @@ export default function AnimatedSplash() {
       <Animated.Image
         source={isDark ? LOCKUP_DARK : LOCKUP_LIGHT}
         resizeMode="contain"
+        onLoadEnd={hideNative}
+        fadeDuration={0}
         style={[
           { width: LOGO_WIDTH, height: LOGO_WIDTH / LOCKUP_RATIO },
           logoStyle,

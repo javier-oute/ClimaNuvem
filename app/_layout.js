@@ -2,22 +2,38 @@ import AuthBootstrap from "@/providers/AuthBootstrap";
 import { applyStoredTheme } from "@/stores/settings.store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack } from "expo-router";
+import { useColorScheme } from "nativewind";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   SafeAreaProvider,
   initialWindowMetrics,
 } from "react-native-safe-area-context";
+import * as SystemUI from "expo-system-ui";
 import AnimatedSplash from "@/components/animated-splash";
 import "../global.css";
 
+// Mismos colores que la splash (app.json) → ninguna capa puede asomar en blanco en el relevo.
+const SPLASH_BG_LIGHT = "#ffffff";
+const SPLASH_BG_DARK = "#1e2a44";
+
 export default function RootLayout() {
+  const { colorScheme } = useColorScheme();
+
   useEffect(() => {
     applyStoredTheme();
   }, []);
 
+  // Fondo NATIVO de ventana (host/windowBackground) acorde al tema: evita el destello blanco
+  // por debajo de React durante el relevo splash → app.
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(
+      colorScheme === "dark" ? SPLASH_BG_DARK : SPLASH_BG_LIGHT,
+    ).catch(() => {});
+  }, [colorScheme]);
+
   return (
-    <GestureHandlerRootView className="flex-1 dark:bg-zinc-900">
+    <GestureHandlerRootView className="flex-1 bg-white dark:bg-[#1e2a44]">
       <SafeAreaProvider initialMetrics={initialWindowMetrics ?? undefined}>
         <BottomSheetModalProvider>
           <AuthBootstrap>
