@@ -11,7 +11,12 @@
     "ios": {
       "bundleIdentifier": "com.javier.climanuvem",
       "usesAppleSignIn": true,
-      "supportsTablet": true
+      "supportsTablet": true,
+      "icon": {
+        "light": "./assets/images/icon.png",
+        "dark": "./assets/images/icon-dark.png",
+        "tinted": "./assets/images/icon-tinted.png"
+      }
     },
     "android": {
       "softwareKeyboardLayoutMode": "resize",
@@ -38,12 +43,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#FFFFFF",
           "dark": {
-            "image": "./assets/images/splash-icon-dark.png",
+            "image": "./assets/images/splash-dark.png",
             "backgroundColor": "#1e2a44"
           }
         }
