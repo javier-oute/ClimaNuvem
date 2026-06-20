@@ -30,10 +30,10 @@ export default function LoginScreen() {
 
   return (
     <View className="flex-1 justify-start bg-white dark:bg-zinc-900">
-      <View className="pt-24">
+      <View className="pt-8">
         <Image
-          source={require("@/assets/images/logo_nube_v1.0.jpg")}
-          style={{ width: 120, height: 120, alignSelf: "center" }}
+          source={require("@/assets/images/icon.png")}
+          style={{ width: 200, height: 200, alignSelf: "center" }}
           resizeMode="contain"
         />
         <View className="p-8 mt-4 gap-3">

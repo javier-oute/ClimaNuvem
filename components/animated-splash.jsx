@@ -7,24 +7,28 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withTiming,
 } from "react-native-reanimated";
 import * as SplashScreen from "expo-splash-screen";
 
 // Mantener la splash NATIVA visible hasta que el overlay tome el relevo (evita parpadeo).
 SplashScreen.preventAutoHideAsync().catch(() => {});
-// La nativa se DESVANECE (cross-fade) sobre el overlay idéntico → relevo imperceptible.
+// Corte seco (sin cross-fade): como el overlay es pixel-idéntico y está QUIETO a escala 1.0
+// durante el relevo, un cut es invisible y evita la ventana de solape (fantasma) del fade.
 try {
-  SplashScreen.setOptions({ fade: true, duration: 250 });
+  SplashScreen.setOptions({ fade: false });
 } catch {
   // setOptions no disponible en versiones antiguas: no es bloqueante.
 }
 
-// Lockup completo (marca + "ClimaNuvem"). Es la MISMA imagen que la splash nativa
-// (app.json), por lo que el relevo nativa → overlay es pixel-idéntico.
-const LOCKUP_LIGHT = require("../assets/images/splash.png");
-const LOCKUP_DARK = require("../assets/images/splash-dark.png");
-const LOCKUP_RATIO = 1024 / 1079; // ancho / alto del PNG
+// Lockup completo (marca + "ClimaNuvem"). Es la MISMA imagen CUADRADA que la splash nativa
+// (app.json), por lo que el relevo nativa → overlay es pixel-idéntico. Al ser cuadrada (1080x1080),
+// "ajustar por ancho" y "ajustar por alto" dan el mismo resultado → nativa y overlay coinciden
+// independientemente de cómo expo-splash-screen interprete `contain` (evita el desajuste de tamaño).
+const LOCKUP_LIGHT = require("../assets/images/splash-square.png");
+const LOCKUP_DARK = require("../assets/images/splash-dark-square.png");
+const LOCKUP_RATIO = 1; // PNG cuadrado (1080x1080)
 
 // El logo arranca EXACTAMENTE como la splash nativa (escala 1.0, mismo tamaño y centrado)
 // para que el relevo nativa → overlay sea invisible, y a partir de ahí hace un "push-in"
@@ -33,8 +37,9 @@ const SCALE_START = 1.0; // idéntico a la splash nativa (sin salto)
 const SCALE_HOLD = 1.15; // crecimiento suave mientras se ve
 const SCALE_EXIT = 1.5; // zoom-through final (entrar en la app)
 
-const GROW_MS = 1700; // push-in lento y continuo
-const MIN_VISIBLE_MS = 1200; // tiempo mínimo en pantalla antes de poder salir
+const START_DELAY_MS = 220; // breve pausa quieto a 1.0 tras el relevo, antes de arrancar el zoom
+const GROW_MS = 1000; // push-in (más rápido que antes), con arranque suave (easing inOut)
+const MIN_VISIBLE_MS = 1000; // tiempo mínimo en pantalla antes de poder salir
 const MAX_WAIT_MS = 2500; // tope: una red lenta no deja al usuario mirando el logo
 const EXIT_MS = 650;
 
@@ -60,19 +65,28 @@ export default function AnimatedSplash() {
   const [visible, setVisible] = useState(true);
   const [minElapsed, setMinElapsed] = useState(false);
   const [capReached, setCapReached] = useState(false);
+  // true cuando la splash nativa ya se ha ocultado (relevo completado). El zoom NO arranca
+  // hasta entonces, para que el overlay permanezca pixel-idéntico a la nativa durante el relevo.
+  const [handedOff, setHandedOff] = useState(false);
 
   // Contenedor arranca OPACO (relevo sin parpadeo). El logo arranca a escala 1.0 (idéntico
   // a la splash nativa) y crece de forma continua.
   const opacity = useSharedValue(1);
   const scale = useSharedValue(SCALE_START);
 
-  // Push-in: crecimiento suave y continuo desde el tamaño exacto de la splash nativa.
+  // Push-in: arranca SOLO tras el relevo (handedOff), desde el tamaño exacto de la splash
+  // nativa. Una breve pausa quieto a 1.0 (START_DELAY_MS) + arranque suave (easing inOut, que
+  // acelera de forma gradual en vez de salir a tope) evitan la sensación de tirón al empezar.
   useEffect(() => {
-    scale.value = withTiming(SCALE_HOLD, {
-      duration: GROW_MS,
-      easing: Easing.out(Easing.quad),
-    });
-  }, [scale]);
+    if (!handedOff) return;
+    scale.value = withDelay(
+      START_DELAY_MS,
+      withTiming(SCALE_HOLD, {
+        duration: GROW_MS,
+        easing: Easing.inOut(Easing.quad),
+      }),
+    );
+  }, [handedOff, scale]);
 
   // Tiempo mínimo en pantalla y tope de seguridad.
   useEffect(() => {
@@ -110,7 +124,10 @@ export default function AnimatedSplash() {
   const hideNative = useCallback(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        SplashScreen.hideAsync().catch(() => {});
+        SplashScreen.hideAsync()
+          .catch(() => {})
+          // Solo al completar el ocultado de la nativa damos paso al zoom (handedOff).
+          .finally(() => setHandedOff(true));
       });
     });
   }, []);

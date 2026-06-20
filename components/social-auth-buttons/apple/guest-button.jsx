@@ -7,7 +7,7 @@ export default function GuestButton({ href = "/(tabs)/home" }) {
   const t = useT();
   return (
     <Link href={href} replace asChild>
-      <Pressable className="flex flex-row justify-between items-center w-52 rounded-3xl bg-[#b0aeaf] px-5 py-2 shadow-sm active:opacity-75">
+      <Pressable className="flex flex-row justify-between items-center w-56 rounded-3xl bg-[#b0aeaf] px-5 py-2 shadow-sm active:opacity-75">
         <UserIcon />
         <Text className="text-white text-sm font-semibold">
           {t("login.guest")}

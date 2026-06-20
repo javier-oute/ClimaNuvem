@@ -116,6 +116,7 @@ import { useEffect } from "react";
 import { TouchableOpacity } from "react-native";
 
 import { expo } from "@/app.json";
+import { useT } from "@/lib/i18n";
 import { Text } from "@react-navigation/elements";
 import { Image } from "expo-image";
 //import { router } from "expo-router";
@@ -124,6 +125,7 @@ import * as WebBrowser from "expo-web-browser";
 WebBrowser.maybeCompleteAuthSession();
 
 export default function GoogleSignInButton() {
+  const t = useT();
   function extractParamsFromUrl(url: string) {
     const parsedUrl = new URL(url);
     const hash = parsedUrl.hash.substring(1); // Remove the leading '#'
@@ -213,15 +215,16 @@ export default function GoogleSignInButton() {
     <TouchableOpacity
       onPress={onSignInButtonPress}
       style={{
+        width: 200,
+        height: 44,
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "center",
         backgroundColor: "#ffffff",
         borderWidth: 1,
         borderColor: "#dbdbdb",
-        borderRadius: 4,
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        justifyContent: "center",
+        borderRadius: 6,
+        paddingHorizontal: 12,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
@@ -234,17 +237,16 @@ export default function GoogleSignInButton() {
         source={{
           uri: "https://developers.google.com/identity/images/g-logo.png",
         }}
-        style={{ width: 24, height: 24, marginRight: 10 }}
+        style={{ width: 14, height: 14, marginRight: 5 }}
       />
       <Text
         style={{
-          fontSize: 16,
+          fontSize: 14,
           color: "#757575",
-          fontFamily: "Roboto-Regular", // Assuming Roboto is available; install via expo-google-fonts or similar if needed
           fontWeight: "500",
         }}
       >
-        Sign in with Google
+        {t("login.google")}
       </Text>
     </TouchableOpacity>
   );
