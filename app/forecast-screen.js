@@ -7,6 +7,7 @@ import { publishPrediction } from "@/lib/communityMap";
 import { forecastTitleKey, RISK_COLORS } from "@/lib/forecast/model-meta";
 import { useT } from "@/lib/i18n";
 import { promptMapPublishConsent } from "@/lib/mapConsent";
+import { selectIsLoggedIn, useAuthStore } from "@/stores/auth.store";
 import { hasMapPublishConsent } from "@/stores/settings.store";
 import BottomSheet, {
   BottomSheetScrollView,
@@ -45,6 +46,10 @@ export default function ConfirmForecast() {
 
   const t = useT();
   const { colorScheme } = useColorScheme();
+
+  // Modo invitado: sin sesión no se puede guardar ni publicar. Solo se muestra el
+  // resultado y el botón de compartir.
+  const isLoggedIn = useAuthStore(selectIsLoggedIn);
 
   const insets = useSafeAreaInsets();
   const { height: windowH } = useWindowDimensions();
@@ -464,48 +469,56 @@ export default function ConfirmForecast() {
               </View>
             )}
             <View>
-              <View className="mt-8 w-80 self-center gap-4">
-                <EditableBottomSheetField
-                  label={t("forecast.name")}
-                  value={name}
-                  onChangeText={setName}
-                  returnKeyType="next"
-                  autoComplete="name"
-                  textContentType="name"
-                  placeholder={t("forecast.namePlaceholder")}
-                  autoCapitalize="words"
-                  maxLength={20}
-                />
+              {/* Campos editables: solo para usuarios logueados (en invitado no se guarda ni publica) */}
+              {isLoggedIn ? (
+                <View className="mt-8 w-80 self-center gap-4">
+                  <EditableBottomSheetField
+                    label={t("forecast.name")}
+                    value={name}
+                    onChangeText={setName}
+                    returnKeyType="next"
+                    autoComplete="name"
+                    textContentType="name"
+                    placeholder={t("forecast.namePlaceholder")}
+                    autoCapitalize="words"
+                    maxLength={20}
+                  />
 
-                <EditableBottomSheetField
-                  label={t("forecast.place")}
-                  value={placeName}
-                  onChangeText={setPlaceName}
-                  returnKeyType="done"
-                  placeholder={
-                    source === "camera"
-                      ? t("forecast.placeCamera")
-                      : t("forecast.placeGallery")
-                  }
-                  autoCapitalize="words"
-                  maxLength={50}
-                />
+                  <EditableBottomSheetField
+                    label={t("forecast.place")}
+                    value={placeName}
+                    onChangeText={setPlaceName}
+                    returnKeyType="done"
+                    placeholder={
+                      source === "camera"
+                        ? t("forecast.placeCamera")
+                        : t("forecast.placeGallery")
+                    }
+                    autoCapitalize="words"
+                    maxLength={50}
+                  />
 
-                <EditableBottomSheetField
-                  label={t("forecast.description")}
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder={t("forecast.descriptionPlaceholder")}
-                  multiline
-                  maxLength={280}
-                  style={{ minHeight: 88, textAlignVertical: "top" }}
-                />
-                <Text className="text-xs text-slate-400 dark:text-zinc-500 -mt-2">
-                  {t("forecast.descriptionHint")}
-                </Text>
-              </View>
+                  <EditableBottomSheetField
+                    label={t("forecast.description")}
+                    value={description}
+                    onChangeText={setDescription}
+                    placeholder={t("forecast.descriptionPlaceholder")}
+                    multiline
+                    maxLength={280}
+                    style={{ minHeight: 88, textAlignVertical: "top" }}
+                  />
+                  <Text className="text-xs text-slate-400 dark:text-zinc-500 -mt-2">
+                    {t("forecast.descriptionHint")}
+                  </Text>
+                </View>
+              ) : null}
               {/* Botones */}
-              {canPublish ? (
+              {!isLoggedIn ? (
+                // Invitado: solo compartir, a ancho completo.
+                <View className="flex-row mt-10">
+                  <ShareForecastButton onShare={onShare} />
+                </View>
+              ) : canPublish ? (
                 <>
                   <View className="flex-row gap-3 mt-10">
                     <ShareForecastButton onShare={onShare} />
