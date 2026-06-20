@@ -29,7 +29,12 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "permissions": []
+      "permissions": [],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyB_FueVvk_Dl5cNpMBuJtN51XJH7Mc0gqE"
+        }
+      }
     },
     "web": {
       "output": "static",
