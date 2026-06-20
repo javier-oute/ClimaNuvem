@@ -6,11 +6,8 @@ import {
 import { publishPrediction } from "@/lib/communityMap";
 import { forecastTitleKey, RISK_COLORS } from "@/lib/forecast/model-meta";
 import { useT } from "@/lib/i18n";
-import {
-  CURRENT_MAP_CONSENT_VERSION,
-  hasMapPublishConsent,
-  useSettingsStore,
-} from "@/stores/settings.store";
+import { promptMapPublishConsent } from "@/lib/mapConsent";
+import { hasMapPublishConsent } from "@/stores/settings.store";
 import BottomSheet, {
   BottomSheetScrollView,
   useBottomSheetSpringConfigs,
@@ -24,9 +21,11 @@ import {
   Platform,
   Pressable,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useColorScheme } from "nativewind";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DownloadPhotoButton, SaveButton } from "../components/buttons";
 import "../global.css";
 import { useModel } from "../hooks/useModel";
@@ -47,8 +46,8 @@ export default function ConfirmForecast() {
   const t = useT();
   const { colorScheme } = useColorScheme();
 
-  //const insets = useSafeAreaInsets();
-  //const { height: windowH } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const { height: windowH } = useWindowDimensions();
 
   const placeNameAuto =
     typeof params.placeNameAuto === "string" ? params.placeNameAuto : "";
@@ -70,14 +69,15 @@ export default function ConfirmForecast() {
     [latStr, lonStr],
   );
 
-  const bottomConstant = Platform.OS === "ios" ? 70 : 120; // 48 3-button ?
+  const bottomConstant = Platform.OS === "ios" ? 22 : 72;
   const topConstant = Platform.OS === "ios" ? 90 : 140;
 
   const snapPoints = useMemo(() => {
     const collapsed = bottomBlockH + bottomConstant;
-    const expanded = topBlockH + topConstant;
-    return [collapsed, expanded];
-  }, [bottomBlockH, topBlockH, bottomConstant, topConstant]);
+    const maxExpanded = Math.round(windowH * 0.72); // techo ~72% de la pantalla
+    const expanded = Math.min(topBlockH + topConstant, maxExpanded);
+    return [collapsed, Math.max(expanded, collapsed + 1)];
+  }, [bottomBlockH, topBlockH, bottomConstant, topConstant, windowH]);
 
   const [name, setName] = useState("");
   const [placeName, setPlaceName] = useState(placeNameAuto);
@@ -86,8 +86,6 @@ export default function ConfirmForecast() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-
-  const setMapPublishConsent = useSettingsStore((s) => s.setMapPublishConsent);
 
   /*
   const forecast = "Posible lluvia en 2 horas. Nubes densas y oscuras.";
@@ -237,17 +235,8 @@ export default function ConfirmForecast() {
       doPublish();
       return;
     }
-    Alert.alert(t("community.consentTitle"), t("community.consentMsg"), [
-      { text: t("buttons.cancel"), style: "cancel" },
-      {
-        text: t("buttons.accept"),
-        onPress: () => {
-          setMapPublishConsent(CURRENT_MAP_CONSENT_VERSION);
-          doPublish();
-        },
-      },
-    ]);
-  }, [doPublish, setMapPublishConsent, t]);
+    promptMapPublishConsent({ t, onAccept: doPublish });
+  }, [doPublish, t]);
 
   // Título firme en alta confianza; dudoso (expresa incertidumbre) en media/baja.
   const forecastDisplay = clase
@@ -391,6 +380,7 @@ export default function ConfirmForecast() {
       >
         <BottomSheetScrollView
           className="pt-5 px-8"
+          contentContainerStyle={{ paddingBottom: insets.bottom + 10 }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={
             Platform.OS === "ios" ? "interactive" : "on-drag"

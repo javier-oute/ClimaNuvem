@@ -197,6 +197,9 @@ export default function GoogleSignInButton() {
         console.error("onSignInButtonPress - setSession - failed");
         // sign in/up failed
       }
+    } else if (result && (result.type === "cancel" || result.type === "dismiss")) {
+      // El usuario cerró/canceló el navegador: acción legítima, no es un error.
+      return;
     } else {
       console.error("onSignInButtonPress - openAuthSessionAsync - failed");
     }

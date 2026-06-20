@@ -1,5 +1,6 @@
 // features/profile/profile.api.js
 import { supabase } from "@/lib/supabase";
+import { normalizeUsername } from "@/utils/username";
 
 export async function upsertProfile({
   userId,
@@ -12,7 +13,7 @@ export async function upsertProfile({
     id: userId,
     full_name: fullName?.trim() || null,
     phone: phone || null,
-    username: username?.trim() || null,
+    username: normalizeUsername(username),
     updated_at: new Date().toISOString(),
   };
 

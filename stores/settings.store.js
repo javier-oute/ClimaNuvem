@@ -10,8 +10,8 @@ export const CURRENT_MAP_CONSENT_VERSION = 1;
 export const useSettingsStore = create(
   persist(
     (set) => ({
-      language: "es", // 'es' | 'gl' | 'en'
-      theme: "system", // 'light' | 'dark' | 'system'
+      language: "gl", // 'es' | 'gl' | 'en'  (por defecto gallego)
+      theme: "light", // 'light' | 'dark' | 'system'  (por defecto claro)
       // Consentimiento de publicación en el mapa (por dispositivo). null = no consentido.
       // Guarda la versión aceptada para poder forzar la reaparición del aviso.
       mapPublishConsentVersion: null,

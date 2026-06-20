@@ -169,6 +169,11 @@ export default {
     invalidPhoneMsg: "Use format like +34 600 123 456",
     saveError: "Could not save",
     noName: "No name",
+    usernameInvalidTitle: "Invalid username",
+    usernameInvalidMsg:
+      "Use 3 to 30 characters: letters, numbers or underscore.",
+    usernameTakenTitle: "Username taken",
+    usernameTakenMsg: "That username is already in use. Try another one.",
     avatar: {
       sheetTitle: "Profile photo",
       camera: "Take a photo",
@@ -367,6 +372,11 @@ export default {
     mapConsent: "Share on map",
     mapConsentOn: "Yes",
     mapConsentOff: "No",
+    mapConsentDisableTitle: "Disable map sharing",
+    mapConsentDisableMsg:
+      "If you disable this option, all your current map posts will be deleted. You can publish new predictions again if you re-enable this option.",
+    mapConsentDisableConfirm: "Disable",
+    mapConsentDisableError: "Couldn't disable",
   },
   tabs: {
     home: "Home",
@@ -383,6 +393,7 @@ export default {
     loading: "Loading...",
     notFound: "Prediction not found",
     userDescription: "User description",
+    yourPublications: "Your posts",
     consentTitle: "Publish on the map",
     consentMsg:
       "Your photo will be visible to the community along with an approximate (not exact) location of where it was taken. The post will be visible until it expires (about 6 hours) and you can unpublish it anytime.",

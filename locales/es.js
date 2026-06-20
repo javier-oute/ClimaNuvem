@@ -169,6 +169,11 @@ export default {
     invalidPhoneMsg: "Usa formato tipo +34 600 123 456",
     saveError: "No se pudo guardar",
     noName: "Sin nombre",
+    usernameInvalidTitle: "Nombre de usuario no válido",
+    usernameInvalidMsg:
+      "Usa entre 3 y 30 caracteres: letras, números o guion bajo.",
+    usernameTakenTitle: "Nombre de usuario en uso",
+    usernameTakenMsg: "Ese nombre de usuario ya está en uso. Prueba con otro.",
     avatar: {
       sheetTitle: "Foto de perfil",
       camera: "Hacer foto",
@@ -370,6 +375,11 @@ export default {
     mapConsent: "Compartir en el mapa",
     mapConsentOn: "Sí",
     mapConsentOff: "No",
+    mapConsentDisableTitle: "Desactivar compartir en el mapa",
+    mapConsentDisableMsg:
+      "Si desactivas esta opción, todas tus publicaciones actuales del mapa se eliminarán. Podrás volver a publicar nuevas predicciones si activas esta opción de nuevo.",
+    mapConsentDisableConfirm: "Desactivar",
+    mapConsentDisableError: "No se pudo desactivar",
   },
   tabs: {
     home: "Home",
@@ -386,6 +396,7 @@ export default {
     loading: "Cargando...",
     notFound: "Predicción no encontrada",
     userDescription: "Descripción del usuario",
+    yourPublications: "Tus publicaciones",
     consentTitle: "Publicar en el mapa",
     consentMsg:
       "Tu foto será visible para la comunidad junto con una ubicación aproximada (no exacta) de dónde se tomó. La publicación se verá hasta que expire (unas 6 horas) y podrás despublicarla cuando quieras.",

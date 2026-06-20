@@ -7,6 +7,7 @@ import {
   uploadAvatar,
 } from "@/stores/profile.store.image";
 import { isValidPhoneSimple, normalizePhone } from "@/utils/phone";
+import { isValidUsername } from "@/utils/username";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Keyboard } from "react-native";
 
@@ -87,6 +88,15 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
 
     setIsSaving(true);
     try {
+      // Validación de username: obligatorio y con formato válido (no vacío)
+      if (!isValidUsername(username)) {
+        Alert.alert(
+          t("profile.usernameInvalidTitle"),
+          t("profile.usernameInvalidMsg"),
+        );
+        return;
+      }
+
       // Validación simple de teléfono
       if (phone.trim() && !isValidPhoneSimple(phone)) {
         Alert.alert(t("profile.invalidPhone"), t("profile.invalidPhoneMsg"));
@@ -125,7 +135,15 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
       Keyboard.dismiss();
       setIsSaveSuccess(true);
     } catch (e) {
-      Alert.alert(t("profile.saveError"), e?.message ?? "Error");
+      // 23505 = unique_violation → el username ya está en uso
+      if (e?.code === "23505") {
+        Alert.alert(
+          t("profile.usernameTakenTitle"),
+          t("profile.usernameTakenMsg"),
+        );
+      } else {
+        Alert.alert(t("profile.saveError"), e?.message ?? "Error");
+      }
     } finally {
       setIsSaving(false);
     }

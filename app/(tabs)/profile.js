@@ -10,7 +10,12 @@ import {
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import usePickAvatar from "@/hooks/profile/usePickAvatar";
 import { useProfileForm } from "@/hooks/profile/useProfileForm";
+import { unpublishAllMine } from "@/lib/communityMap";
 import { useT } from "@/lib/i18n";
+import {
+  promptMapPublishConsent,
+  promptMapPublishDisable,
+} from "@/lib/mapConsent";
 import { useAuthStore } from "@/stores/auth.store";
 import {
   CURRENT_MAP_CONSENT_VERSION,
@@ -20,6 +25,7 @@ import { Redirect } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -273,11 +279,30 @@ export default function Profile() {
           <SettingRow
             label={t("settings.mapConsent")}
             value={mapConsentGranted ? "on" : "off"}
-            onChange={(key) =>
-              setMapPublishConsent(
-                key === "on" ? CURRENT_MAP_CONSENT_VERSION : null,
-              )
-            }
+            onChange={(key) => {
+              // "Sí" muestra el MISMO aviso que el flujo de "Publicar" (el helper concede el
+              // consentimiento al aceptar). "No" avisa de que se borrarán las publicaciones del mapa;
+              // solo al confirmar y borrar con éxito se retira el consentimiento.
+              if (key === "on") {
+                if (!mapConsentGranted) promptMapPublishConsent({ t });
+                return;
+              }
+              if (!mapConsentGranted) return; // ya estaba en "No"
+              promptMapPublishDisable({
+                t,
+                onConfirm: async () => {
+                  try {
+                    await unpublishAllMine();
+                    setMapPublishConsent(null);
+                  } catch (e) {
+                    Alert.alert(
+                      t("settings.mapConsentDisableError"),
+                      e?.message ?? "Error",
+                    );
+                  }
+                },
+              });
+            }}
             options={[
               { key: "on", label: t("settings.mapConsentOn") },
               { key: "off", label: t("settings.mapConsentOff") },

@@ -1,10 +1,11 @@
+import { MapLegend, OWN_PIN_COLOR } from "@/components/map/map-legend";
 import { getNearbyPredictions } from "@/lib/communityMap";
 import { RISK_COLORS } from "@/lib/forecast/model-meta";
 import { t } from "@/lib/i18n";
 import { tryGetCoordsAndPlace } from "@/lib/location";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import "../../global.css";
 
@@ -15,10 +16,6 @@ const DEFAULT_REGION = {
   latitudeDelta: 0.5,
   longitudeDelta: 0.5,
 };
-
-// Color del pin propio (azul de la app): sobrescribe el color de clase para distinguir las publicaciones
-// propias de las ajenas (Q30).
-const OWN_PIN_COLOR = "#314468";
 
 export default function MapScreen() {
   const mapRef = useRef(null);
@@ -74,25 +71,28 @@ export default function MapScreen() {
   }, []);
 
   return (
-    <MapView
-      ref={mapRef}
-      style={StyleSheet.absoluteFill}
-      initialRegion={DEFAULT_REGION}
-      showsUserLocation={locationGranted}
-      showsMyLocationButton={locationGranted}
-    >
-      {predictions.map((item) => (
-        <Marker
-          key={item.id}
-          coordinate={{ latitude: item.lat, longitude: item.lon }}
-          pinColor={
-            item.is_mine
-              ? OWN_PIN_COLOR
-              : (RISK_COLORS[item.forecast] ?? "#888888")
-          }
-          onPress={() => onMarkerPress(item.id)}
-        />
-      ))}
-    </MapView>
+    <View style={{ flex: 1 }}>
+      <MapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFill}
+        initialRegion={DEFAULT_REGION}
+        showsUserLocation={locationGranted}
+        showsMyLocationButton={locationGranted}
+      >
+        {predictions.map((item) => (
+          <Marker
+            key={item.id}
+            coordinate={{ latitude: item.lat, longitude: item.lon }}
+            pinColor={
+              item.is_mine
+                ? OWN_PIN_COLOR
+                : (RISK_COLORS[item.forecast] ?? "#888888")
+            }
+            onPress={() => onMarkerPress(item.id)}
+          />
+        ))}
+      </MapView>
+      <MapLegend />
+    </View>
   );
 }

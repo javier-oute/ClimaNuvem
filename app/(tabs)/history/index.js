@@ -9,7 +9,7 @@ import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
 import { LOCALE_MAP, useT } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settings.store";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Link, Stack } from "expo-router";
+import { Link, Stack, useFocusEffect } from "expo-router";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, {
   Extrapolation,
@@ -215,6 +215,20 @@ export default function Historial() {
     setIsRefreshing(true);
     loadInitial();
   }, [loadInitial, debouncedSearch, day]);
+
+  // Recarga al volver a la pestaña (salta el primer foco, que coincide con el montaje) para reflejar
+  // cambios de estado de publicación hechos fuera: despublicar desde el detalle o desactivar
+  // "compartir en el mapa" desde Ajustes. Así los badges (azul → gris) quedan siempre coherentes.
+  const didFocusOnce = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!didFocusOnce.current) {
+        didFocusOnce.current = true;
+        return;
+      }
+      loadInitial();
+    }, [loadInitial]),
+  );
 
   const onRefresh = useCallback(() => {
     setIsRefreshing(true);
