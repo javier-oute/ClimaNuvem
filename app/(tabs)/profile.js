@@ -12,7 +12,10 @@ import usePickAvatar from "@/hooks/profile/usePickAvatar";
 import { useProfileForm } from "@/hooks/profile/useProfileForm";
 import { useT } from "@/lib/i18n";
 import { useAuthStore } from "@/stores/auth.store";
-import { useSettingsStore } from "@/stores/settings.store";
+import {
+  CURRENT_MAP_CONSENT_VERSION,
+  useSettingsStore,
+} from "@/stores/settings.store";
 import { Redirect } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -72,6 +75,9 @@ export default function Profile() {
   const theme = useSettingsStore((s) => s.theme);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const setTheme = useSettingsStore((s) => s.setTheme);
+  const mapConsentVersion = useSettingsStore((s) => s.mapPublishConsentVersion);
+  const setMapPublishConsent = useSettingsStore((s) => s.setMapPublishConsent);
+  const mapConsentGranted = mapConsentVersion === CURRENT_MAP_CONSENT_VERSION;
 
   const userId = session?.user?.id ?? null;
   const email = session?.user?.email ?? "—";
@@ -262,6 +268,19 @@ export default function Profile() {
               { key: "light", label: t("settings.themeLight") },
               { key: "dark", label: t("settings.themeDark") },
               { key: "system", label: t("settings.themeSystem") },
+            ]}
+          />
+          <SettingRow
+            label={t("settings.mapConsent")}
+            value={mapConsentGranted ? "on" : "off"}
+            onChange={(key) =>
+              setMapPublishConsent(
+                key === "on" ? CURRENT_MAP_CONSENT_VERSION : null,
+              )
+            }
+            options={[
+              { key: "on", label: t("settings.mapConsentOn") },
+              { key: "off", label: t("settings.mapConsentOff") },
             ]}
           />
         </View>

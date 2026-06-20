@@ -9,6 +9,7 @@ export async function saveForecastWithPhoto({
   coords,
   placeName,
   placeNameSource,
+  description = null, // texto libre opcional; también se muestra en el mapa si se publica
 }) {
   // 1) usuario logueado
   const {
@@ -42,6 +43,7 @@ export async function saveForecastWithPhoto({
         place_name_source: placeNameSource,
         location: locationWkt,
         image_path: imagePath,
+        description: description?.trim() ? description.trim() : null,
       })
       .select()
       .single();

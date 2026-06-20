@@ -1,6 +1,13 @@
 import { useT } from "@/lib/i18n";
 import { Pressable, Text } from "react-native";
-import { ChevronLeftIcon, SaveIcon, ShareIcon, TrashIcon } from "../icons";
+import {
+  ChevronLeftIcon,
+  PublishIcon,
+  ReportIcon,
+  SaveIcon,
+  ShareIcon,
+  TrashIcon,
+} from "../icons";
 
 export function DiscardForecastButton({ onDiscard }) {
   const t = useT();
@@ -57,6 +64,55 @@ export function ShareForecastButton({ onShare }) {
       <ShareIcon />
       <Text className="text-base font-semibold text-white">
         {t("buttons.share")}
+      </Text>
+    </Pressable>
+  );
+}
+
+export function PublishForecastButton({ onPublish, isPublishing }) {
+  const t = useT();
+  return (
+    <Pressable
+      onPress={onPublish}
+      disabled={isPublishing}
+      className="flex-1 flex-row items-center justify-between rounded-3xl bg-[#314468] px-6 py-4 shadow-sm active:opacity-75"
+    >
+      <PublishIcon />
+      <Text className="text-base font-semibold text-white">
+        {isPublishing ? t("buttons.publishing") : t("buttons.publish")}
+      </Text>
+    </Pressable>
+  );
+}
+
+// Botón a ancho completo para despublicar desde el detalle de historial.
+export function UnpublishForecastButton({ onUnpublish, isUnpublishing }) {
+  const t = useT();
+  return (
+    <Pressable
+      onPress={onUnpublish}
+      disabled={isUnpublishing}
+      className="flex-1 flex-row items-center justify-center gap-3 rounded-3xl bg-[#b0aeaf] px-6 py-4 shadow-sm active:opacity-75"
+    >
+      <PublishIcon />
+      <Text className="text-base font-semibold text-white">
+        {isUnpublishing ? t("buttons.unpublishing") : t("buttons.unpublish")}
+      </Text>
+    </Pressable>
+  );
+}
+
+// Botón para reportar una publicación ajena (detalle del mapa).
+export function ReportForecastButton({ onReport }) {
+  const t = useT();
+  return (
+    <Pressable
+      onPress={onReport}
+      className="flex-1 flex-row items-center justify-center gap-3 rounded-3xl bg-[#E24B4A] px-6 py-4 shadow-sm active:opacity-75"
+    >
+      <ReportIcon />
+      <Text className="text-base font-semibold text-white">
+        {t("buttons.report")}
       </Text>
     </Pressable>
   );

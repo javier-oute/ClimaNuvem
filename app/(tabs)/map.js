@@ -1,8 +1,10 @@
+import { getNearbyPredictions } from "@/lib/communityMap";
+import { RISK_COLORS } from "@/lib/forecast/model-meta";
+import { t } from "@/lib/i18n";
 import { tryGetCoordsAndPlace } from "@/lib/location";
-import { getNearbyPredictions } from "@/services/communityMap.mock";
-import { router } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet } from "react-native";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import { Alert, StyleSheet } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import "../../global.css";
 
@@ -14,44 +16,58 @@ const DEFAULT_REGION = {
   longitudeDelta: 0.5,
 };
 
-const FORECAST_COLORS = {
-  cielo_despejado: "#1D9E75",
-  nubes_altas_medias: "#378ADD",
-  lenticular_viento: "#EF9F27",
-  cubierto_precipitacion: "#EF9F27",
-  niebla_stratus: "#E24B4A",
-  conveccion_desarrollo: "#E24B4A",
-  tormenta: "#7F77DD",
-  foto_invalida: "#888888",
-};
+// Color del pin propio (azul de la app): sobrescribe el color de clase para distinguir las publicaciones
+// propias de las ajenas (Q30).
+const OWN_PIN_COLOR = "#314468";
 
 export default function MapScreen() {
   const mapRef = useRef(null);
   const [predictions, setPredictions] = useState([]);
   const [locationGranted, setLocationGranted] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  // Carga al enfocar la tab (sin pull-to-refresh ni polling, Q31). Sin ubicación: no hay pins + aviso (P14).
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
 
-    // Carga inmediata con fallback a Santiago para que el mapa no quede vacío
-    setPredictions(getNearbyPredictions(SANTIAGO.latitude, SANTIAGO.longitude));
+      (async () => {
+        const result = await tryGetCoordsAndPlace();
+        if (cancelled) return;
 
-    tryGetCoordsAndPlace().then((result) => {
-      if (cancelled || !result?.coords) return;
+        if (!result?.coords) {
+          setLocationGranted(false);
+          setPredictions([]);
+          Alert.alert(
+            t("community.locationOffTitle"),
+            t("community.locationOffMsg"),
+          );
+          return;
+        }
 
-      const { coords } = result;
-      setLocationGranted(true);
-      setPredictions(getNearbyPredictions(coords.latitude, coords.longitude));
-      mapRef.current?.animateToRegion(
-        { ...coords, latitudeDelta: 0.5, longitudeDelta: 0.5 },
-        800,
-      );
-    });
+        const { coords } = result;
+        setLocationGranted(true);
+        mapRef.current?.animateToRegion(
+          { ...coords, latitudeDelta: 0.5, longitudeDelta: 0.5 },
+          800,
+        );
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+        try {
+          const rows = await getNearbyPredictions(
+            coords.latitude,
+            coords.longitude,
+          );
+          if (!cancelled) setPredictions(rows);
+        } catch (e) {
+          console.error("Error cargando predicciones del mapa:", e);
+          if (!cancelled) setPredictions([]);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }, []),
+  );
 
   const onMarkerPress = useCallback((id) => {
     router.push(`/map-prediction/${id}`);
@@ -69,7 +85,11 @@ export default function MapScreen() {
         <Marker
           key={item.id}
           coordinate={{ latitude: item.lat, longitude: item.lon }}
-          pinColor={FORECAST_COLORS[item.forecast] ?? "#888888"}
+          pinColor={
+            item.is_mine
+              ? OWN_PIN_COLOR
+              : (RISK_COLORS[item.forecast] ?? "#888888")
+          }
           onPress={() => onMarkerPress(item.id)}
         />
       ))}

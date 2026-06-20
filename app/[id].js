@@ -1,3 +1,4 @@
+import { unpublishPrediction } from "@/lib/communityMap";
 import { bandForConfidence, forecastTitleKey } from "@/lib/forecast/model-meta";
 import { deleteForecast, fetchForecast } from "@/lib/forecastHistory";
 import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
@@ -22,6 +23,7 @@ import { DownloadSupabaseImageButton } from "../components/buttons";
 import {
   DeleteForecastButton,
   ShareForecastButton,
+  UnpublishForecastButton,
 } from "../components/forecast/forecast-buttons";
 import "../global.css";
 import { useShareForecast } from "../hooks/useShareForecast";
@@ -38,6 +40,7 @@ export default function ItemDetail() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
 
   const [topBlockH, setTopBlockH] = useState(0);
   const [bottomBlockH, setBottomBlockH] = useState(0);
@@ -89,28 +92,34 @@ export default function ItemDetail() {
       return;
     }
 
-    Alert.alert(t("detail.deleteTitle"), t("detail.deleteMsg"), [
-      {
-        text: t("detail.cancel"),
-        style: "cancel",
-        onPress: () => setIsDeleting(false),
-      },
-      {
-        text: t("detail.deleteConfirm"),
-        style: "destructive",
-        onPress: async () => {
-          setIsDeleting(true);
-          try {
-            await deleteForecast({ id, imagePath: item?.image_path });
-            router.replace("/(tabs)/history");
-          } catch (e) {
-            Alert.alert(t("detail.deleteError"), e?.message ?? "Error");
-          } finally {
-            setIsDeleting(false);
-          }
+    Alert.alert(
+      t("detail.deleteTitle"),
+      item?.isPublishedActive
+        ? t("detail.deleteMsgPublished")
+        : t("detail.deleteMsg"),
+      [
+        {
+          text: t("detail.cancel"),
+          style: "cancel",
+          onPress: () => setIsDeleting(false),
         },
-      },
-    ]);
+        {
+          text: t("detail.deleteConfirm"),
+          style: "destructive",
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              await deleteForecast({ id, imagePath: item?.image_path });
+              router.replace("/(tabs)/history");
+            } catch (e) {
+              Alert.alert(t("detail.deleteError"), e?.message ?? "Error");
+            } finally {
+              setIsDeleting(false);
+            }
+          },
+        },
+      ],
+    );
 
     /*
     try {
@@ -126,6 +135,37 @@ export default function ItemDetail() {
     }
       */
   }, [id, item, isDeleting, t]);
+
+  const onUnpublish = useCallback(() => {
+    if (isUnpublishing || !item?.communityPredictionId) return;
+    Alert.alert(t("community.unpublishTitle"), t("community.unpublishMsg"), [
+      { text: t("buttons.cancel"), style: "cancel" },
+      {
+        text: t("buttons.unpublish"),
+        style: "destructive",
+        onPress: async () => {
+          setIsUnpublishing(true);
+          try {
+            await unpublishPrediction(item.communityPredictionId);
+            // El badge/botón pasan a "fue publicada" sin recargar.
+            setItem((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    isPublishedActive: false,
+                    communityPredictionId: null,
+                  }
+                : prev,
+            );
+          } catch (e) {
+            Alert.alert(t("community.actionError"), e?.message ?? "Error");
+          } finally {
+            setIsUnpublishing(false);
+          }
+        },
+      },
+    ]);
+  }, [item, isUnpublishing, t]);
 
   const { onShare } = useShareForecast({
     name: item?.name,
@@ -249,6 +289,11 @@ export default function ItemDetail() {
             )}
             {/* Detalles */}
             <View className="flex gap-1">
+              {item.description ? (
+                <Text className="text-base text-slate-600 dark:text-zinc-300 text-center">
+                  {t("community.userDescription")}: {item.description}
+                </Text>
+              ) : null}
               {item.place_name ? (
                 <Text className="text-lg text-[#b0aeaf] text-center">
                   {t("detail.place")}: {item.place_name}
@@ -267,6 +312,14 @@ export default function ItemDetail() {
               />
               <ShareForecastButton onShare={onShare} />
             </View>
+            {item.isPublishedActive ? (
+              <View className="flex-row">
+                <UnpublishForecastButton
+                  onUnpublish={onUnpublish}
+                  isUnpublishing={isUnpublishing}
+                />
+              </View>
+            ) : null}
           </View>
         </BottomSheetView>
       </BottomSheet>

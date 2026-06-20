@@ -154,6 +154,7 @@ export default {
     date: "Date",
     forecast: "Forecast",
     probability: "Probability",
+    publishedBadge: "Published",
   },
   profile: {
     fullName: "Full name",
@@ -203,6 +204,10 @@ export default {
     placeGallery: "Location (optional)",
     probability: "Probability",
     defaultName: "Prediction",
+    description: "Description",
+    descriptionPlaceholder: "Add a comment (optional)",
+    descriptionHint:
+      "If you publish the prediction, this description will be shown on the map.",
   },
   detail: {
     loading: "Loading...",
@@ -211,6 +216,8 @@ export default {
     deleteTitle: "Delete prediction",
     deleteMsg:
       "Are you sure you want to delete it? This action cannot be undone.",
+    deleteMsgPublished:
+      "This prediction is published on the map. If you delete it, it will also be removed from the map. This action cannot be undone.",
     deleteError: "Could not delete",
     deleteConfirm: "Delete",
     cancel: "Cancel",
@@ -223,6 +230,7 @@ export default {
     title: "Welcome to ClimaNuvem!",
     subtitle: "Sign in to save your predictions and access exclusive features",
     guest: "Continue as guest",
+    google: "Sign in with Google",
   },
   buttons: {
     takePhoto: "Take photo",
@@ -233,6 +241,12 @@ export default {
     delete: "Delete",
     deleting: "Deleting...",
     share: "Share",
+    publish: "Publish",
+    publishing: "Publishing…",
+    unpublish: "Unpublish",
+    unpublishing: "Unpublishing…",
+    report: "Report",
+    accept: "Accept",
     editProfile: "Edit profile",
     cancel: "Cancel",
     signOut: "Sign out",
@@ -262,8 +276,7 @@ export default {
       tituloDudoso: "Possible strong wind aloft",
       mensaje: {
         alta: "Lenticular clouds: strong wind on summits. Take care in exposed areas.",
-        media:
-          "Possible signs of strong wind aloft. Be careful on the ridges.",
+        media: "Possible signs of strong wind aloft. Be careful on the ridges.",
         baja: "There may be strong wind on summits. Not certain; assess it before exposing yourself.",
       },
     },
@@ -351,6 +364,9 @@ export default {
     langEs: "Español",
     langGl: "Galego",
     langEn: "English",
+    mapConsent: "Share on map",
+    mapConsentOn: "Yes",
+    mapConsentOff: "No",
   },
   tabs: {
     home: "Home",
@@ -364,10 +380,26 @@ export default {
     publishedAt: "Published",
     expiresIn: "Expires in",
     expired: "Expired",
-    by: "By",
-    anonymous: "Anonymous",
     loading: "Loading...",
     notFound: "Prediction not found",
+    userDescription: "User description",
+    consentTitle: "Publish on the map",
+    consentMsg:
+      "Your photo will be visible to the community along with an approximate (not exact) location of where it was taken. The post will be visible until it expires (about 6 hours) and you can unpublish it anytime.",
+    publishError: "Could not publish",
+    publishLimit:
+      "You have reached the maximum of 3 active posts. Unpublish one to publish a new one.",
+    locationOffTitle: "Turn on location",
+    locationOffMsg:
+      "Turn on location to see and publish predictions from your area on the map.",
+    unpublishTitle: "Unpublish prediction",
+    unpublishMsg: "It will be removed from the community map. Continue?",
+    reportConfirmTitle: "Report post",
+    reportConfirmMsg:
+      "Are you sure you want to report this post? This is a serious action; only do it if the content is inappropriate.",
+    reportThanksTitle: "Thank you",
+    reportThanksMsg: "We have received your report and will review it.",
+    actionError: "Could not complete the action",
   },
   help: {
     title: "Help",

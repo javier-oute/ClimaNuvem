@@ -89,6 +89,23 @@ function DeleteAction({
   );
 }
 
+// Badge de estado de publicación en el mapa: azul si está publicada (activa), gris atenuado si lo
+// estuvo pero ya no, nada si nunca se publicó.
+function PublishedBadge({ active, wasPublished, label }) {
+  if (!active && !wasPublished) return null;
+  return (
+    <View
+      className={`px-2 py-0.5 rounded-full ${active ? "bg-[#314468]" : "bg-[#b0aeaf]"}`}
+    >
+      <Text
+        className={`text-xs font-semibold ${active ? "text-white" : "text-white/70"}`}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+}
+
 const PAGE_SIZE = 15;
 
 export default function Historial() {
@@ -378,9 +395,16 @@ export default function Historial() {
                       resizeMode="cover"
                     />
                     <View className="px-4 pb-4 gap-1">
-                      <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
-                        {t("history.prediction")}: {item.name}
-                      </Text>
+                      <View className="flex-row items-center justify-between gap-2">
+                        <Text className="flex-1 text-lg font-semibold text-slate-900 dark:text-zinc-100">
+                          {t("history.prediction")}: {item.name}
+                        </Text>
+                        <PublishedBadge
+                          active={item.isPublishedActive}
+                          wasPublished={!!item.published_at}
+                          label={t("history.publishedBadge")}
+                        />
+                      </View>
                       <Text className="text-slate-600 dark:text-zinc-400">
                         {t("history.date")}: {texto}
                       </Text>

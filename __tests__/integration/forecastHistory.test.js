@@ -37,6 +37,7 @@ function makeQueryBuilder(resolvedValue) {
     range: jest.fn().mockReturnThis(),
     gte: jest.fn().mockReturnThis(),
     lt: jest.fn().mockReturnThis(),
+    in: jest.fn().mockReturnThis(),
     or: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
     insert: jest.fn().mockReturnThis(),
@@ -376,7 +377,12 @@ describe("fetchForecast", () => {
 
     const result = await fetchForecast({ id: "def" });
 
-    expect(result).toEqual(fakeData); // no tiene signedUrl añadido
+    // Ahora fetchForecast enriquece con el estado de publicación (Fase 2 mapa comunitario).
+    expect(result).toEqual({
+      ...fakeData,
+      communityPredictionId: null,
+      isPublishedActive: false,
+    });
     expect(getSignedImageUrl).not.toHaveBeenCalled();
   });
 

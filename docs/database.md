@@ -195,12 +195,59 @@ Tras la limpieza, los advisors restantes son **inherentes a PostGIS/Supabase** o
 
 ---
 
-## 9. Fase 2 — Mapa comunitario
+## 9. Fase 2 — Mapa comunitario (IMPLEMENTADO 2026-06-20)
 
-Plan completo en `../funcionalidad-mapa.md` (fuera del repo). Resumen del impacto en BD:
-- Tabla nueva `community_predictions` (campos de `PublishedPrediction` + `user_id`) con `ST_DWithin` server-side para el filtro de radio.
-- La vista `public_profiles` (o equivalente seguro) se usará para mostrar avatar+nombre del autor (ver §4).
-- `forecast_history.location` (geography + índice GIST) ya está listo para consultas espaciales.
+Diseño completo en `../mapa-comunitario-fase2-diseño.md` y log en `../mapa-comunitario-implementacion-log.md`.
+Migraciones `20260620120000…120600`. Resumen del esquema añadido:
+
+### Tablas nuevas
+- **`public.community_predictions`** — publicaciones del mapa. Columnas: `id`, `user_id` (FK→profiles,
+  CASCADE), `forecast_history_id` (FK→forecast_history, CASCADE), `forecast` (CHECK 7 clases publicables),
+  `probability` (0..1), `location` `geography(Point,4326)` **ya snapeada ~2 km** (nunca exacta),
+  `place_name`, `description` (≤280), `image_path`, `published_at`, `expires_at` (=+6 h),
+  `reported_count`, `hidden_at`, `created_at`. Índices: GIST(location), (expires_at), (user_id),
+  (image_path), (forecast_history_id).
+- **`public.community_reports`** — `id`, `prediction_id` (FK→community_predictions, CASCADE),
+  `reporter_id` (FK→profiles, CASCADE), `created_at`, **UNIQUE(prediction_id, reporter_id)**.
+
+### Columnas añadidas
+- `public.profiles.is_admin boolean default false` — rol admin (se activa **manualmente en BD**).
+- `public.forecast_history.description text` (≤280) — comentario del autor (también se ve en el mapa).
+- `public.forecast_history.published_at timestamptz` — marca durable "fue publicada" (badge gris).
+
+### RLS
+- `community_predictions`: `cp_select_active` (SELECT authenticated: `expires_at>now() and hidden_at is null`);
+  `cp_delete_own_or_admin` (DELETE: dueño o admin). **Sin INSERT/UPDATE directo** (solo RPC). `SELECT`
+  revocado a `anon`.
+- `community_reports`: `cr_select_admin` (solo admin lee). INSERT solo por RPC. `SELECT` revocado a `anon`.
+
+### Funciones RPC (`SECURITY DEFINER`, `search_path=''`, EXECUTE solo `authenticated`)
+- `publish_prediction(p_forecast_history_id, p_lat, p_lon, p_forecast, p_probability, p_image_path, p_place_name, p_description)`
+  → valida sesión + propiedad del historial + propiedad de `image_path`; **límite 3 activas**; **snap**
+  `round(·,2)`; inserta (`expires_at=now()+6h`); marca `forecast_history.published_at`. Devuelve uuid.
+- `unpublish_prediction(p_id)` → borra si dueño o admin.
+- `report_prediction(p_id)` → inserta reporte (`on conflict do nothing`); recuenta; **oculta a 3**.
+- `get_nearby_predictions(p_lat, p_lon)` → `ST_DWithin(...,30000)` + activas/no ocultas + **join `profiles`**
+  (username, avatar_url) + `is_mine`, `LIMIT 200`.
+- `get_prediction_by_id(p_id)` → una fila (mismo join + filtros).
+
+### Storage
+- Política `forecast_images_read_if_published` en `storage.objects`: cualquier autenticado puede firmar una
+  imagen de `forecast-images` **solo** si existe una publicación **activa y no oculta** que la referencia
+  (acceso auto-expirable, sin copiar la imagen). El avatar del autor se sirve con la política existente
+  `avatars_read_authenticated`.
+
+### Limpieza y otros
+- **`pg_cron`** habilitado; job horario `cleanup_expired_community_predictions` borra caducadas > 1 h
+  (el filtro `expires_at>now()` en lectura es la barrera real; el cron solo limpia).
+- Vista **`public_profiles` eliminada** (la identidad del autor se resuelve por RPC).
+- `delete-account`: la cascada por FK (`community_predictions`/`community_reports` → profiles) basta; las
+  imágenes del usuario ya las borra (`forecast-images/{uid}/`). Sin cambios necesarios.
+
+### Advisors
+Sin problemas nuevos críticos. Avisos esperables y aceptados: discoverability GraphQL (RLS protege filas;
+`anon` revocado) y `authenticated_security_definer_function_executable` de las 5 RPC (intencionado: el
+diseño requiere que `authenticated` las ejecute para hacer snap/join con privilegios de owner).
 
 ---
 

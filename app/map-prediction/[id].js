@@ -1,16 +1,34 @@
-import { getPredictionById } from "@/services/communityMap.mock";
+import {
+  ReportForecastButton,
+  UnpublishForecastButton,
+} from "@/components/forecast/forecast-buttons";
+import { UserIcon } from "@/components/icons";
+import {
+  getPredictionById,
+  reportPrediction,
+  unpublishPrediction,
+} from "@/lib/communityMap";
 import { bandForConfidence, forecastTitleKey } from "@/lib/forecast/model-meta";
 import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
 import { LOCALE_MAP, useT } from "@/lib/i18n";
+import { getSignedImageUrl } from "@/stores/forecast.store.image";
+import { resolveAvatarUrl } from "@/stores/profile.store.image";
 import { useSettingsStore } from "@/stores/settings.store";
 import BottomSheet, {
   BottomSheetView,
   useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useColorScheme } from "nativewind";
-import { useMemo, useState } from "react";
-import { Image, Platform, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Platform,
+  Text,
+  View,
+} from "react-native";
 import "../../global.css";
 
 function formatTimeRemaining(expiresAt) {
@@ -30,7 +48,12 @@ export default function CommunityPredictionDetail() {
   const locale = LOCALE_MAP[language];
 
   const { id } = useLocalSearchParams();
-  const item = getPredictionById(id);
+
+  const [item, setItem] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [signedUrl, setSignedUrl] = useState(null);
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [isBusy, setIsBusy] = useState(false);
 
   const [topBlockH, setTopBlockH] = useState(0);
   const [bottomBlockH, setBottomBlockH] = useState(0);
@@ -52,6 +75,101 @@ export default function CommunityPredictionDetail() {
     const expanded = topBlockH + topConstant;
     return [collapsed, expanded];
   }, [bottomBlockH, topBlockH, bottomConstant, topConstant]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getPredictionById(id);
+        if (cancelled) return;
+        setItem(data);
+
+        if (data?.image_path) {
+          try {
+            const url = await getSignedImageUrl(data.image_path);
+            if (!cancelled) setSignedUrl(url);
+          } catch (err) {
+            console.error("Error firmando imagen de la publicación:", err);
+          }
+        }
+        if (data?.author_avatar_url) {
+          try {
+            const url = await resolveAvatarUrl(data.author_avatar_url);
+            if (!cancelled) setAvatarUrl(url);
+          } catch (err) {
+            console.error("Error resolviendo avatar del autor:", err);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching community prediction:", err);
+        if (!cancelled) setItem(null);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const onUnpublish = useCallback(() => {
+    if (!item) return;
+    Alert.alert(t("community.unpublishTitle"), t("community.unpublishMsg"), [
+      { text: t("buttons.cancel"), style: "cancel" },
+      {
+        text: t("buttons.unpublish"),
+        style: "destructive",
+        onPress: async () => {
+          setIsBusy(true);
+          try {
+            await unpublishPrediction(item.id);
+            router.back();
+          } catch (e) {
+            Alert.alert(t("community.actionError"), e?.message ?? "Error");
+            setIsBusy(false);
+          }
+        },
+      },
+    ]);
+  }, [item, t]);
+
+  const onReport = useCallback(() => {
+    if (!item) return;
+    Alert.alert(
+      t("community.reportConfirmTitle"),
+      t("community.reportConfirmMsg"),
+      [
+        { text: t("buttons.cancel"), style: "cancel" },
+        {
+          text: t("buttons.report"),
+          style: "destructive",
+          onPress: async () => {
+            setIsBusy(true);
+            try {
+              await reportPrediction(item.id);
+              Alert.alert(
+                t("community.reportThanksTitle"),
+                t("community.reportThanksMsg"),
+              );
+            } catch (e) {
+              Alert.alert(t("community.actionError"), e?.message ?? "Error");
+            } finally {
+              setIsBusy(false);
+            }
+          },
+        },
+      ],
+    );
+  }, [item, t]);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
+        <Stack.Screen options={{ headerShown: true, headerTitle: "" }} />
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   if (!item) {
     return (
@@ -88,7 +206,11 @@ export default function CommunityPredictionDetail() {
         }}
       />
       <Image
-        source={require("@/assets/images/fondo-nubes-1.avif")}
+        source={
+          signedUrl
+            ? { uri: signedUrl }
+            : require("@/assets/images/fondo-nubes-1.avif")
+        }
         className="absolute inset-0 w-full h-full"
         resizeMode="cover"
       />
@@ -112,7 +234,7 @@ export default function CommunityPredictionDetail() {
       >
         <BottomSheetView className="pt-5 px-8">
           <View
-            className="flex gap-8"
+            className="flex gap-6"
             onLayout={(event) => {
               const h = Math.ceil(event.nativeEvent.layout.height);
               setTopBlockH((prev) => (prev === h ? prev : h));
@@ -125,9 +247,23 @@ export default function CommunityPredictionDetail() {
                 setBottomBlockH((prev) => (prev === h ? prev : h));
               }}
             >
-              <Text className="font-bold text-left text-2xl text-slate-900 dark:text-zinc-100">
-                {t("community.prediction")}:
-              </Text>
+              {/* Cabecera de autor: avatar + username (siempre) */}
+              <View className="flex-row items-center gap-3">
+                {avatarUrl ? (
+                  <Image
+                    source={{ uri: avatarUrl }}
+                    className="h-10 w-10 rounded-full"
+                  />
+                ) : (
+                  <View className="h-10 w-10 rounded-full bg-slate-300 dark:bg-zinc-600 items-center justify-center">
+                    <UserIcon color="white" size={20} />
+                  </View>
+                )}
+                <Text className="text-base font-semibold text-slate-900 dark:text-zinc-100">
+                  {item.author_username}
+                </Text>
+              </View>
+
               <Text className="font-bold text-center text-3xl text-slate-900 dark:text-zinc-100">
                 {forecastDisplay || "-"}
               </Text>
@@ -148,6 +284,11 @@ export default function CommunityPredictionDetail() {
             )}
 
             <View className="flex gap-1">
+              {item.description ? (
+                <Text className="text-base text-slate-600 dark:text-zinc-300 text-center">
+                  {t("community.userDescription")}: {item.description}
+                </Text>
+              ) : null}
               {item.place_name ? (
                 <Text className="text-lg text-[#b0aeaf] text-center">
                   {t("detail.place")}: {item.place_name}
@@ -167,10 +308,18 @@ export default function CommunityPredictionDetail() {
                   {t("community.expired")}
                 </Text>
               )}
-              <Text className="text-base text-[#b0aeaf] text-center">
-                {t("community.by")}:{" "}
-                {item.is_anonymous ? t("community.anonymous") : item.alias}
-              </Text>
+            </View>
+
+            {/* Acción: despublicar (propia) o reportar (ajena) */}
+            <View className="flex-row">
+              {item.is_mine ? (
+                <UnpublishForecastButton
+                  onUnpublish={onUnpublish}
+                  isUnpublishing={isBusy}
+                />
+              ) : (
+                <ReportForecastButton onReport={onReport} />
+              )}
             </View>
           </View>
         </BottomSheetView>

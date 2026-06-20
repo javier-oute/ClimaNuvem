@@ -152,6 +152,7 @@ export default {
     date: "Data",
     forecast: "Prognóstico",
     probability: "Probabilidade",
+    publishedBadge: "Publicada",
   },
   profile: {
     fullName: "Nome completo",
@@ -201,6 +202,9 @@ export default {
     placeGallery: "Lugar (opcional)",
     probability: "Probabilidade",
     defaultName: "Predición",
+    description: "Descrición",
+    descriptionPlaceholder: "Engade un comentario (opcional)",
+    descriptionHint: "Se publicas a predición, esta descrición verase no mapa.",
   },
   detail: {
     loading: "Cargando...",
@@ -209,6 +213,8 @@ export default {
     deleteTitle: "Eliminar predición",
     deleteMsg:
       "¿Seguro que queres eliminala? Esta acción non se pode desfacer.",
+    deleteMsgPublished:
+      "Esta predición está publicada no mapa. Se a eliminas, tamén se quitará do mapa. Esta acción non se pode desfacer.",
     deleteError: "Non se puido eliminar",
     deleteConfirm: "Eliminar",
     cancel: "Cancelar",
@@ -222,6 +228,7 @@ export default {
     subtitle:
       "Inicia sesión para gardar as túas predicións e acceder a funcións exclusivas",
     guest: "Entrar como convidado",
+    google: "Iniciar sesión con Google",
   },
   buttons: {
     takePhoto: "Facer foto",
@@ -232,6 +239,12 @@ export default {
     delete: "Eliminar",
     deleting: "Eliminando...",
     share: "Compartir",
+    publish: "Publicar",
+    publishing: "Publicando…",
+    unpublish: "Despublicar",
+    unpublishing: "Despublicando…",
+    report: "Reportar",
+    accept: "Aceptar",
     editProfile: "Editar perfil",
     cancel: "Cancelar",
     signOut: "Pechar sesión",
@@ -271,8 +284,7 @@ export default {
       tituloDudoso: "Posible ceo cuberto",
       mensaje: {
         alta: "Ceo cuberto: pode chegar chuvia ou neve. Prepárate por se empeora.",
-        media:
-          "Ceo cuberto. Posible precipitación próxima; leva protección.",
+        media: "Ceo cuberto. Posible precipitación próxima; leva protección.",
         baja: "Podería haber ceo cuberto e chuvia próxima. Sen certeza; vixía o tempo.",
       },
     },
@@ -351,6 +363,9 @@ export default {
     langEs: "Español",
     langGl: "Galego",
     langEn: "English",
+    mapConsent: "Compartir no mapa",
+    mapConsentOn: "Si",
+    mapConsentOff: "Non",
   },
   tabs: {
     home: "Inicio",
@@ -364,10 +379,26 @@ export default {
     publishedAt: "Publicado",
     expiresIn: "Expira en",
     expired: "Caducada",
-    by: "Por",
-    anonymous: "Anónimo",
     loading: "Cargando...",
     notFound: "Predición non atopada",
+    userDescription: "Descrición do usuario",
+    consentTitle: "Publicar no mapa",
+    consentMsg:
+      "A túa foto será visible para a comunidade xunto cunha ubicación aproximada (non exacta) de onde se tomou. A publicación verase ata que expire (unhas 6 horas) e poderás despublicala cando queiras.",
+    publishError: "Non se puido publicar",
+    publishLimit:
+      "Acadaches o máximo de 3 publicacións activas. Despublica algunha para publicar unha nova.",
+    locationOffTitle: "Activa a ubicación",
+    locationOffMsg:
+      "Activa a ubicación para ver e publicar predicións da túa zona no mapa.",
+    unpublishTitle: "Despublicar predición",
+    unpublishMsg: "Quitarase do mapa comunitario. ¿Queres continuar?",
+    reportConfirmTitle: "Reportar publicación",
+    reportConfirmMsg:
+      "¿Seguro que queres reportar esta publicación? É unha acción importante; faino só se o contido é inapropiado.",
+    reportThanksTitle: "Grazas",
+    reportThanksMsg: "Recibimos o teu reporte e revisarémolo.",
+    actionError: "Non se puido completar a acción",
   },
   help: {
     title: "Axuda",

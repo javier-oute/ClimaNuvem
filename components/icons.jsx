@@ -97,3 +97,11 @@ export const HelpIcon = ({ color = "black" }) => (
 export const MapIcon = ({ color = "black" }) => (
   <Feather name="map" size={24} color={color} />
 );
+
+export const PublishIcon = ({ color = "white" }) => (
+  <Feather name="map-pin" size={24} color={color} />
+);
+
+export const ReportIcon = ({ color = "white" }) => (
+  <Feather name="flag" size={24} color={color} />
+);

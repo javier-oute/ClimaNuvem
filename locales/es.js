@@ -154,6 +154,7 @@ export default {
     date: "Fecha",
     forecast: "Pronóstico",
     probability: "Probabilidad",
+    publishedBadge: "Publicada",
   },
   profile: {
     fullName: "Nombre completo",
@@ -203,6 +204,10 @@ export default {
     placeGallery: "Lugar (opcional)",
     probability: "Probabilidad",
     defaultName: "Predicción",
+    description: "Descripción",
+    descriptionPlaceholder: "Añade un comentario (opcional)",
+    descriptionHint:
+      "Si publicas la predicción, esta descripción se verá en el mapa.",
   },
   detail: {
     loading: "Cargando...",
@@ -211,6 +216,8 @@ export default {
     deleteTitle: "Eliminar predicción",
     deleteMsg:
       "¿Seguro que quieres eliminarla? Esta acción no se puede deshacer.",
+    deleteMsgPublished:
+      "Esta predicción está publicada en el mapa. Si la eliminas, también se quitará del mapa. Esta acción no se puede deshacer.",
     deleteError: "No se pudo eliminar",
     deleteConfirm: "Eliminar",
     cancel: "Cancelar",
@@ -224,6 +231,7 @@ export default {
     subtitle:
       "Inicia sesión para guardar tus predicciones y acceder a funciones exclusivas",
     guest: "Entrar como invitado",
+    google: "Iniciar sesión con Google",
   },
   buttons: {
     takePhoto: "Tomar foto",
@@ -234,6 +242,12 @@ export default {
     delete: "Eliminar",
     deleting: "Eliminando...",
     share: "Compartir",
+    publish: "Publicar",
+    publishing: "Publicando…",
+    unpublish: "Despublicar",
+    unpublishing: "Despublicando…",
+    report: "Reportar",
+    accept: "Aceptar",
     editProfile: "Editar perfil",
     cancel: "Cancelar",
     signOut: "Cerrar sesión",
@@ -244,8 +258,7 @@ export default {
       tituloDudoso: "Tal vez cielo despejado",
       mensaje: {
         alta: "No se observan riesgos meteorológicos. Buenas condiciones para la actividad.",
-        media:
-          "El cielo parece despejado. Aun así, revísalo de vez en cuando.",
+        media: "El cielo parece despejado. Aun así, revísalo de vez en cuando.",
         baja: "Parece despejado, aunque la detección no es clara. Echa un vistazo al cielo.",
       },
     },
@@ -354,6 +367,9 @@ export default {
     langEs: "Español",
     langGl: "Galego",
     langEn: "English",
+    mapConsent: "Compartir en el mapa",
+    mapConsentOn: "Sí",
+    mapConsentOff: "No",
   },
   tabs: {
     home: "Home",
@@ -367,10 +383,26 @@ export default {
     publishedAt: "Publicado",
     expiresIn: "Expira en",
     expired: "Caducada",
-    by: "Por",
-    anonymous: "Anónimo",
     loading: "Cargando...",
     notFound: "Predicción no encontrada",
+    userDescription: "Descripción del usuario",
+    consentTitle: "Publicar en el mapa",
+    consentMsg:
+      "Tu foto será visible para la comunidad junto con una ubicación aproximada (no exacta) de dónde se tomó. La publicación se verá hasta que expire (unas 6 horas) y podrás despublicarla cuando quieras.",
+    publishError: "No se pudo publicar",
+    publishLimit:
+      "Has alcanzado el máximo de 3 publicaciones activas. Despublica alguna para publicar una nueva.",
+    locationOffTitle: "Activa la ubicación",
+    locationOffMsg:
+      "Activa la ubicación para ver y publicar predicciones de tu zona en el mapa.",
+    unpublishTitle: "Despublicar predicción",
+    unpublishMsg: "Se quitará del mapa comunitario. ¿Quieres continuar?",
+    reportConfirmTitle: "Reportar publicación",
+    reportConfirmMsg:
+      "¿Seguro que quieres reportar esta publicación? Es una acción importante; hazlo solo si el contenido es inapropiado.",
+    reportThanksTitle: "Gracias",
+    reportThanksMsg: "Hemos recibido tu reporte y lo revisaremos.",
+    actionError: "No se pudo completar la acción",
   },
   help: {
     title: "Ayuda",

@@ -1,7 +1,16 @@
 import { EditableBottomSheetField } from "@/components/editableField";
-import { ShareForecastButton } from "@/components/forecast/forecast-buttons";
+import {
+  PublishForecastButton,
+  ShareForecastButton,
+} from "@/components/forecast/forecast-buttons";
+import { publishPrediction } from "@/lib/communityMap";
 import { forecastTitleKey, RISK_COLORS } from "@/lib/forecast/model-meta";
 import { useT } from "@/lib/i18n";
+import {
+  CURRENT_MAP_CONSENT_VERSION,
+  hasMapPublishConsent,
+  useSettingsStore,
+} from "@/stores/settings.store";
 import BottomSheet, {
   BottomSheetScrollView,
   useBottomSheetSpringConfigs,
@@ -72,9 +81,13 @@ export default function ConfirmForecast() {
 
   const [name, setName] = useState("");
   const [placeName, setPlaceName] = useState(placeNameAuto);
+  const [description, setDescription] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  const setMapPublishConsent = useSettingsStore((s) => s.setMapPublishConsent);
 
   /*
   const forecast = "Posible lluvia en 2 horas. Nubes densas y oscuras.";
@@ -127,6 +140,7 @@ export default function ConfirmForecast() {
         coords: source === "camera" ? coords : null,
         placeName: finalPlace || null,
         placeNameSource,
+        description: description.trim() || null,
       });
 
       router.replace("/(tabs)/home");
@@ -144,8 +158,96 @@ export default function ConfirmForecast() {
     image,
     clase,
     confianza,
+    description,
     t,
   ]);
+
+  // Solo se puede publicar una foto tomada en el momento (cámara), con coordenadas, clasificable y con
+  // fiabilidad NO baja (no se avisa a la comunidad con una detección poco fiable).
+  const canPublish =
+    source === "camera" &&
+    !!coords &&
+    !isRetake &&
+    !!clase &&
+    clase !== "foto_invalida" &&
+    reliability !== null &&
+    reliability !== "baja";
+
+  // Guarda en historial y publica en el mapa. La ubicación se snapea en servidor (~2 km).
+  const doPublish = useCallback(async () => {
+    setIsPublishing(true);
+    try {
+      const finalName = name.trim() || t("forecast.defaultName");
+      const finalPlace = placeName.trim();
+      let placeNameSource = "none";
+      if (finalPlace) {
+        placeNameSource = finalPlace === placeNameAuto ? "auto" : "user";
+      }
+      const finalDescription = description.trim() || null;
+
+      // 1) Guardar en historial (sube la foto una vez y devuelve id + image_path).
+      const row = await saveForecastWithPhoto({
+        asset: { uri: image },
+        name: finalName,
+        forecast: clase,
+        probability: confianza,
+        coords,
+        placeName: finalPlace || null,
+        placeNameSource,
+        description: finalDescription,
+      });
+
+      // 2) Publicar en el mapa. place_name = zona auto-degradada (no lo tecleado por el usuario).
+      await publishPrediction({
+        forecastHistoryId: row.id,
+        lat: coords.latitude,
+        lon: coords.longitude,
+        forecast: clase,
+        probability: confianza,
+        imagePath: row.image_path,
+        placeName: placeNameAuto || null,
+        description: finalDescription,
+      });
+
+      router.replace("/(tabs)/map");
+    } catch (e) {
+      const msg =
+        e?.message === "active_publications_limit_reached"
+          ? t("community.publishLimit")
+          : (e?.message ?? "Error");
+      Alert.alert(t("community.publishError"), msg);
+    } finally {
+      setIsPublishing(false);
+    }
+  }, [
+    name,
+    placeName,
+    placeNameAuto,
+    coords,
+    image,
+    clase,
+    confianza,
+    description,
+    t,
+  ]);
+
+  // Aviso de consentimiento la primera vez (por dispositivo, versionado). Cancelar deja en la pantalla.
+  const onPublish = useCallback(() => {
+    if (hasMapPublishConsent()) {
+      doPublish();
+      return;
+    }
+    Alert.alert(t("community.consentTitle"), t("community.consentMsg"), [
+      { text: t("buttons.cancel"), style: "cancel" },
+      {
+        text: t("buttons.accept"),
+        onPress: () => {
+          setMapPublishConsent(CURRENT_MAP_CONSENT_VERSION);
+          doPublish();
+        },
+      },
+    ]);
+  }, [doPublish, setMapPublishConsent, t]);
 
   // Título firme en alta confianza; dudoso (expresa incertidumbre) en media/baja.
   const forecastDisplay = clase
@@ -398,12 +500,40 @@ export default function ConfirmForecast() {
                   autoCapitalize="words"
                   maxLength={50}
                 />
+
+                <EditableBottomSheetField
+                  label={t("forecast.description")}
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder={t("forecast.descriptionPlaceholder")}
+                  multiline
+                  maxLength={280}
+                  style={{ minHeight: 88, textAlignVertical: "top" }}
+                />
+                <Text className="text-xs text-slate-400 dark:text-zinc-500 -mt-2">
+                  {t("forecast.descriptionHint")}
+                </Text>
               </View>
               {/* Botones */}
-              <View className="flex-row gap-3 mt-10">
-                <ShareForecastButton onShare={onShare} />
-                <SaveButton onSave={onSave} isSaving={isSaving} />
-              </View>
+              {canPublish ? (
+                <>
+                  <View className="flex-row gap-3 mt-10">
+                    <ShareForecastButton onShare={onShare} />
+                    <PublishForecastButton
+                      onPublish={onPublish}
+                      isPublishing={isPublishing}
+                    />
+                  </View>
+                  <View className="flex-row mt-3">
+                    <SaveButton onSave={onSave} isSaving={isSaving} />
+                  </View>
+                </>
+              ) : (
+                <View className="flex-row gap-3 mt-10">
+                  <ShareForecastButton onShare={onShare} />
+                  <SaveButton onSave={onSave} isSaving={isSaving} />
+                </View>
+              )}
             </View>
           </View>
         </BottomSheetScrollView>
