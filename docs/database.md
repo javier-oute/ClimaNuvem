@@ -1,9 +1,16 @@
 # Base de datos — ClimaNuvem (Supabase)
 
 Documentación del esquema **real** de la base de datos de ClimaNuvem tras la auditoría y
-limpieza del 2026-06-16 (actualizada el **2026-06-17** con la implementación de la subida de
-avatares: ver §6). Incluye tablas, relaciones, RLS, Storage, funciones/triggers, el
-modelo de seguridad y un **registro de auditoría con todos los comandos ejecutados**.
+limpieza del 2026-06-16, actualizada el **2026-06-17** (subida de avatares: §6) y el
+**2026-06-20** (**mapa comunitario Fase 2** + username robusto: §9). Incluye tablas, relaciones,
+RLS, Storage, funciones/triggers, el modelo de seguridad y un **registro de auditoría con todos los
+comandos ejecutados**.
+
+> **Nota de lectura:** las §1–§8 documentan el esquema base (auth, perfiles, historial). El estado
+> **actual** añade la Fase 2 del mapa (§9): tablas `community_predictions`/`community_reports`, RPCs,
+> y la **eliminación de la vista `public_profiles`** (su identidad pública la resuelven las RPC). Donde
+> §4 describe esa vista, léelo como contexto histórico: hoy **ya no existe** (ver §9 y migración
+> `20260620120400`).
 
 - **Proyecto Supabase**: `javier-oute's ClimaNuvem-prueba` (`egefjrnnjyuazdoabebd`), región `eu-west-1`.
 - **Motor**: PostgreSQL 17.6 + PostGIS 3.3.7.
@@ -24,7 +31,7 @@ Perfil de cada usuario (1:1 con `auth.users`). Lo crea automáticamente el trigg
 |---|---|---|
 | `id` | `uuid` | **PK**. **FK → `auth.users(id)` ON DELETE CASCADE**. |
 | `updated_at` | `timestamptz` | default `now()`; lo actualiza el trigger `profiles_set_updated_at`. |
-| `username` | `text` | **UNIQUE**, CHECK `char_length(username) >= 3`. |
+| `username` | `text` | **NOT NULL** (desde 2026-06-20), **UNIQUE**, CHECK `char_length(username) >= 3`. Se asigna SIEMPRE en el registro vía `handle_new_user`/`unique_username` (proveedor → prefijo email → generado, saneado y con sufijo si colisiona). El editor valida formato (`^[a-zA-Z0-9_]{3,30}$`) y mapea el duplicado (23505) a "en uso". |
 | `full_name` | `text` | nullable. |
 | `avatar_url` | `text` | nullable. Puede guardar **dos formatos**: (a) URL externa de OAuth (Google/Apple, empieza por `http`) puesta al registrarse, o (b) **path de Storage** `{uid}/avatar.jpg` si el usuario sube su propia foto. La app distingue ambos con `resolveAvatarUrl` (§6). |
 | `website` | `text` | nullable. Sin uso en la app (resto del quickstart). |
@@ -85,7 +92,12 @@ Tabla de sistema de **PostGIS** (definiciones de sistemas de referencia espacial
 
 ---
 
-## 4. Vista `public.public_profiles`
+## 4. Vista `public.public_profiles` — ⚠️ ELIMINADA (Fase 2, 2026-06-20)
+
+> **Esta vista ya no existe.** Se eliminó en la migración `20260620120400_drop_public_profiles_view`
+> porque la identidad pública del autor en el mapa la resuelven ahora las RPC `get_nearby_predictions` /
+> `get_prediction_by_id` (join a `profiles` dentro de `SECURITY DEFINER`, devolviendo solo `username` y
+> `avatar_url`). El resto de esta sección se conserva como contexto histórico. Ver §9.
 
 Subconjunto **seguro** de `profiles` (`id`, `username`, `full_name`, `avatar_url`) — **sin email ni phone**.
 Pensada para que el mapa comunitario muestre "avatar + nombre" de quien publica.
@@ -101,7 +113,8 @@ Pensada para que el mapa comunitario muestre "avatar + nombre" de quien publica.
 
 | Función | Tipo | Disparada por |
 |---|---|---|
-| `handle_new_user()` | `SECURITY DEFINER`, `search_path='public'` | trigger `on_auth_user_created` (AFTER INSERT en `auth.users`) → crea/upserta la fila en `profiles`. EXECUTE revocado de anon/authenticated (M3). |
+| `handle_new_user()` | `SECURITY DEFINER`, `search_path='public'` | trigger `on_auth_user_created` (AFTER INSERT en `auth.users`) → crea/upserta la fila en `profiles`. **Asigna `username` con `unique_username(...)`** (proveedor → prefijo email → generado; nunca NULL ni roto por colisión). En conflicto por `id`, conserva el username existente. EXECUTE revocado de anon/authenticated (M3). |
+| `unique_username(text)` | `SECURITY DEFINER`, `search_path=''` | Devuelve un username **válido y único**: sanea a `[a-z0-9_]`, fuerza ≥3 (fallback `user`), recorta a ≤30 y añade sufijo numérico (o de uuid) si colisiona. EXECUTE revocado de public/anon/authenticated (solo lo usa el trigger). |
 | `sync_profile_email()` | `SECURITY DEFINER`, `search_path='public'` | trigger `on_auth_user_updated_email` (AFTER UPDATE OF email en `auth.users`) → sincroniza `profiles.email`. EXECUTE revocado (M3). |
 | `set_updated_at()` | `search_path=''` (M4) | trigger `trg_forecast_history_set_updated_at` (BEFORE UPDATE). |
 | `set_profiles_updated_at()` | `search_path=''` (M4) | trigger `profiles_set_updated_at` (BEFORE UPDATE). |
@@ -364,14 +377,22 @@ Cada una está en `supabase/migrations/<version>_<name>.sql`:
 | `20260616092103` | `lock_down_spatial_ref_sys` | Revoca escritura de anon/authenticated en `spatial_ref_sys`. |
 | `20260616092111` | `consolidate_forecast_history_rls` | Un único juego de políticas RLS con `(select auth.uid())`. |
 | `20260616092121` | `forecast_to_text_drop_unused_index` | `forecast` `jsonb→text` + borra índice `image_path_idx`. |
-| `20260616092349` | `public_profiles_security_invoker` | Vista `public_profiles` a `security_invoker = on`. |
+| `20260616092349` | `public_profiles_security_invoker` | Vista `public_profiles` a `security_invoker = on`. *(Vista luego eliminada en `20260620120400`.)* |
 | `20260617170842` | `harden_avatars_bucket_limits` | Bucket `avatars`: `file_size_limit=5 MB` + MIME solo `image/jpeg,png,webp` (2026-06-17). |
+| `20260620120000` | `community_map_schema` | Fase 2: tablas `community_predictions` + `community_reports`, columnas en `profiles`/`forecast_history`. |
+| `20260620120100` | `community_map_rls` | Fase 2: RLS del mapa (SELECT solo activas; sin INSERT/UPDATE directo → solo RPC). |
+| `20260620120200` | `community_map_rpc` | Fase 2: RPC `SECURITY DEFINER` (publish/unpublish/report/get_nearby/get_by_id). |
+| `20260620120300` | `community_map_storage_policy` | Fase 2: acceso a la foto solo mientras la publicación esté activa (auto-expirable). |
+| `20260620120400` | `drop_public_profiles_view` | Fase 2: **elimina la vista `public_profiles`** (identidad por RPC). |
+| `20260620120500` | `community_map_cron_cleanup` | Fase 2: `pg_cron` horario borra publicaciones caducadas > 1 h. |
+| `20260620120600` | `community_map_revoke_anon` | Fase 2: revoca `SELECT` de `anon` en las tablas del mapa. |
+| `20260620130000` | `robust_username` | `username` siempre válido y único en el registro + columna **NOT NULL**. |
 
 ## A.4. Comandos de shell ejecutados
 
 ```bash
 npm run lint   # expo lint → sin errores
-npx jest --watchAll=false --ci   # 8 suites, 150 passed + 3 todo (153 total), 0.6 s
+npx jest --watchAll=false --ci   # 9 suites, 163 passed + 3 todo (166 total), ~0.6 s (2026-06-20)
 ```
 (Nota: `npm test` a secas puede quedar a la espera; usar `--watchAll=false --ci` en CI/agentes.)
 

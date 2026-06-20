@@ -21,7 +21,8 @@ ClimaNuvem es una app React Native / Expo (TFG, USC + HP SCDS) de seguridad para
 - **Este repo es la raíz de git.** La carpeta padre del workspace NO está versionada.
 - Trabaja en ramas de feature (p. ej. `feature-mapa`). **No cambies de rama sin que te lo pidan.**
 - No commitees secretos. `.env` está en `.gitignore` (usa `.env.example` si existe).
-- Avisos: `climanuvem.apk` (~13 MB) está **trackeado por error** — es un artefacto de build que debería estar ignorado. `ios/` y `android/` están ignorados (proyecto prebuild).
+- Avisos: `climanuvem.apk` está **trackeado por error** — hoy es un fichero de **191 B con un JSON de error** de un build EAS fallido (antes era un APK de ~13 MB); debería estar en `.gitignore`. `ios/` y `android/` están ignorados (proyecto prebuild). También están trackeados pesos de modelo que la app ya no usa: `assets/models/climanuvem_v2.tflite` (sustituido por v3) y `assets/models/mejor_modelo.pt` (checkpoint PyTorch, no es asset de app).
+- **Rama de trabajo actual:** `feature-mapa` (mapa comunitario Fase 2).
 
 ---
 
@@ -69,24 +70,28 @@ app/                       Rutas (Expo Router, file-based)
     _layout.ios.js         NativeTabs (hidden={!session})
     home/index.js          Home (video fondo + botones + acceso a ayuda)
     guide.js               Guía de nubes (tab PÚBLICA)
-    history/index.js       Historial paginado
-    map.js                 Mapa comunitario (tab PROTEGIDA, Fase 1 mock)
-    profile.js             Perfil + preferencias (idioma/tema) + logout
-  forecast-screen.js       Resultado de inferencia (BottomSheet)
-  [id].js                  Detalle de predicción guardada
+    history/index.js       Historial paginado (recarga al enfocar para refrescar badges)
+    map.js                 Mapa comunitario (tab PROTEGIDA, Fase 2 real con Supabase)
+    profile.js             Perfil + preferencias (idioma/tema) + compartir-en-mapa + logout
+  forecast-screen.js       Resultado de inferencia + publicar en mapa (BottomSheet)
+  [id].js                  Detalle de predicción guardada (+ despublicar del mapa)
   cloud/[type].tsx         Detalle de un género de nube
-  map-prediction/[id].js   Detalle de predicción comunitaria
+  map-prediction/[id].js   Detalle de predicción comunitaria (+ reportar)
   help.js                  Cómo fotografiar correctamente
-components/                UI (buttons, icons, forecast/, profile/, guide/, social-auth-buttons/)
+components/                UI (buttons, icons, forecast/, profile/, guide/, map/, history/, social-auth-buttons/)
 hooks/                     useModel (inferencia), useTomarFoto, useCargarImagen, useShareForecast, profile/
-stores/                    auth.store.ts, forecast.store.js, forecast.store.image.js, settings.store.js
-lib/                       supabase, forecastHistory, format, location, savePhotos, i18n, mlNormalize, resetSupabaseAuth
+stores/                    auth.store.ts, forecast.store.js, forecast.store.image.js, profile.store.image.js, settings.store.js
+lib/                       supabase, forecastHistory, format, location, savePhotos, i18n, mlNormalize, resetSupabaseAuth,
+                           communityMap (capa de datos del mapa Fase 2), mapConsent (avisos de consentimiento),
+                           forecast/{evaluateForecast,model-meta} (decisión de alerta)
 features/                  profile/profile-api.js, guide/cloud-data.ts
-services/                  communityMap.mock.js (mock del mapa; reemplazar por lib/ en Fase 2)
+                           (carpeta services/ eliminada en la higiene 2026-06-20: el mock del mapa ya no existe; usar lib/communityMap.js)
 locales/                   es.js (fuente de verdad), gl.js, en.js
-utils/                     phone.js
+utils/                     phone.js, username.js
 providers/                 AuthBootstrap.tsx
-assets/models/             climanuvem_v2.tflite (ACTIVO) + climanuvem_labels.txt + mejor_modelo.pt
+supabase/                  migrations/ (esquema versionado), functions/delete-account/ (Edge Function)
+assets/models/             climanuvem_v3.tflite (ACTIVO) + climanuvem_v3_labels.txt
+                           climanuvem_v2.tflite + climanuvem_labels.txt (OBSOLETO, sin uso) + mejor_modelo.pt (PyTorch, no-asset)
 __tests__/                 unit/ · integration/ · pending/
 ```
 
@@ -95,13 +100,14 @@ __tests__/                 unit/ · integration/ · pending/
 ## 5. Módulos clave (cómo funcionan)
 
 - **Auth** (`stores/auth.store.ts` + `providers/AuthBootstrap.tsx`): `session === undefined` significa "inicializando" → NUNCA redirijas con `undefined`. Sesión cifrada (AES-256) en `LargeSecureStore` (`lib/supabase.ts`) porque supera el límite de SecureStore. Hard reset en `lib/resetSupabaseAuth.ts`.
-- **Inferencia** (`hooks/useModel.jsx`): resize 224×224 → `jpeg.decode` → `normalizeRGBA` (ImageNet, `lib/mlNormalize.js`) → `tflite.model.run` → 8 probabilidades. **El array `CLASES` DEBE coincidir con el orden de `assets/models/climanuvem_labels.txt`.** Si re-entrenas el modelo, verifica ese orden. `ALERTAS` (colores) está inline en el hook; los textos de alerta vienen de `locales/*.alerts`.
+- **Inferencia** (`hooks/useModel.jsx`): modelo activo **`climanuvem_v3.tflite`**. Pipeline fiel al eval del notebook: Resize(256 lado corto) + CenterCrop(224) → `jpeg.decode` → `normalizeRGBA` (ImageNet, `lib/mlNormalize.js`, con detección de layout NCHW/NHWC) → `tflite.model.run` → 8 probabilidades (el modelo ya lleva softmax + temperature scaling → probs calibradas). El **orden de clases** y todos los umbrales viven en `lib/forecast/model-meta.js` (`CLASS_ORDER`, `RISK`, `RISK_COLORS`). **`CLASS_ORDER` DEBE coincidir con `assets/models/climanuvem_v3_labels.txt`** (invariante verificada por test). Si re-entrenas (v4): sustituye el `.tflite`, re-verifica labels y **re-deriva los umbrales de `model-meta.js`** con la nueva matriz de confusión y calibración.
+- **Decisión de alerta** (`lib/forecast/evaluateForecast.js`, función PURA): usa **toda la distribución softmax** (no solo el top-1). Calcula banda de fiabilidad (`alta/media/baja`), suaviza el mensaje un escalón si la 2ª clase es bastante menos grave, y manda **"repetir foto"** si el top-1 es `foto_invalida` firme o si la inferencia es incoherente (par top1/top2 no esperado + confianza baja). **El top-1 SIEMPRE manda; nunca se escala la alerta a la 2ª clase.** Los textos por banda están en `locales/*.alerts`; los colores en `RISK_COLORS`.
 - **Historial/Storage** (`lib/forecastHistory.js`, `stores/forecast.store*.js`): imágenes privadas en bucket `forecast-images`, acceso solo por URLs firmadas (10 min). `saveForecastWithPhoto` sube imagen → inserta fila (y borra la imagen si el INSERT falla).
 - **Avatar de perfil** (`stores/profile.store.image.js`, `hooks/profile/usePickAvatar.jsx`, `components/profile/{profile-avatar,avatar-source-sheet}.jsx`): foto de perfil en bucket privado `avatars` (límite 5 MB + MIME `image/jpeg,png,webp`), guardado **diferido** (se sube solo al pulsar Guardar; Cancelar no toca Storage). `avatar_url` puede ser una URL externa de OAuth (`http…`) o un path de Storage (`{uid}/avatar.jpg`); `resolveAvatarUrl` lo distingue. Requiere `BottomSheetModalProvider` en `app/_layout.js`.
 - **Eliminar cuenta** (`stores/auth.store.ts → deleteAccount`, `components/profile/delete-account-modal.jsx`, **Edge Function** `supabase/functions/delete-account/index.ts`): hard delete irreversible. La Edge Function (con `service_role`, nunca en el cliente; `verify_jwt`) borra Storage `forecast-images/{uid}/` + `avatars/{uid}/` y luego `auth.admin.deleteUser` → cascada a `profiles`/`forecast_history`/`auth.*`. El cliente confirma con palabra escrita, limpia local y va a login.
-- **i18n + tema** (`lib/i18n.js`, `stores/settings.store.js`): ver §6.
-- **Mapa** (`app/(tabs)/map.js`, `services/communityMap.mock.js`): Fase 1, datos mock. Fase 2 (Supabase + PostGIS) pendiente — ver `../funcionalidad-mapa.md`.
-- **Base de datos** (Supabase Postgres + PostGIS): esquema documentado en **`docs/database.md`** y gestionado por **migraciones** en `supabase/migrations/`. Tablas: `profiles` (1:1 con `auth.users`) y `forecast_history`. Reglas al tocar la BD: (1) **toda tabla nueva en `public` lleva RLS** — la seguridad recae 100% en RLS; (2) acceso por usuario con `user_id = (select auth.uid())`; (3) Storage aislado por carpeta `{uid}/` y servido por URL firmada; (4) **nunca expongas PII** (`email`/`phone`) a otros usuarios — usa la vista `public_profiles` para datos públicos; (5) aplica cambios como migración (no a mano por el dashboard).
+- **i18n + tema** (`lib/i18n.js`, `stores/settings.store.js`): ver §6. **Idioma por defecto: gallego (`gl`)**; tema por defecto claro.
+- **Mapa comunitario — Fase 2 REAL** (`app/(tabs)/map.js`, `lib/communityMap.js`, `lib/mapConsent.js`): backend Supabase + PostGIS en producción (el antiguo mock `services/communityMap.mock.js` fue eliminado en la higiene 2026-06-20). `lib/communityMap.js` envuelve las RPC `SECURITY DEFINER`: `publishPrediction`, `unpublishPrediction`, `unpublishAllMine`, `reportPrediction`, `getNearbyPredictions`, `getPredictionById`. El servidor aplica **snap de coordenadas ~2 km** (privacidad), **límite de 3 activas**, **expiración 6 h** y moderación (oculta a 3 reportes). **Consentimiento** versionado por dispositivo en `settings.store` (`mapPublishConsentVersion`); el aviso (`promptMapPublishConsent`) se reutiliza al pulsar "Publicar" y al activar el ajuste. Al desactivar "compartir en el mapa" (`promptMapPublishDisable` + `unpublishAllMine`) se borran todas las publicaciones del usuario. Esquema en `docs/database.md` §9.
+- **Base de datos** (Supabase Postgres + PostGIS): esquema documentado en **`docs/database.md`** y gestionado por **migraciones** en `supabase/migrations/`. Tablas: `profiles` (1:1 con `auth.users`), `forecast_history`, y **`community_predictions` / `community_reports`** (Fase 2). Reglas al tocar la BD: (1) **toda tabla nueva en `public` lleva RLS** — la seguridad recae 100% en RLS; (2) acceso por usuario con `user_id = (select auth.uid())`; (3) Storage aislado por carpeta `{uid}/` y servido por URL firmada; (4) **nunca expongas PII** (`email`/`phone`) a otros usuarios — la identidad pública del autor en el mapa se resuelve dentro de las RPC `SECURITY DEFINER` (la vista `public_profiles` fue **eliminada** en la Fase 2); (5) escrituras de tablas sensibles (mapa) solo por RPC, no INSERT/UPDATE directo; (6) aplica cambios como migración (no a mano por el dashboard).
 
 ---
 
@@ -120,20 +126,38 @@ __tests__/                 unit/ · integration/ · pending/
 ## 7. Tests
 
 - Jest + `jest-expo`, entorno Node. Config: `jest.config.js` (alias `@/`, `collectCoverageFrom`), mocks nativos en `jest.setup.js`.
-- Estado: **137 passing + 3 `it.todo`** en `__tests__/{unit,integration,pending}`.
-- Cubren lógica pura e integración con Supabase mockeado (`lib/format`, `lib/mlNormalize`, `utils/phone`, `lib/forecastHistory`, `stores/forecast.store`).
+- Estado: **163 passing + 3 `it.todo`** (166 total) en 9 suites de `__tests__/{unit,integration,pending}`.
+- Cubren lógica pura e integración con Supabase mockeado (`lib/format`, `lib/mlNormalize`, `lib/forecast/evaluateForecast`, `utils/phone`, `utils/username`, `lib/forecastHistory`, `stores/forecast.store`, `lib/resetSupabaseAuth`).
 - **Fuera de alcance actual:** tests de componentes (requieren `@testing-library/react-native` + mocks de Expo Router/NativeWind/BottomSheet), `useModel` completo, `LargeSecureStore`, E2E.
 - Al corregir un bug con `it.todo` pendiente, conviértelo en test activo. Detalle en `../Testing.md`.
 
 ---
 
-## 8. Estado y pendientes (junio 2026)
+## 8. Estado y pendientes (2026-06-20)
 
-- **Modelo:** sigue activo `climanuvem_v2.tflite`. v3 (83.96%) y v4 definitivo pendientes de integrar (sustituir `.tflite` + revisar labels).
-- **Alertas graduadas por confianza:** NO implementado (`useModel` solo toma top-1).
-- **Mapa Fase 2 (backend):** pendiente.
-- **Deuda técnica (`../Revision.md`):** `console.*` en producción, `climanuvem.apk` trackeado, permiso `RECORD_AUDIO` sin uso, deps sin usar.
-- **Implementado recientemente:** i18n (es/gl/en), modo oscuro, guía de nubes, pantalla de ayuda, mapa Fase 1 (mock), suite de tests, y fixes de auditoría (C01/C02/C03/B01/DATE01).
+> Análisis de estado realista y completo en **`docs/estado-proyecto.md`**.
+
+**Hecho (verificado en código):**
+- **Modelo v3** activo (`climanuvem_v3.tflite`) con preprocesado de evaluación fiel y probs calibradas.
+- **Alertas graduadas por confianza** (`lib/forecast/*`): bandas de fiabilidad, suavizado por 2ª clase, "repetir foto".
+- **Mapa comunitario Fase 2** (backend Supabase real): publicar/despublicar/reportar, snap de coords, expiración 6 h, límite 3, consentimiento versionado, moderación.
+- i18n (es/gl/en, default gallego), modo oscuro, guía de nubes, ayuda, avatar de perfil, baja de cuenta (Edge Function), suite de tests (163).
+
+**Pendiente:**
+- **Modelo v4 definitivo:** entrenar e integrar (sustituir `.tflite`, re-verificar labels, **re-derivar umbrales de `model-meta.js`**).
+- **Probar el mapa Fase 2 end-to-end en dispositivo** (módulo nativo; requiere build reciente + Google Maps API key Android).
+- **3 `it.todo`** (cobertura del pipeline `useModel`).
+- Decidir sobre filas históricas inconsistentes de `forecast_history` (mensaje vs clave de clase).
+
+**Higiene aplicada (2026-06-20, en working tree, sin commitear):**
+- `climanuvem.apk` + `*.apk`/`*.aab` → `.gitignore`; el apk dejó de trackearse.
+- Modelos sin uso (`climanuvem_v2.tflite`, `climanuvem_labels.txt`, `mejor_modelo.pt`) → untrackeados (conservados en disco) + `.gitignore`. El activo `climanuvem_v3.tflite` sigue versionado.
+- `services/communityMap.mock.js` (código muerto) → **eliminado**.
+- `RECORD_AUDIO` retirado de `app.json` (`permissions: []`). **Requiere rebuild nativo** para surtir efecto.
+
+**Deuda técnica restante (`../Revision.md`):**
+- `console.*` en producción (~20 ficheros).
+- Dependencias instaladas sin usar (pendiente de analizar; no entró en esta tanda de higiene).
 
 ---
 

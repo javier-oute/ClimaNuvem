@@ -34,6 +34,17 @@ expo-env.d.ts
 ios/
 android/
 
+# Artefactos de build (no versionar binarios de app)
+*.apk
+*.aab
+climanuvem.apk
+
+# Pesos de modelo sin uso en la app (el activo, climanuvem_v3.tflite, SÍ se versiona).
+# Conservados en disco local pero fuera del repo (decisión de higiene 2026-06-20).
+assets/models/climanuvem_v2.tflite
+assets/models/climanuvem_labels.txt
+assets/models/mejor_modelo.pt
+
 # Misc sensitive files
 *.pem
 *.p8

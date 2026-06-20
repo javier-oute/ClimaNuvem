@@ -16,9 +16,9 @@ Proyecto de **TFG** (Ingeniería Informática, Universidad de Santiago de Compos
 | Routing | Expo Router 6 (file-based, typed routes) |
 | Estilos | NativeWind v4 + Tailwind v3 (con modo oscuro) |
 | Estado | Zustand v5 (auth, forecast, settings) |
-| Backend | Supabase (Auth, Postgres, Storage) |
-| Inferencia ML | `react-native-fast-tflite` (EfficientNet-Lite0 `.tflite`) |
-| Mapas | `react-native-maps` |
+| Backend | Supabase (Auth, Postgres + PostGIS, Storage, Edge Functions, RPC) |
+| Inferencia ML | `react-native-fast-tflite` (EfficientNet-Lite0 `climanuvem_v3.tflite`, probs calibradas) |
+| Mapas | `react-native-maps` (mapa comunitario Fase 2, backend Supabase real) |
 | i18n | propio (`lib/i18n.js`), es / gl / en |
 | Tests | Jest + jest-expo |
 
@@ -64,12 +64,13 @@ npm run test:watch
 app/          Rutas (Expo Router): home, guide, history, map, profile, forecast, detalles, help
 components/   UI reutilizable (botones, iconos, forecast, profile, guide, social-auth)
 hooks/        useModel (inferencia ML), foto/galería, share, profile
-stores/       Zustand: auth, forecast, settings (idioma/tema)
-lib/          supabase, forecastHistory, format, location, i18n, mlNormalize, ...
+stores/       Zustand: auth, forecast, settings (idioma/tema/consentimiento mapa)
+lib/          supabase, forecastHistory, format, location, i18n, mlNormalize,
+              communityMap (mapa Fase 2), mapConsent, forecast/ (alertas graduadas), ...
 features/     profile-api, guide/cloud-data
-services/     mock del mapa comunitario (Fase 1)
-locales/      es / gl / en
-assets/       modelo .tflite, vídeos, imágenes
+supabase/     migrations/ (esquema versionado), functions/ (Edge Functions)
+locales/      es / gl / en (por defecto gallego)
+assets/       modelo climanuvem_v3.tflite, vídeos, imágenes
 __tests__/    unit · integration · pending
 ```
 
@@ -81,7 +82,10 @@ Detalle completo de arquitectura, flujos y módulos en **[`AGENTS.md`](./AGENTS.
 
 `foto_invalida` · `cielo_despejado` · `nubes_altas_medias` · `lenticular_viento` · `cubierto_precipitacion` · `niebla_stratus` · `conveccion_desarrollo` · `tormenta`
 
-El modelo clasifica **decisiones del montañero** (no nubes según la taxonomía OMM). En caso de duda entre `conveccion_desarrollo` y `tormenta`, el diseño escala siempre a la alerta más grave.
+El modelo clasifica **decisiones del montañero** (no nubes según la taxonomía OMM). La alerta se gradúa
+con **toda la distribución de probabilidad** (bandas de fiabilidad calibradas, no solo el top-1): en
+detecciones poco fiables se suaviza el mensaje y se oculta el %, y ante una foto inválida o una inferencia
+incoherente se pide repetir la foto. El top-1 siempre manda (la alerta nunca se escala a la 2ª clase).
 
 ---
 
@@ -95,12 +99,16 @@ El modelo clasifica **decisiones del montañero** (no nubes según la taxonomía
 
 ---
 
-## Estado del proyecto (junio 2026)
+## Estado del proyecto (2026-06-20)
 
-- ✅ Auth (Apple / Google / invitado), inferencia on-device, historial, perfil.
+- ✅ Auth (Apple / Google / invitado), inferencia on-device (modelo v3), historial, perfil + avatar, baja de cuenta.
+- ✅ **Alertas graduadas por confianza** (bandas de fiabilidad calibradas, "repetir foto").
 - ✅ i18n (es/gl/en), modo oscuro, guía de nubes, pantalla de ayuda.
-- ✅ Suite de tests (137 passing).
-- 🟡 Mapa comunitario: Fase 1 (datos mock); backend Supabase pendiente.
-- ⏳ Modelo v4 definitivo y alertas graduadas por confianza: pendientes.
+- ✅ **Mapa comunitario Fase 2** (backend Supabase real: publicar/despublicar/reportar, privacidad por snap de coords, expiración 6 h).
+- ✅ Suite de tests (163 passing + 3 todo).
+- ⏳ Modelo v4 definitivo: pendiente de entrenar e integrar.
+- 🧹 Higiene de repo (2026-06-20): apk/modelos viejos untrackeados + `.gitignore`, mock del mapa eliminado, `RECORD_AUDIO` retirado. Pendiente: `console.*` y deps sin usar.
+
+> Análisis de estado completo y realista en **[`docs/estado-proyecto.md`](./docs/estado-proyecto.md)**.
 
 Autor: Javier Outeiriño Cortés.
