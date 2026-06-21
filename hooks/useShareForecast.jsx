@@ -1,19 +1,16 @@
 import { t } from "@/lib/i18n";
 import { useCallback } from "react";
 import { Alert, Share } from "react-native";
-import { formatProbability } from "../lib/format";
 
 export function useShareForecast({
   name,
   placeName,
   forecast,
   recommendation,
-  probability,
   reliability,
 }) {
   const onShare = useCallback(async () => {
-    // El % solo se comparte si la fiabilidad no es baja (coherente con la pantalla de resultado).
-    const showProbability = reliability && reliability !== "baja";
+    // Se comparte la fiabilidad (banda), nunca el porcentaje.
     const reliabilityLabel = reliability
       ? `${t("share.reliabilityLabel")}${t(`alerts.fiabilidad.${reliability}`)}`
       : null;
@@ -30,9 +27,6 @@ export function useShareForecast({
         ? `${t("share.recommendationLabel")}${recommendation}`
         : null,
       reliabilityLabel,
-      showProbability
-        ? `${t("share.probabilityLabel")}${formatProbability(probability)}%`
-        : null,
       t("share.footer"),
     ]
       .filter(Boolean)
@@ -43,7 +37,7 @@ export function useShareForecast({
     } catch (e) {
       Alert.alert(t("share.error"), e?.message ?? "Error");
     }
-  }, [name, placeName, forecast, recommendation, probability, reliability]);
+  }, [name, placeName, forecast, recommendation, reliability]);
 
   return { onShare };
 }

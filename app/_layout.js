@@ -5,7 +5,8 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 import { useEffect } from "react";
-import { Platform } from "react-native";
+import { InteractionManager, Platform } from "react-native";
+import { preloadModel } from "@/lib/tflite/modelLoader";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   SafeAreaProvider,
@@ -24,6 +25,17 @@ export default function RootLayout() {
 
   useEffect(() => {
     applyStoredTheme();
+  }, []);
+
+  // Precarga del modelo TFLite una sola vez, diferida tras las interacciones de
+  // arranque para que la congelación de JS de la carga (~1-2 s) no pille el splash
+  // ni la primera pantalla. Cuando el usuario llega a tomar una foto, el modelo ya
+  // está en memoria → el "cargando" del pronóstico aparece al instante.
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      preloadModel().catch(() => {});
+    });
+    return () => task.cancel();
   }, []);
 
   // Fondo NATIVO de ventana (host/windowBackground) acorde al tema: evita el destello blanco

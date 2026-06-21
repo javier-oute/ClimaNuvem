@@ -1,7 +1,9 @@
 import { unpublishPrediction } from "@/lib/communityMap";
 import { bandForConfidence, forecastTitleKey } from "@/lib/forecast/model-meta";
+import { ForecastDetailBody } from "@/components/forecast/forecast-detail-body";
+import { PublishedBadge } from "@/components/published-badge";
 import { deleteForecast, fetchForecast } from "@/lib/forecastHistory";
-import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
+import { formatDateTimeWithWeekday } from "@/lib/format";
 import { LOCALE_MAP, useT } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settings.store";
 import BottomSheet, {
@@ -16,12 +18,17 @@ import {
   Alert,
   Image,
   Platform,
+  Pressable,
   Text,
   View,
 } from "react-native";
 import { FloatingHeaderButton } from "@/components/floating-header-button";
 import { BackIcon } from "@/components/icons";
 import { PlainStateHeader } from "@/components/plain-state-header";
+import {
+  FullscreenImageViewer,
+  ImageZoomHint,
+} from "@/components/fullscreen-image-viewer";
 import { DownloadSupabaseImageButton } from "../components/buttons";
 import {
   DeleteForecastButton,
@@ -44,6 +51,8 @@ export default function ItemDetail() {
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUnpublishing, setIsUnpublishing] = useState(false);
+  // Visor de la foto a pantalla completa (se abre tocando el fondo).
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   const [topBlockH, setTopBlockH] = useState(0);
   const [bottomBlockH, setBottomBlockH] = useState(0);
@@ -57,7 +66,9 @@ export default function ItemDetail() {
     restSpeedThreshold: 0.5,
   });
 
-  const bottomConstant = Platform.OS === "ios" ? 70 : 120; // 48 3-button ?
+  // bottomConstant: ajusta cuánto se esconde el sheet colapsado (identidad + pronóstico visibles).
+  // Si la recomendación asoma, bájalo; si corta el pronóstico, súbelo.
+  const bottomConstant = Platform.OS === "ios" ? 52 : 96;
   const topConstant = Platform.OS === "ios" ? 90 : 140;
 
   const snapPoints = useMemo(() => {
@@ -174,7 +185,7 @@ export default function ItemDetail() {
     name: item?.name,
     placeName: item?.place_name,
     forecast: item?.forecast,
-    probability: item?.probability,
+    reliability: bandForConfidence(item?.probability ?? 0),
   });
 
   if (isLoading) {
@@ -201,15 +212,19 @@ export default function ItemDetail() {
   }
 
   const { texto } = formatDateTimeWithWeekday(item.created_at, locale);
-  // Mismo criterio que en vivo: título dudoso y % oculto según la banda de la probabilidad guardada.
+  // Mismo criterio que en vivo: título dudoso y banda de fiabilidad según la probabilidad guardada.
   const band = bandForConfidence(item.probability ?? 0);
   const forecastTitle = t(forecastTitleKey(item.forecast, band));
   const forecastDisplay = forecastTitle.startsWith("alerts.")
     ? item.forecast
     : forecastTitle;
-
-  const p = formatProbability(item.probability);
   const lowBand = band === "baja";
+  // Recomendación de seguridad derivada de la banda guardada (la 2ª clase no se
+  // almacena, así que se usa la banda de fiabilidad directamente).
+  const recommendationText = t(`alerts.${item.forecast}.mensaje.${band}`);
+  const recommendation = recommendationText.startsWith("alerts.")
+    ? null
+    : recommendationText;
 
   return (
     <View className="flex-1">
@@ -235,15 +250,24 @@ export default function ItemDetail() {
               : undefined,
         }}
       />
-      <Image
-        source={
-          item?.signedUrl
-            ? { uri: item?.signedUrl }
-            : require("@/assets/images/fondo-nubes-1.avif")
-        }
-        className="absolute inset-0 w-full h-full"
-        resizeMode="cover"
-      />
+      {/* Fondo a sangre (igual que antes). Si hay foto real, tocarla abre el visor. */}
+      <Pressable
+        onPress={() => item?.signedUrl && setViewerOpen(true)}
+        className="absolute inset-0"
+      >
+        <Image
+          source={
+            item?.signedUrl
+              ? { uri: item?.signedUrl }
+              : require("@/assets/images/fondo-nubes-1.avif")
+          }
+          className="w-full h-full"
+          resizeMode="cover"
+        />
+      </Pressable>
+      {item?.signedUrl ? (
+        <ImageZoomHint onPress={() => setViewerOpen(true)} />
+      ) : null}
       {/* Android (sin header nativo): botones flotantes (icono blanco + sombra). */}
       {Platform.OS === "android" ? (
         <>
@@ -277,58 +301,44 @@ export default function ItemDetail() {
       >
         <BottomSheetView className="pt-5 px-8">
           <View
-            className="flex gap-8"
+            className="flex gap-4"
             onLayout={(event) => {
               const h = Math.ceil(event.nativeEvent.layout.height);
               setTopBlockH((prev) => (prev === h ? prev : h));
             }}
           >
-            <View
-              className="flex gap-4"
-              onLayout={(event) => {
+            <ForecastDetailBody
+              onLayoutInner={(event) => {
                 const h = Math.ceil(event.nativeEvent.layout.height);
                 setBottomBlockH((prev) => (prev === h ? prev : h));
               }}
-            >
-              <Text className="font-bold text-left text-2xl text-slate-900 dark:text-zinc-100">
-                {t("detail.saved")}
-              </Text>
-              <Text className="font-bold text-center text-3xl text-slate-900 dark:text-zinc-100">
-                {forecastDisplay || "-"}
-              </Text>
-            </View>
-            {lowBand ? null : (
-              <View className="flex w-full items-center gap-2">
-                <Text className="font-bold text-center text-2xl rounded-2xl bg-[#314468] px-3 py-1 text-white">
-                  {t("detail.probability")}: {p ?? "-"}%
-                </Text>
-                <View className="h-2 w-80 rounded-2xl bg-slate-200 dark:bg-zinc-700 overflow-hidden">
-                  <View
-                    className="h-2 rounded-2xl bg-[#314468]"
-                    style={{ width: `${p}%` }}
+              identity={
+                // Nombre como título principal + badge "Publicada" a la derecha (igual que la lista)
+                <View className="flex-row items-center justify-between gap-2">
+                  <Text
+                    className="flex-1 font-bold text-left text-3xl text-slate-900 dark:text-zinc-100"
+                    numberOfLines={2}
+                  >
+                    {item.name || t("forecast.defaultName")}
+                  </Text>
+                  <PublishedBadge
+                    active={item.isPublishedActive}
+                    wasPublished={!!item.published_at}
+                    label={t("history.publishedBadge")}
+                    size="lg"
                   />
                 </View>
-              </View>
-            )}
-            {/* Detalles */}
-            <View className="flex gap-1">
-              {item.description ? (
-                <Text className="text-base text-slate-600 dark:text-zinc-300 text-center">
-                  {t("community.userDescription")}: {item.description}
-                </Text>
-              ) : null}
-              {item.place_name ? (
-                <Text className="text-lg text-[#b0aeaf] text-center">
-                  {t("detail.place")}: {item.place_name}
-                </Text>
-              ) : null}
-              {texto ? (
-                <Text className="text-base text-[#b0aeaf] text-center">
-                  {texto}
-                </Text>
-              ) : null}
-            </View>
-            <View className="flex-row gap-3">
+              }
+              clase={item.forecast}
+              band={band}
+              forecastDisplay={forecastDisplay}
+              recommendation={recommendation}
+              lowBand={lowBand}
+              description={item.description}
+              placeName={item.place_name}
+              dateText={texto}
+            />
+            <View className="mt-4 flex-row gap-3">
               <DeleteForecastButton
                 isDeleting={isDeleting}
                 onDelete={onDelete}
@@ -346,6 +356,11 @@ export default function ItemDetail() {
           </View>
         </BottomSheetView>
       </BottomSheet>
+      <FullscreenImageViewer
+        visible={viewerOpen}
+        uri={item?.signedUrl}
+        onClose={() => setViewerOpen(false)}
+      />
     </View>
   );
 }

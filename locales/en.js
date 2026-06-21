@@ -198,8 +198,8 @@ export default {
     },
   },
   forecast: {
-    loading: "Loading...",
-    generating: "Generating forecast…",
+    loading: "Analysing your sky photo…",
+    loadingHint: "This may take a few seconds.",
     notFound: "Image not found",
     saveError: "Could not save",
     name: "Name",
@@ -255,6 +255,7 @@ export default {
     editProfile: "Edit profile",
     cancel: "Cancel",
     signOut: "Sign out",
+    tapToZoom: "Tap to zoom",
   },
   alerts: {
     cielo_despejado: {
@@ -397,6 +398,7 @@ export default {
     notFound: "Prediction not found",
     userDescription: "User description",
     yourPublications: "Your posts",
+    locationApproxNotice: "For privacy, prediction locations are approximate",
     consentTitle: "Publish on the map",
     consentMsg:
       "Your photo will be visible to the community along with an approximate (not exact) location of where it was taken. The post will be visible until it expires (about 6 hours) and you can unpublish it anytime.",

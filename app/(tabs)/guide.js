@@ -1,7 +1,14 @@
 import { useT } from "@/lib/i18n";
 import { Link } from "expo-router";
 import { useMemo } from "react";
-import { Image, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import "../../global.css";
 
@@ -33,9 +40,12 @@ const ABREVIATURAS = {
 
 function NubeCard({ nube }) {
   return (
+    // Altura fija: la imagen (height "100%") siempre mide exactamente lo que la tarjeta,
+    // así cuadra igual en todos los dispositivos. El texto se acota (numberOfLines +
+    // lineHeight fijo) para que NUNCA se desborde, sea cual sea el idioma o la fuente.
     <View
       className="flex-row bg-white dark:bg-zinc-800 rounded-xl shadow-sm"
-      style={{ height: 180 }}
+      style={{ height: 160 }}
     >
       <Image
         source={nube.imagen}
@@ -49,14 +59,21 @@ function NubeCard({ nube }) {
       />
       <View className="flex-1 px-4 pt-3 pb-4 gap-1 justify-center">
         <View className="flex-row items-baseline gap-2">
-          <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
+          <Text
+            numberOfLines={1}
+            className="text-lg font-semibold text-slate-900 dark:text-zinc-100"
+          >
             {nube.nombre}
           </Text>
           <Text className="text-sm text-slate-400 dark:text-zinc-500">
             {nube.abrev}
           </Text>
         </View>
-        <Text className="text-slate-600 dark:text-zinc-400">
+        <Text
+          numberOfLines={5}
+          style={{ lineHeight: 18 }}
+          className="text-slate-600 dark:text-zinc-400"
+        >
           {nube.descripcion}
         </Text>
       </View>

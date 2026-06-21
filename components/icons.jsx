@@ -52,6 +52,16 @@ export const CrossIcon = ({ color = "#A1A1AA" }) => (
   <Entypo name="circle-with-cross" size={24} color={color} />
 );
 
+// Cerrar el visor de imagen a pantalla completa.
+export const CloseIcon = ({ size = 26, color = "white" }) => (
+  <Feather name="x" size={size} color={color} />
+);
+
+// Pista de "ampliar" sobre la foto de fondo (abre el visor a pantalla completa).
+export const ExpandIcon = ({ size = 16, color = "white" }) => (
+  <Feather name="maximize-2" size={size} color={color} />
+);
+
 export const CalendarIcon = ({ color = "black" }) => (
   <FontAwesome5 name="calendar-alt" size={24} color={color} />
 );
@@ -105,6 +115,10 @@ export const HelpIcon = ({ color = "black", style }) => (
 
 export const MapIcon = ({ color = "black" }) => (
   <Feather name="map" size={24} color={color} />
+);
+
+export const LockIcon = ({ size = 16, color = "black" }) => (
+  <Feather name="lock" size={size} color={color} />
 );
 
 export const PublishIcon = ({ color = "white" }) => (

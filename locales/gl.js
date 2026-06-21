@@ -196,8 +196,8 @@ export default {
     },
   },
   forecast: {
-    loading: "Cargando...",
-    generating: "Xerando prognóstico…",
+    loading: "Analizando a túa foto do ceo…",
+    loadingHint: "Pode tardar uns segundos.",
     notFound: "Non se atopou a imaxe",
     saveError: "Non se puido gardar",
     name: "Nome",
@@ -253,6 +253,7 @@ export default {
     editProfile: "Editar perfil",
     cancel: "Cancelar",
     signOut: "Pechar sesión",
+    tapToZoom: "Toca para ampliar",
   },
   alerts: {
     cielo_despejado: {
@@ -396,6 +397,8 @@ export default {
     notFound: "Predición non atopada",
     userDescription: "Descrición do usuario",
     yourPublications: "As túas publicacións",
+    locationApproxNotice:
+      "Por privacidade, a ubicación das predicións é aproximada",
     consentTitle: "Publicar no mapa",
     consentMsg:
       "A túa foto será visible para a comunidade xunto cunha ubicación aproximada (non exacta) de onde se tomou. A publicación verase ata que expire (unhas 6 horas) e poderás despublicala cando queiras.",

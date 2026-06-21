@@ -5,7 +5,9 @@ import {
   fetchForecastHistoryWithSignedUrls,
 } from "@/lib/forecastHistory";
 import { bandForConfidence, forecastTitleKey } from "@/lib/forecast/model-meta";
-import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
+import { ReliabilityRow } from "@/components/forecast/reliability-row";
+import { PublishedBadge } from "@/components/published-badge";
+import { formatDateTimeWithWeekday } from "@/lib/format";
 import { LOCALE_MAP, useT } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settings.store";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -91,21 +93,6 @@ function DeleteAction({
 
 // Badge de estado de publicación en el mapa: azul si está publicada (activa), gris atenuado si lo
 // estuvo pero ya no, nada si nunca se publicó.
-function PublishedBadge({ active, wasPublished, label }) {
-  if (!active && !wasPublished) return null;
-  return (
-    <View
-      className={`px-2 py-0.5 rounded-full ${active ? "bg-[#314468]" : "bg-[#b0aeaf]"}`}
-    >
-      <Text
-        className={`text-xs font-semibold ${active ? "text-white" : "text-white/70"}`}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-}
-
 const PAGE_SIZE = 15;
 
 export default function Historial() {
@@ -369,7 +356,6 @@ export default function Historial() {
           const forecastDisplay = forecastTitle.startsWith("alerts.")
             ? item.forecast
             : forecastTitle;
-          const lowBand = band === "baja";
 
           return (
             <Swipeable
@@ -408,10 +394,10 @@ export default function Historial() {
                       className="w-full h-32 mb-4 rounded-t-xl"
                       resizeMode="cover"
                     />
-                    <View className="px-4 pb-4 gap-1">
+                    <View className="px-4 pb-4 gap-0.5">
                       <View className="flex-row items-center justify-between gap-2">
                         <Text className="flex-1 text-lg font-semibold text-slate-900 dark:text-zinc-100">
-                          {t("history.prediction")}: {item.name}
+                          {item.name}
                         </Text>
                         <PublishedBadge
                           active={item.isPublishedActive}
@@ -419,18 +405,21 @@ export default function Historial() {
                           label={t("history.publishedBadge")}
                         />
                       </View>
-                      <Text className="text-slate-600 dark:text-zinc-400">
-                        {t("history.date")}: {texto}
-                      </Text>
-                      <Text className="mt-1 text-slate-600 dark:text-zinc-400">
+                      <Text className="text-base font-medium text-slate-800 dark:text-zinc-100">
                         {t("history.forecast")}: {forecastDisplay}
                       </Text>
-                      {lowBand ? null : (
-                        <Text className="mt-1 text-slate-600 dark:text-zinc-400">
-                          {t("history.probability")}:{" "}
-                          {formatProbability(item.probability)}%
+                      <ReliabilityRow clase={item.forecast} band={band} />
+                      {item.description ? (
+                        <Text
+                          className="italic text-slate-600 dark:text-zinc-400"
+                          numberOfLines={2}
+                        >
+                          {item.description}
                         </Text>
-                      )}
+                      ) : null}
+                      <Text className="text-sm text-slate-400 dark:text-zinc-500">
+                        {texto}
+                      </Text>
                     </View>
                   </View>
                 </Pressable>

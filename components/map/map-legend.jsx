@@ -1,5 +1,7 @@
+import { LockIcon } from "@/components/icons";
 import { RISK_COLORS } from "@/lib/forecast/model-meta";
 import { useT } from "@/lib/i18n";
+import { useColorScheme } from "nativewind";
 import { Platform, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -68,29 +70,49 @@ function LegendRow({ color, label }) {
   );
 }
 
-// Leyenda de colores del mapa: fija, compacta, arriba-izquierda. Por nivel de riesgo (5) + el color de
-// las publicaciones propias. No intercepta gestos del mapa (pointerEvents none).
+// Overlay fijo arriba-izquierda: leyenda de colores + aviso de privacidad, apilados con el MISMO ancho
+// (alignItems por defecto = stretch) y limitados con maxWidth para que el aviso largo no se desborde.
+// No intercepta gestos del mapa (pointerEvents none).
 export function MapLegend() {
   const t = useT();
   const insets = useSafeAreaInsets();
+  const { colorScheme } = useColorScheme();
+  // El color del candado se fija en runtime para casar con el texto (slate-700 / dark:zinc-200).
+  const lockColor = colorScheme === "dark" ? "#e4e4e7" : "#334155";
 
   return (
     <View
       pointerEvents="none"
-      style={{ position: "absolute", top: insets.top + 8, left: 12 }}
-      className="gap-1 rounded-xl bg-white/90 dark:bg-zinc-800/90 px-2.5 py-2 shadow-sm"
+      style={{
+        position: "absolute",
+        top: insets.top + 8,
+        left: 12,
+        maxWidth: 190,
+      }}
+      className="gap-2"
     >
-      {RISK_ROWS.map((row) => (
+      {/* Leyenda de colores: por nivel de riesgo (5) + el color de las publicaciones propias. */}
+      <View className="gap-1 rounded-xl bg-white/90 dark:bg-zinc-800/90 px-2.5 py-2 shadow-sm">
+        {RISK_ROWS.map((row) => (
+          <LegendRow
+            key={row.level}
+            color={row.color}
+            label={t(`guide.detail.riesgo.${row.level}`)}
+          />
+        ))}
         <LegendRow
-          key={row.level}
-          color={row.color}
-          label={t(`guide.detail.riesgo.${row.level}`)}
+          color={OWN_PIN_COLOR}
+          label={t("community.yourPublications")}
         />
-      ))}
-      <LegendRow
-        color={OWN_PIN_COLOR}
-        label={t("community.yourPublications")}
-      />
+      </View>
+
+      {/* Aviso de privacidad: las coordenadas se publican con snap (~2 km), no exactas. */}
+      <View className="flex-row items-start gap-1.5 rounded-xl bg-white/90 dark:bg-zinc-800/90 px-2.5 py-2 shadow-sm">
+        <LockIcon size={12} color={lockColor} />
+        <Text className="flex-1 text-[11px] text-slate-700 dark:text-zinc-200">
+          {t("community.locationApproxNotice")}
+        </Text>
+      </View>
     </View>
   );
 }

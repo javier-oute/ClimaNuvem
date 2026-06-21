@@ -11,7 +11,8 @@ import {
   unpublishPrediction,
 } from "@/lib/communityMap";
 import { bandForConfidence, forecastTitleKey } from "@/lib/forecast/model-meta";
-import { formatDateTimeWithWeekday, formatProbability } from "@/lib/format";
+import { ForecastDetailBody } from "@/components/forecast/forecast-detail-body";
+import { formatDateTimeWithWeekday } from "@/lib/format";
 import { LOCALE_MAP, useT } from "@/lib/i18n";
 import { getSignedImageUrl } from "@/stores/forecast.store.image";
 import { resolveAvatarUrl } from "@/stores/profile.store.image";
@@ -28,9 +29,14 @@ import {
   Alert,
   Image,
   Platform,
+  Pressable,
   Text,
   View,
 } from "react-native";
+import {
+  FullscreenImageViewer,
+  ImageZoomHint,
+} from "@/components/fullscreen-image-viewer";
 import "../../global.css";
 
 function formatTimeRemaining(expiresAt) {
@@ -56,6 +62,8 @@ export default function CommunityPredictionDetail() {
   const [signedUrl, setSignedUrl] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [isBusy, setIsBusy] = useState(false);
+  // Visor de la foto a pantalla completa (se abre tocando el fondo).
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   const [topBlockH, setTopBlockH] = useState(0);
   const [bottomBlockH, setBottomBlockH] = useState(0);
@@ -69,7 +77,9 @@ export default function CommunityPredictionDetail() {
     restSpeedThreshold: 0.5,
   });
 
-  const bottomConstant = Platform.OS === "ios" ? 70 : 120;
+  // bottomConstant: ajusta cuánto se esconde el sheet colapsado (usuario + pronóstico visibles).
+  // Si la recomendación asoma, bájalo; si corta el pronóstico, súbelo.
+  const bottomConstant = Platform.OS === "ios" ? 52 : 96;
   const topConstant = Platform.OS === "ios" ? 90 : 140;
 
   const snapPoints = useMemo(() => {
@@ -190,9 +200,17 @@ export default function CommunityPredictionDetail() {
   const forecastDisplay = forecastTitle.startsWith("alerts.")
     ? item.forecast
     : forecastTitle;
-  const p = formatProbability(item.probability);
   const lowBand = band === "baja";
+  // Mismo criterio que el historial: recomendación + aviso "poco fiable" derivados de la banda.
+  const recommendationText = t(`alerts.${item.forecast}.mensaje.${band}`);
+  const recommendation = recommendationText.startsWith("alerts.")
+    ? null
+    : recommendationText;
   const timeRemaining = formatTimeRemaining(item.expires_at);
+  // Caducidad (info propia del mapa): se muestra como meta extra, con el estilo de la fecha.
+  const expiresLine = timeRemaining
+    ? `${t("community.expiresIn")}: ${timeRemaining}`
+    : t("community.expired");
 
   return (
     <View className="flex-1">
@@ -208,15 +226,22 @@ export default function CommunityPredictionDetail() {
           headerTintColor: "#FFFFFF",
         }}
       />
-      <Image
-        source={
-          signedUrl
-            ? { uri: signedUrl }
-            : require("@/assets/images/fondo-nubes-1.avif")
-        }
-        className="absolute inset-0 w-full h-full"
-        resizeMode="cover"
-      />
+      {/* Fondo a sangre (igual que antes). Si hay foto real, tocarla abre el visor. */}
+      <Pressable
+        onPress={() => signedUrl && setViewerOpen(true)}
+        className="absolute inset-0"
+      >
+        <Image
+          source={
+            signedUrl
+              ? { uri: signedUrl }
+              : require("@/assets/images/fondo-nubes-1.avif")
+          }
+          className="w-full h-full"
+          resizeMode="cover"
+        />
+      </Pressable>
+      {signedUrl ? <ImageZoomHint onPress={() => setViewerOpen(true)} /> : null}
       {/* Android (sin header nativo): botón de atrás flotante (icono blanco + sombra). */}
       {Platform.OS === "android" ? (
         <FloatingHeaderButton side="left" onPress={() => router.back()}>
@@ -243,84 +268,50 @@ export default function CommunityPredictionDetail() {
       >
         <BottomSheetView className="pt-5 px-8">
           <View
-            className="flex gap-6"
+            className="flex gap-4"
             onLayout={(event) => {
               const h = Math.ceil(event.nativeEvent.layout.height);
               setTopBlockH((prev) => (prev === h ? prev : h));
             }}
           >
-            <View
-              className="flex gap-4"
-              onLayout={(event) => {
+            <ForecastDetailBody
+              onLayoutInner={(event) => {
                 const h = Math.ceil(event.nativeEvent.layout.height);
                 setBottomBlockH((prev) => (prev === h ? prev : h));
               }}
-            >
-              {/* Cabecera de autor: avatar + username (siempre) */}
-              <View className="flex-row items-center gap-3">
-                {avatarUrl ? (
-                  <Image
-                    source={{ uri: avatarUrl }}
-                    className="h-10 w-10 rounded-full"
-                  />
-                ) : (
-                  <View className="h-10 w-10 rounded-full bg-slate-300 dark:bg-zinc-600 items-center justify-center">
-                    <UserIcon color="white" size={20} />
-                  </View>
-                )}
-                <Text className="text-base font-semibold text-slate-900 dark:text-zinc-100">
-                  {item.author_username}
-                </Text>
-              </View>
-
-              <Text className="font-bold text-center text-3xl text-slate-900 dark:text-zinc-100">
-                {forecastDisplay || "-"}
-              </Text>
-            </View>
-
-            {lowBand ? null : (
-              <View className="flex w-full items-center gap-2">
-                <Text className="font-bold text-center text-2xl rounded-2xl bg-[#314468] px-3 py-1 text-white">
-                  {t("detail.probability")}: {p ?? "-"}%
-                </Text>
-                <View className="h-2 w-80 rounded-2xl bg-slate-200 dark:bg-zinc-700 overflow-hidden">
-                  <View
-                    className="h-2 rounded-2xl bg-[#314468]"
-                    style={{ width: `${p}%` }}
-                  />
+              identity={
+                // Cabecera de autor: avatar + username (propia del mapa)
+                <View className="flex-row items-center gap-3">
+                  {avatarUrl ? (
+                    <Image
+                      source={{ uri: avatarUrl }}
+                      className="h-10 w-10 rounded-full"
+                    />
+                  ) : (
+                    <View className="h-10 w-10 rounded-full bg-slate-300 dark:bg-zinc-600 items-center justify-center">
+                      <UserIcon color="white" size={20} />
+                    </View>
+                  )}
+                  <Text className="text-base font-semibold text-slate-900 dark:text-zinc-100">
+                    {item.author_username}
+                  </Text>
                 </View>
-              </View>
-            )}
-
-            <View className="flex gap-1">
-              {item.description ? (
-                <Text className="text-base text-slate-600 dark:text-zinc-300 text-center">
-                  {t("community.userDescription")}: {item.description}
-                </Text>
-              ) : null}
-              {item.place_name ? (
-                <Text className="text-lg text-[#b0aeaf] text-center">
-                  {t("detail.place")}: {item.place_name}
-                </Text>
-              ) : null}
-              {texto ? (
-                <Text className="text-base text-[#b0aeaf] text-center">
-                  {t("community.publishedAt")}: {texto}
-                </Text>
-              ) : null}
-              {timeRemaining ? (
-                <Text className="text-base text-[#b0aeaf] text-center">
-                  {t("community.expiresIn")}: {timeRemaining}
-                </Text>
-              ) : (
-                <Text className="text-base text-[#b0aeaf] text-center">
-                  {t("community.expired")}
-                </Text>
-              )}
-            </View>
+              }
+              clase={item.forecast}
+              band={band}
+              forecastDisplay={forecastDisplay}
+              forecastSizeClass="text-3xl"
+              recommendation={recommendation}
+              lowBand={lowBand}
+              description={item.description}
+              descriptionLabel={t("community.userDescription")}
+              placeName={item.place_name}
+              dateText={texto}
+              extraLines={[expiresLine]}
+            />
 
             {/* Acción: despublicar (propia) o reportar (ajena) */}
-            <View className="flex-row">
+            <View className="mt-4 flex-row">
               {item.is_mine ? (
                 <UnpublishForecastButton
                   onUnpublish={onUnpublish}
@@ -333,6 +324,11 @@ export default function CommunityPredictionDetail() {
           </View>
         </BottomSheetView>
       </BottomSheet>
+      <FullscreenImageViewer
+        visible={viewerOpen}
+        uri={signedUrl}
+        onClose={() => setViewerOpen(false)}
+      />
     </View>
   );
 }

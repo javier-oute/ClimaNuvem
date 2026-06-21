@@ -4,7 +4,8 @@ import {
   ShareForecastButton,
 } from "@/components/forecast/forecast-buttons";
 import { publishPrediction } from "@/lib/communityMap";
-import { forecastTitleKey, RISK_COLORS } from "@/lib/forecast/model-meta";
+import { forecastTitleKey } from "@/lib/forecast/model-meta";
+import { ReliabilityRow } from "@/components/forecast/reliability-row";
 import { useT } from "@/lib/i18n";
 import { promptMapPublishConsent } from "@/lib/mapConsent";
 import { tryGetCoordsAndPlace } from "@/lib/location";
@@ -31,11 +32,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FloatingHeaderButton } from "@/components/floating-header-button";
 import { BackIcon } from "@/components/icons";
 import { PlainStateHeader } from "@/components/plain-state-header";
+import {
+  FullscreenImageViewer,
+  ImageZoomHint,
+} from "@/components/fullscreen-image-viewer";
 import { DownloadPhotoButton, SaveButton } from "../components/buttons";
 import "../global.css";
 import { useModel } from "../hooks/useModel";
 import { useShareForecast } from "../hooks/useShareForecast";
-import { formatProbability } from "../lib/format";
 import { saveForecastWithPhoto } from "../stores/forecast.store";
 
 export default function ConfirmForecast() {
@@ -86,12 +90,14 @@ export default function ConfirmForecast() {
   // cuando el GPS resuelva tarde).
   const placeEdited = useRef(false);
 
-  const bottomConstant = Platform.OS === "ios" ? 22 : 72;
+  // bottomConstant: ajusta el snap colapsado (debe verse hasta la fiabilidad). Si la fiabilidad
+  // queda cortada, súbelo; si asoma el aviso "poco fiable" de debajo, bájalo.
+  const bottomConstant = Platform.OS === "ios" ? 48 : 78;
   const topConstant = Platform.OS === "ios" ? 90 : 140;
 
   const snapPoints = useMemo(() => {
     const collapsed = bottomBlockH + bottomConstant;
-    const maxExpanded = Math.round(windowH * 0.72); // techo ~72% de la pantalla
+    const maxExpanded = Math.round(windowH * 0.68); // techo ~68% de la pantalla
     const expanded = Math.min(topBlockH + topConstant, maxExpanded);
     return [collapsed, Math.max(expanded, collapsed + 1)];
   }, [bottomBlockH, topBlockH, bottomConstant, topConstant, windowH]);
@@ -122,6 +128,8 @@ export default function ConfirmForecast() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  // Visor de la foto a pantalla completa (se abre tocando el fondo).
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   /*
   const forecast = "Posible lluvia en 2 horas. Nubes densas y oscuras.";
@@ -145,15 +153,6 @@ export default function ConfirmForecast() {
   const reliability = resultado?.reliability ?? null;
   const messageBand = resultado?.messageBand ?? reliability;
   const isLowBand = reliability === "baja";
-
-  const p = formatProbability(confianza);
-
-  // Color de la clase; atenuado a gris cuando la detección es poco fiable (banda baja).
-  const accentColor = isLowBand
-    ? "#9CA3AF"
-    : clase
-      ? RISK_COLORS[clase]
-      : "#314468";
 
   // Recomendación graduada por banda (la descripción la da el título).
   const recommendation =
@@ -290,17 +289,19 @@ export default function ConfirmForecast() {
     placeName: placeName.trim() || null,
     forecast: forecastDisplay,
     recommendation,
-    probability: confianza,
     reliability,
   });
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900 px-8">
         <PlainStateHeader />
         <ActivityIndicator />
-        <Text className="mt-2 text-slate-500 dark:text-zinc-400">
+        <Text className="mt-3 text-center text-base text-slate-700 dark:text-zinc-200">
           {t("forecast.loading")}
+        </Text>
+        <Text className="mt-1 text-center text-sm text-slate-500 dark:text-zinc-400">
+          {t("forecast.loadingHint")}
         </Text>
       </View>
     );
@@ -406,10 +407,14 @@ export default function ConfirmForecast() {
               : undefined,
         }}
       />
-      <Image
-        source={{ uri: image }}
-        className="absolute inset-0 w-full h-full"
-      />
+      {/* Fondo a sangre (igual que antes). Tocarlo abre el visor a pantalla completa. */}
+      <Pressable
+        onPress={() => setViewerOpen(true)}
+        className="absolute inset-0"
+      >
+        <Image source={{ uri: image }} className="w-full h-full" />
+      </Pressable>
+      <ImageZoomHint onPress={() => setViewerOpen(true)} />
       {/* Android (sin header nativo): botones flotantes (icono blanco + sombra). */}
       {Platform.OS === "android" ? (
         <>
@@ -470,75 +475,41 @@ export default function ConfirmForecast() {
               setTopBlockH((prev) => (prev === h ? prev : h));
             }}
           >
-            {/* Resultado */}
-            {isLoading ? (
-              <View className="items-center">
-                <ActivityIndicator />
-                <Text className="mt-2 text-slate-500 dark:text-zinc-400">
-                  {t("forecast.generating")}
+            {/* Resultado (al renderizar aquí la carga ya ha terminado: ver el
+                early-return de isLoading arriba). */}
+            <View className="items-center">
+              {/* Solo pronóstico + recomendación + fiabilidad se MIDEN (bottomBlockH): es lo que
+                    queda visible en el snap colapsado. */}
+              <View
+                className="items-center gap-3"
+                onLayout={(event) => {
+                  const h = Math.ceil(event.nativeEvent.layout.height);
+                  setBottomBlockH((prev) => (prev === h ? prev : h));
+                }}
+              >
+                <Text className="font-bold text-center text-3xl text-slate-900 dark:text-zinc-100">
+                  {forecastDisplay || "-"}
                 </Text>
-              </View>
-            ) : (
-              <View className="flex gap-6 items-center">
-                <View
-                  className="items-center gap-3"
-                  onLayout={(event) => {
-                    const h = Math.ceil(event.nativeEvent.layout.height);
-                    setBottomBlockH((prev) => (prev === h ? prev : h));
-                  }}
-                >
-                  <Text className="font-bold text-center text-3xl text-slate-900 dark:text-zinc-100">
-                    {forecastDisplay || "-"}
+
+                {/* Recomendación graduada por banda de confianza */}
+                {recommendation ? (
+                  <Text className="text-center text-base text-slate-600 dark:text-zinc-300">
+                    {recommendation}
                   </Text>
+                ) : null}
 
-                  {/* Recomendación graduada por banda de confianza */}
-                  {recommendation ? (
-                    <Text className="text-center text-base text-slate-600 dark:text-zinc-300">
-                      {recommendation}
-                    </Text>
-                  ) : null}
-
-                  {/* Fiabilidad: banda de confianza, con punto de color de la clase */}
-                  {reliability ? (
-                    <View className="flex-row items-center gap-2">
-                      <View
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: accentColor }}
-                      />
-                      <Text className="text-sm text-slate-500 dark:text-zinc-400">
-                        {t("alerts.fiabilidad.label")}:{" "}
-                        {t(`alerts.fiabilidad.${reliability}`)}
-                      </Text>
-                    </View>
-                  ) : null}
-
-                  {/* Aviso explícito cuando la detección es poco fiable (banda baja) */}
-                  {isLowBand ? (
-                    <Text className="text-center text-sm italic text-slate-500 dark:text-zinc-400">
-                      {t("alerts.tone.pocoFiable")}
-                    </Text>
-                  ) : null}
-                </View>
-
-                {/* Probabilidad: solo visible si la fiabilidad no es baja */}
-                {isLowBand ? null : (
-                  <View className="flex w-full items-center gap-2">
-                    <Text
-                      className="font-bold text-center text-2xl rounded-2xl px-3 py-1 text-white"
-                      style={{ backgroundColor: accentColor }}
-                    >
-                      {t("forecast.probability")}: {p ?? "-"}%
-                    </Text>
-                    <View className="h-2 w-80 rounded-2xl bg-slate-200 dark:bg-zinc-700 overflow-hidden">
-                      <View
-                        className="h-2 rounded-2xl"
-                        style={{ width: `${p}%`, backgroundColor: accentColor }}
-                      />
-                    </View>
-                  </View>
-                )}
+                {/* Fiabilidad: banda de confianza, con punto de color de la clase */}
+                <ReliabilityRow clase={clase} band={reliability} />
               </View>
-            )}
+
+              {/* Aviso "poco fiable" (banda baja): fuera de la medición → oculto al colapsar,
+                    visible solo al ampliar. */}
+              {isLowBand ? (
+                <Text className="mt-3 text-center text-sm italic text-slate-500 dark:text-zinc-400">
+                  {t("alerts.tone.pocoFiable")}
+                </Text>
+              ) : null}
+            </View>
             <View>
               {/* Campos editables: solo para usuarios logueados (en invitado no se guarda ni publica) */}
               {isLoggedIn ? (
@@ -615,11 +586,16 @@ export default function ConfirmForecast() {
           </View>
         </BottomSheetScrollView>
       </BottomSheet>
+      <FullscreenImageViewer
+        visible={viewerOpen}
+        uri={image}
+        onClose={() => setViewerOpen(false)}
+      />
     </View>
   );
 }
 
-/* 
+/*
 
 
 import { EditableBottomSheetField } from "@/components/editableField";

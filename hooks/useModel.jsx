@@ -1,9 +1,9 @@
 import { evaluateForecast } from "@/lib/forecast/evaluateForecast";
 import { normalizeRGBA } from "@/lib/mlNormalize";
+import { getModel } from "@/lib/tflite/modelLoader";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as jpeg from "jpeg-js";
 import { useEffect, useState } from "react";
-import { useTensorflowModel } from "react-native-fast-tflite";
 
 const IMG_SIZE = 224;
 const RESIZE_SHORT_SIDE = 256; // Resize(256) + CenterCrop(224), igual que el eval del notebook
@@ -20,16 +20,34 @@ function inputLayout(model) {
 }
 
 export function useModel(imageUri) {
-  const tflite = useTensorflowModel(
-    require("../assets/models/climanuvem_v3.tflite"),
-  );
+  // Instancia compartida del modelo (precargada en el arranque, ver modelLoader).
+  // Al montar esta pantalla no se dispara ninguna carga pesada: el modelo ya está
+  // en memoria, así que el spinner se pinta al instante.
+  const [model, setModel] = useState(null);
 
   const [resultado, setResultado] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (tflite.state !== "loaded" || !imageUri) return;
+    let cancelado = false;
+    getModel()
+      .then((m) => {
+        if (!cancelado) setModel(m);
+      })
+      .catch((e) => {
+        if (!cancelado) {
+          setError(e?.message ?? "Error cargando el modelo");
+          setCargando(false);
+        }
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!model || !imageUri) return;
 
     let cancelado = false;
 
@@ -59,11 +77,11 @@ export function useModel(imageUri) {
         const { data } = jpeg.decode(bytes, { useTArray: true });
 
         // 3. RGBA → Float32 normalizado (ImageNet) en el layout que espera el modelo
-        const layout = inputLayout(tflite.model);
+        const layout = inputLayout(model);
         const input = normalizeRGBA(data, IMG_SIZE, IMG_SIZE, { layout });
 
         // 4. Inferencia. El modelo ya incluye softmax + temperature scaling → probs calibradas.
-        const outputs = await tflite.model.run([input]);
+        const outputs = await model.run([input]);
         const probs = Array.from(outputs[0]);
 
         // 5. Decisión de alerta a partir de TODA la distribución (no solo el top-1).
@@ -81,7 +99,7 @@ export function useModel(imageUri) {
     return () => {
       cancelado = true;
     };
-  }, [imageUri, tflite.state, tflite.model]);
+  }, [imageUri, model]);
 
   return { resultado, cargando, error };
 }

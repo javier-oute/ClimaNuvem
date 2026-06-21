@@ -198,8 +198,8 @@ export default {
     },
   },
   forecast: {
-    loading: "Cargando...",
-    generating: "Generando pronóstico…",
+    loading: "Analizando tu foto del cielo…",
+    loadingHint: "Esto puede tardar unos segundos.",
     notFound: "No se encontró la imagen",
     saveError: "No se pudo guardar",
     name: "Nombre",
@@ -256,6 +256,7 @@ export default {
     editProfile: "Editar perfil",
     cancel: "Cancelar",
     signOut: "Cerrar sesión",
+    tapToZoom: "Toca para ampliar",
   },
   alerts: {
     cielo_despejado: {
@@ -399,6 +400,8 @@ export default {
     notFound: "Predicción no encontrada",
     userDescription: "Descripción del usuario",
     yourPublications: "Tus publicaciones",
+    locationApproxNotice:
+      "Por privacidad, la ubicación de las predicciones es aproximada",
     consentTitle: "Publicar en el mapa",
     consentMsg:
       "Tu foto será visible para la comunidad junto con una ubicación aproximada (no exacta) de dónde se tomó. La publicación se verá hasta que expire (unas 6 horas) y podrás despublicarla cuando quieras.",
