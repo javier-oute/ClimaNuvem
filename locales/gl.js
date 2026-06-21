@@ -288,8 +288,8 @@ export default {
       titulo: "Ceo cuberto, posible chuvia",
       tituloDudoso: "Posible ceo cuberto",
       mensaje: {
-        alta: "Ceo cuberto: pode chegar chuvia ou neve. Prepárate por se empeora.",
-        media: "Ceo cuberto. Posible precipitación próxima; leva protección.",
+        alta: "Ceo cuberto: pode chegar chuvia ou neve.",
+        media: "Ceo cuberto. Posible precipitación próxima.",
         baja: "Podería haber ceo cuberto e chuvia próxima. Sen certeza; vixía o tempo.",
       },
     },
@@ -297,10 +297,10 @@ export default {
       titulo: "Néboa ou nubes baixas",
       tituloDudoso: "Quizais haxa néboa",
       mensaje: {
-        alta: "Néboa ou nubes baixas: visibilidade reducida e risco de desorientación. Extrema a precaución.",
+        alta: "Néboa ou nubes baixas: visibilidade reducida e risco de desorientación.",
         media:
           "Posible néboa ou nubes baixas. A visibilidade pode empeorar; atento á orientación.",
-        baja: "Podería haber néboa. Sen certeza; vixía a visibilidade antes de avanzar.",
+        baja: "Podería haber néboa. Sen certeza; vixía a visibilidade.",
       },
     },
     conveccion_desarrollo: {
@@ -319,7 +319,7 @@ export default {
       mensaje: {
         alta: "Tormenta activa. Busca refuxio e abandona cristas e cumes de inmediato.",
         media:
-          "Hai indicios claros de tormenta. Aléxate de zonas expostas e valora descender xa.",
+          "Hai indicios claros de tormenta. Aléxate de zonas expostas e valora descender.",
         baja: "Podería haber actividade tormentosa, sen certeza. Vixía o ceo e evita zonas expostas.",
       },
     },
@@ -332,6 +332,9 @@ export default {
       reintentarTitulo: "Imaxe pouco clara",
       reintentarMensaje:
         "O modelo non está seguro desta imaxe. Repite a foto encadrando ben o ceo e evitando obstáculos.",
+      errorTitulo: "Erro ao analizar a foto",
+      errorMensaje:
+        "Produciuse un problema ao analizar a imaxe. Téntao de novo con outra foto.",
       repetirFoto: "Repetir foto",
     },
     fiabilidad: {
@@ -399,9 +402,6 @@ export default {
     publishError: "Non se puido publicar",
     publishLimit:
       "Acadaches o máximo de 3 publicacións activas. Despublica algunha para publicar unha nova.",
-    locationOffTitle: "Activa a ubicación",
-    locationOffMsg:
-      "Activa a ubicación para ver e publicar predicións da túa zona no mapa.",
     unpublishTitle: "Despublicar predición",
     unpublishMsg: "Quitarase do mapa comunitario. ¿Queres continuar?",
     reportConfirmTitle: "Reportar publicación",

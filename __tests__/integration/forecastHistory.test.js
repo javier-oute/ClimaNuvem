@@ -4,7 +4,7 @@
 jest.mock("@/lib/supabase", () => ({
   supabase: {
     auth: {
-      getUser: jest.fn(),
+      getSession: jest.fn(),
     },
     from: jest.fn(),
   },
@@ -51,8 +51,8 @@ function makeQueryBuilder(resolvedValue) {
 const MOCK_USER_ID = "user-uuid-abc123";
 
 function mockAuth(userId = MOCK_USER_ID) {
-  supabase.auth.getUser.mockResolvedValue({
-    data: { user: { id: userId } },
+  supabase.auth.getSession.mockResolvedValue({
+    data: { session: { user: { id: userId } } },
     error: null,
   });
 }
@@ -211,9 +211,9 @@ describe("fetchForecastHistoryWithSignedUrls", () => {
   });
 
   describe("autenticación", () => {
-    it("retorna array vacío si no hay usuario autenticado (user null)", async () => {
-      supabase.auth.getUser.mockResolvedValue({
-        data: { user: null },
+    it("retorna array vacío si no hay sesión (session null)", async () => {
+      supabase.auth.getSession.mockResolvedValue({
+        data: { session: null },
         error: null,
       });
 
@@ -223,9 +223,9 @@ describe("fetchForecastHistoryWithSignedUrls", () => {
       expect(supabase.from).not.toHaveBeenCalled();
     });
 
-    it("retorna array vacío si getUser devuelve error", async () => {
-      supabase.auth.getUser.mockResolvedValue({
-        data: { user: null },
+    it("retorna array vacío si getSession no devuelve sesión (con error)", async () => {
+      supabase.auth.getSession.mockResolvedValue({
+        data: { session: null },
         error: { message: "Auth error" },
       });
 
@@ -436,13 +436,13 @@ describe("fetchForecast", () => {
   });
 
   // ─── Fix B01: defensa en profundidad con user_id ──────────────────────────
-  it("[B01] llama a supabase.auth.getUser() para obtener el usuario autenticado", async () => {
+  it("[B01] lee la sesión local con supabase.auth.getSession() para obtener el usuario", async () => {
     const builder = makeQueryBuilder({ data: null, error: null });
     supabase.from.mockReturnValue(builder);
 
     await fetchForecast({ id: "xyz" });
 
-    expect(supabase.auth.getUser).toHaveBeenCalled();
+    expect(supabase.auth.getSession).toHaveBeenCalled();
   });
 
   it('[B01] filtra también por .eq("user_id", userId) además de por id', async () => {
@@ -455,9 +455,9 @@ describe("fetchForecast", () => {
     expect(builder.eq).toHaveBeenCalledWith("user_id", MOCK_USER_ID);
   });
 
-  it("[B01] retorna null si no hay usuario autenticado", async () => {
-    supabase.auth.getUser.mockResolvedValue({
-      data: { user: null },
+  it("[B01] retorna null si no hay sesión", async () => {
+    supabase.auth.getSession.mockResolvedValue({
+      data: { session: null },
       error: null,
     });
 

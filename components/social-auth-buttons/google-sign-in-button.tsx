@@ -197,7 +197,10 @@ export default function GoogleSignInButton() {
         console.error("onSignInButtonPress - setSession - failed");
         // sign in/up failed
       }
-    } else if (result && (result.type === "cancel" || result.type === "dismiss")) {
+    } else if (
+      result &&
+      (result.type === "cancel" || result.type === "dismiss")
+    ) {
       // El usuario cerró/canceló el navegador: acción legítima, no es un error.
       return;
     } else {
@@ -218,7 +221,7 @@ export default function GoogleSignInButton() {
     <TouchableOpacity
       onPress={onSignInButtonPress}
       style={{
-        width: 200,
+        width: 240,
         height: 44,
         flexDirection: "row",
         alignItems: "center",
@@ -243,6 +246,7 @@ export default function GoogleSignInButton() {
         style={{ width: 14, height: 14, marginRight: 5 }}
       />
       <Text
+        numberOfLines={1}
         style={{
           fontSize: 14,
           color: "#757575",

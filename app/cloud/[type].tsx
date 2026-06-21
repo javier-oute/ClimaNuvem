@@ -8,13 +8,17 @@ import {
   isCloudKey,
   RISK_COLORS,
 } from "@/features/guide/cloud-data";
+import { FloatingHeaderButton } from "@/components/floating-header-button";
+import { BackIcon } from "@/components/icons";
+import { PlainStateHeader } from "@/components/plain-state-header";
 import { useT } from "@/lib/i18n";
-import { Stack, useLocalSearchParams } from "expo-router";
-import { Text, View } from "react-native";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import { Platform, Text, View } from "react-native";
 import Animated, {
   useAnimatedRef,
   useScrollOffset,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -64,10 +68,12 @@ export default function CloudDetailScreen() {
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollOffset(scrollRef);
+  const insets = useSafeAreaInsets();
 
   if (!isCloudKey(type)) {
     return (
       <View className="flex-1 items-center justify-center bg-slate-50 dark:bg-zinc-900">
+        <PlainStateHeader />
         <Text className="text-slate-500 dark:text-zinc-400">
           {t("guide.title")}
         </Text>
@@ -83,11 +89,19 @@ export default function CloudDetailScreen() {
   return (
     <View className="flex-1 bg-slate-50 dark:bg-zinc-900">
       <Stack.Screen options={{ headerTintColor: "#ffffff" }} />
+      {/* Android (sin header nativo): botón de atrás flotante (icono blanco + sombra). */}
+      {Platform.OS === "android" ? (
+        <FloatingHeaderButton side="left" onPress={() => router.back()}>
+          <BackIcon color="white" />
+        </FloatingHeaderButton>
+      ) : null}
       <Animated.ScrollView
         ref={scrollRef}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 48 }}
+        contentContainerStyle={{
+          paddingBottom: Platform.OS === "android" ? 24 + insets.bottom : 48,
+        }}
       >
         <CloudDetailHeader images={images} scrollOffset={scrollOffset} />
 

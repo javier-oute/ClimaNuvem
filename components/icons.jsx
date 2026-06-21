@@ -78,8 +78,17 @@ export const BookmarckIcon = () => (
 
 export const ShareIcon = () => <Feather name="share" size={24} color="white" />;
 
-export const DownloadIcon = ({ color }) => (
-  <AntDesign name="cloud-download" size={24} color={color ?? "black"} />
+export const DownloadIcon = ({ color, style }) => (
+  <AntDesign
+    name="cloud-download"
+    size={24}
+    color={color ?? "black"}
+    style={style}
+  />
+);
+
+export const BackIcon = ({ color = "black", style }) => (
+  <Ionicons name="arrow-back" size={26} color={color} style={style} />
 );
 
 export const ClockIcon = (props) => (
@@ -90,8 +99,8 @@ export const CloudIcon = ({ color = "black", ...props }) => (
   <Feather name="cloud" size={24} color={color} {...props} />
 );
 
-export const HelpIcon = ({ color = "black" }) => (
-  <Ionicons name="help" size={24} color={color} />
+export const HelpIcon = ({ color = "black", style }) => (
+  <Ionicons name="help" size={24} color={color} style={style} />
 );
 
 export const MapIcon = ({ color = "black" }) => (

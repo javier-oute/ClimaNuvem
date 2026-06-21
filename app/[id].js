@@ -19,6 +19,9 @@ import {
   Text,
   View,
 } from "react-native";
+import { FloatingHeaderButton } from "@/components/floating-header-button";
+import { BackIcon } from "@/components/icons";
+import { PlainStateHeader } from "@/components/plain-state-header";
 import { DownloadSupabaseImageButton } from "../components/buttons";
 import {
   DeleteForecastButton,
@@ -177,6 +180,7 @@ export default function ItemDetail() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
+        <PlainStateHeader />
         <ActivityIndicator />
         <Text className="mt-2 text-slate-500 dark:text-zinc-400">
           {t("detail.loading")}
@@ -188,6 +192,7 @@ export default function ItemDetail() {
   if (!item) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900 p-6">
+        <PlainStateHeader />
         <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
           {t("detail.notFound")}
         </Text>
@@ -211,18 +216,23 @@ export default function ItemDetail() {
       <Stack.Screen
         options={{
           headerBackTitleVisible: false,
-          headerShown: true,
+          // Android: sin header nativo (intercepta toques y pinta sombra). Los
+          // botones (atrás + descarga) van flotantes. iOS mantiene su header.
+          headerShown: Platform.OS === "ios",
           headerTitle: "",
           headerBackTitle: "",
           headerTransparent: true,
           headerShadowVisible: true,
           headerTintColor: "#FFFFFF",
-          headerRight: () => (
-            <DownloadSupabaseImageButton
-              uri={item?.signedUrl}
-              color={colorScheme === "dark" ? "white" : "black"}
-            />
-          ),
+          headerRight:
+            Platform.OS === "ios"
+              ? () => (
+                  <DownloadSupabaseImageButton
+                    uri={item?.signedUrl}
+                    color={colorScheme === "dark" ? "white" : "black"}
+                  />
+                )
+              : undefined,
         }}
       />
       <Image
@@ -234,6 +244,19 @@ export default function ItemDetail() {
         className="absolute inset-0 w-full h-full"
         resizeMode="cover"
       />
+      {/* Android (sin header nativo): botones flotantes (icono blanco + sombra). */}
+      {Platform.OS === "android" ? (
+        <>
+          <FloatingHeaderButton side="left" onPress={() => router.back()}>
+            <BackIcon color="white" />
+          </FloatingHeaderButton>
+          <DownloadSupabaseImageButton
+            uri={item?.signedUrl}
+            color="white"
+            floating
+          />
+        </>
+      ) : null}
 
       <BottomSheet
         index={1} // empieza en el primer snap point

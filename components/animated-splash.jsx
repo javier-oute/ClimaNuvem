@@ -1,7 +1,7 @@
 import { useAuthStore } from "@/stores/auth.store";
 import { useColorScheme } from "nativewind";
 import { useCallback, useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import Animated, {
   Easing,
   runOnJS,
@@ -22,13 +22,22 @@ try {
   // setOptions no disponible en versiones antiguas: no es bloqueante.
 }
 
-// Lockup completo (marca + "ClimaNuvem"). Es la MISMA imagen CUADRADA que la splash nativa
-// (app.json), por lo que el relevo nativa → overlay es pixel-idéntico. Al ser cuadrada (1080x1080),
-// "ajustar por ancho" y "ajustar por alto" dan el mismo resultado → nativa y overlay coinciden
-// independientemente de cómo expo-splash-screen interprete `contain` (evita el desajuste de tamaño).
-const LOCKUP_LIGHT = require("../assets/images/splash-square.png");
-const LOCKUP_DARK = require("../assets/images/splash-dark-square.png");
-const LOCKUP_RATIO = 1; // PNG cuadrado (1080x1080)
+// Imagen del overlay = MISMA que la splash nativa de cada plataforma, para que el relevo
+// nativa → overlay sea pixel-idéntico (mismo dibujo, mismo tamaño, centrado).
+//   · iOS: lockup completo (nube + "ClimaNuvem").
+//   · Android: SOLO la nube (sin texto). En Android 12+ la splash nativa es un "icono" a tamaño
+//     fijo pequeño; un wordmark ahí se reescala y sale aliased ("entrecortado"). Por eso el icono
+//     nativo y este overlay usan la nube sola y el texto se reserva para dentro de la app.
+// Todas son PNG cuadradas → "ajustar por ancho" y "por alto" coinciden, así que el relevo encaja
+// independientemente de cómo expo-splash-screen interprete `contain`.
+const isAndroid = Platform.OS === "android";
+const LOCKUP_LIGHT = isAndroid
+  ? require("../assets/images/splash-icon.png")
+  : require("../assets/images/splash-square.png");
+const LOCKUP_DARK = isAndroid
+  ? require("../assets/images/splash-icon-dark.png")
+  : require("../assets/images/splash-dark-square.png");
+const LOCKUP_RATIO = 1; // PNG cuadrado (lockup 1080x1080 / icono 1024x1024)
 
 // El logo arranca EXACTAMENTE como la splash nativa (escala 1.0, mismo tamaño y centrado)
 // para que el relevo nativa → overlay sea invisible, y a partir de ahí hace un "push-in"

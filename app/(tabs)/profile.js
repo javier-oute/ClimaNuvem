@@ -192,7 +192,7 @@ export default function Profile() {
         className="flex-1"
         contentContainerStyle={{
           paddingHorizontal: 32,
-          paddingBottom: Platform.OS === "ios" ? 24 : insets.bottom + 24,
+          paddingBottom: Platform.OS === "ios" ? 24 : insets.bottom,
         }}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"

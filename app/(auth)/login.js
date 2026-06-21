@@ -16,7 +16,7 @@ export default function LoginScreen() {
     buttonType: AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN,
     buttonStyle: AppleAuthentication.AppleAuthenticationButtonStyle.BLACK,
     cornerRadius: 6,
-    style: { width: 200, height: 44 }, // w: 200 h: 44
+    style: { width: 240, height: 44 }, // w: 240 h: 44 (mismo ancho que Google/Invitado)
   };
 
   const session = useAuthStore((s) => s.session);

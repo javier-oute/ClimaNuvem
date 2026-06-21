@@ -1,11 +1,10 @@
 import { MapLegend, OWN_PIN_COLOR } from "@/components/map/map-legend";
-import { getNearbyPredictions } from "@/lib/communityMap";
+import { getActivePredictions } from "@/lib/communityMap";
 import { RISK_COLORS } from "@/lib/forecast/model-meta";
-import { t } from "@/lib/i18n";
 import { tryGetCoordsAndPlace } from "@/lib/location";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import "../../global.css";
 
@@ -22,42 +21,33 @@ export default function MapScreen() {
   const [predictions, setPredictions] = useState([]);
   const [locationGranted, setLocationGranted] = useState(false);
 
-  // Carga al enfocar la tab (sin pull-to-refresh ni polling, Q31). Sin ubicación: no hay pins + aviso (P14).
+  // Carga al enfocar la tab (sin pull-to-refresh ni polling, Q31). Sin filtro de distancia: se cargan
+  // TODAS las publicaciones activas (con pocos usuarios un radio dejaría el mapa casi vacío). La
+  // ubicación es opcional y solo sirve para centrar la vista; aunque no haya GPS se ven los pins.
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
 
+      // 1) Datos: independientes del GPS.
       (async () => {
-        const result = await tryGetCoordsAndPlace();
-        if (cancelled) return;
-
-        if (!result?.coords) {
-          setLocationGranted(false);
-          setPredictions([]);
-          Alert.alert(
-            t("community.locationOffTitle"),
-            t("community.locationOffMsg"),
-          );
-          return;
-        }
-
-        const { coords } = result;
-        setLocationGranted(true);
-        mapRef.current?.animateToRegion(
-          { ...coords, latitudeDelta: 0.5, longitudeDelta: 0.5 },
-          800,
-        );
-
         try {
-          const rows = await getNearbyPredictions(
-            coords.latitude,
-            coords.longitude,
-          );
+          const rows = await getActivePredictions();
           if (!cancelled) setPredictions(rows);
         } catch (e) {
           console.error("Error cargando predicciones del mapa:", e);
           if (!cancelled) setPredictions([]);
         }
+      })();
+
+      // 2) Ubicación: solo para centrar el mapa y mostrar el punto azul del usuario.
+      (async () => {
+        const result = await tryGetCoordsAndPlace();
+        if (cancelled || !result?.coords) return;
+        setLocationGranted(true);
+        mapRef.current?.animateToRegion(
+          { ...result.coords, latitudeDelta: 0.5, longitudeDelta: 0.5 },
+          800,
+        );
       })();
 
       return () => {
@@ -77,7 +67,13 @@ export default function MapScreen() {
         style={StyleSheet.absoluteFill}
         initialRegion={DEFAULT_REGION}
         showsUserLocation={locationGranted}
-        showsMyLocationButton={locationGranted}
+        // En Android, Google Maps dibuja estos controles arriba a la derecha sin respetar los
+        // márgenes; se ocultan. En iOS se mantiene el comportamiento por defecto.
+        showsMyLocationButton={
+          Platform.OS === "android" ? false : locationGranted
+        }
+        showsCompass={Platform.OS !== "android"}
+        toolbarEnabled={Platform.OS !== "android"}
       >
         {predictions.map((item) => (
           <Marker

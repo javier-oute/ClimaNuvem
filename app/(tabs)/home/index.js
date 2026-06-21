@@ -1,4 +1,5 @@
 import { BotonCargarImagen, BotonTomarFoto } from "@/components/buttons";
+import { FloatingHeaderButton } from "@/components/floating-header-button";
 import { HelpIcon, UserIcon } from "@/components/icons";
 import DemoVideo from "@/components/videoComponent";
 import { useT } from "@/lib/i18n";
@@ -20,13 +21,16 @@ export default function Index() {
     <View className="flex-1 flex-grow justify-end bg-white dark:bg-zinc-900">
       <Stack.Screen
         options={{
-          headerShown: true,
+          // En Android quitamos el header nativo (intercepta toques y pinta
+          // sombra/fondo fantasma); los botones se dibujan flotantes (más abajo).
+          // En iOS se mantiene el header nativo transparente con sus botones.
+          headerShown: Platform.OS === "ios",
           headerTransparent: true,
           headerTitle: "",
           headerBackTitle: "",
-          // Solo en modo invitado (session === null): botón de perfil que lleva al login.
+          // iOS: botón de perfil (solo invitado) y de ayuda en el header nativo.
           headerLeft:
-            session === null
+            Platform.OS === "ios" && session === null
               ? () => (
                   <Pressable
                     onPress={() => router.replace("/(auth)/login")}
@@ -40,18 +44,43 @@ export default function Index() {
                   </Pressable>
                 )
               : undefined,
-          headerRight: () => (
-            <Pressable
-              onPress={() => router.push("/help")}
-              hitSlop={10}
-              className="p-2"
-            >
-              <HelpIcon color={colorScheme === "dark" ? "white" : "black"} />
-            </Pressable>
-          ),
+          headerRight:
+            Platform.OS === "ios"
+              ? () => (
+                  <Pressable
+                    onPress={() => router.push("/help")}
+                    hitSlop={10}
+                    className="p-2"
+                  >
+                    <HelpIcon
+                      color={colorScheme === "dark" ? "white" : "black"}
+                    />
+                  </Pressable>
+                )
+              : undefined,
         }}
       />
       <DemoVideo />
+      {/* Android (sin header nativo): botones de cabecera flotantes
+          (icono blanco con sombra). */}
+      {Platform.OS === "android" && (
+        <>
+          <FloatingHeaderButton
+            side="right"
+            onPress={() => router.push("/help")}
+          >
+            <HelpIcon color="white" />
+          </FloatingHeaderButton>
+          {session === null ? (
+            <FloatingHeaderButton
+              side="left"
+              onPress={() => router.replace("/(auth)/login")}
+            >
+              <UserIcon color="white" size={24} />
+            </FloatingHeaderButton>
+          ) : null}
+        </>
+      )}
       <View
         className={`bg-white dark:bg-zinc-900 rounded-t-3xl text-balance ${
           Platform.OS === "ios" ? "pb-20" : "pb-0"

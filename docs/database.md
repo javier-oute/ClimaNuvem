@@ -73,7 +73,7 @@ Historial de predicciones guardadas por el usuario.
 **Índices**:
 - `forecast_history_pkey` (PK sobre `id`).
 - `forecast_history_user_created_idx` `(user_id, created_at DESC)` — usado por la paginación del historial.
-- `forecast_history_location_gix` GIST sobre `location` — sin uso aún; **se conserva** para el filtro espacial `ST_DWithin` del mapa (Fase 2).
+- `forecast_history_location_gix` GIST sobre `location` — sin uso actualmente. Se mantiene por si se reintroduce un filtro espacial (`ST_DWithin`) en el mapa: hoy el mapa **no filtra por distancia** (ver §9, decisión de pocos usuarios).
 - *(eliminado en M6: `forecast_history_image_path_idx`, sin uso.)*
 
 **RLS** (habilitado) — un único juego por acción, rol `authenticated`, con `(select auth.uid())`:
@@ -95,7 +95,7 @@ Tabla de sistema de **PostGIS** (definiciones de sistemas de referencia espacial
 ## 4. Vista `public.public_profiles` — ⚠️ ELIMINADA (Fase 2, 2026-06-20)
 
 > **Esta vista ya no existe.** Se eliminó en la migración `20260620120400_drop_public_profiles_view`
-> porque la identidad pública del autor en el mapa la resuelven ahora las RPC `get_nearby_predictions` /
+> porque la identidad pública del autor en el mapa la resuelven ahora las RPC `get_active_predictions` /
 > `get_prediction_by_id` (join a `profiles` dentro de `SECURITY DEFINER`, devolviendo solo `username` y
 > `avatar_url`). El resto de esta sección se conserva como contexto histórico. Ver §9.
 
@@ -240,8 +240,17 @@ Migraciones `20260620120000…120600`. Resumen del esquema añadido:
   `round(·,2)`; inserta (`expires_at=now()+6h`); marca `forecast_history.published_at`. Devuelve uuid.
 - `unpublish_prediction(p_id)` → borra si dueño o admin.
 - `report_prediction(p_id)` → inserta reporte (`on conflict do nothing`); recuenta; **oculta a 3**.
-- `get_nearby_predictions(p_lat, p_lon)` → `ST_DWithin(...,30000)` + activas/no ocultas + **join `profiles`**
-  (username, avatar_url) + `is_mine`, `LIMIT 200`.
+- `get_active_predictions()` → **todas** las activas/no ocultas (`expires_at>now() and hidden_at is null`)
+  + **join `profiles`** (username, avatar_url) + `is_mine`, orden por `published_at desc`, `LIMIT 200`.
+  **Sin filtro de distancia** (decisión 2026-06-21, ver nota abajo). La ubicación del usuario ya solo
+  centra el mapa en el cliente, no se envía a esta RPC.
+
+> **Por qué sin radio (pocos usuarios).** La versión inicial (`get_nearby_predictions(p_lat, p_lon)`,
+> migración `20260620120200`) filtraba por `ST_DWithin(...,30000)` (30 km alrededor del usuario). Con la
+> base de usuarios actual (muy pequeña) ese radio dejaría el mapa casi siempre vacío, así que la
+> migración `20260621090000_map_remove_distance_filter` la sustituye por `get_active_predictions()` (sin
+> parámetros, sin filtro espacial). Cuando crezca el número de usuarios se puede reintroducir el filtro
+> recuperando la lógica de la 20260620120200 (el índice GIST y la columna `geography` se conservan).
 - `get_prediction_by_id(p_id)` → una fila (mismo join + filtros).
 
 ### Storage
@@ -382,6 +391,7 @@ Cada una está en `supabase/migrations/<version>_<name>.sql`:
 | `20260620120000` | `community_map_schema` | Fase 2: tablas `community_predictions` + `community_reports`, columnas en `profiles`/`forecast_history`. |
 | `20260620120100` | `community_map_rls` | Fase 2: RLS del mapa (SELECT solo activas; sin INSERT/UPDATE directo → solo RPC). |
 | `20260620120200` | `community_map_rpc` | Fase 2: RPC `SECURITY DEFINER` (publish/unpublish/report/get_nearby/get_by_id). |
+| `20260621090000` | `map_remove_distance_filter` | Fase 2: elimina el filtro de distancia (pocos usuarios); `get_nearby_predictions` → `get_active_predictions()` (todas las activas). |
 | `20260620120300` | `community_map_storage_policy` | Fase 2: acceso a la foto solo mientras la publicación esté activa (auto-expirable). |
 | `20260620120400` | `drop_public_profiles_view` | Fase 2: **elimina la vista `public_profiles`** (identidad por RPC). |
 | `20260620120500` | `community_map_cron_cleanup` | Fase 2: `pg_cron` horario borra publicaciones caducadas > 1 h. |

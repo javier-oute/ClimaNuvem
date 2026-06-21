@@ -6,7 +6,7 @@
  *   - Sin escalado: el top-1 SIEMPRE manda (la 2ª clase solo matiza el tono o se menciona).
  *   - Bandas conservadoras: alta ≥0.90 · media 0.70–0.90 · baja <0.70.
  *   - Suavizado por 2ª clase: si la ganadora es ≥2 niveles más grave que la 2ª y ésta tiene
- *     prob ≥0.20, el MENSAJE baja un escalón (messageBand), sin tocar la fiabilidad.
+ *     prob ≥0.10, el MENSAJE baja un escalón (messageBand), sin tocar la fiabilidad.
  */
 const fs = require("fs");
 const path = require("path");
@@ -125,14 +125,14 @@ describe("suavizado del mensaje por 2ª clase (sin tocar la fiabilidad)", () => 
     expect(d.tone).toBe("normal");
   });
 
-  it("no suaviza si la 2ª clase tiene poca probabilidad (conf2 < 0.15)", () => {
-    const d = evaluateForecast(vec({ tormenta: 0.85, cielo_despejado: 0.13 }));
+  it("no suaviza si la 2ª clase tiene poca probabilidad (conf2 < 0.10)", () => {
+    const d = evaluateForecast(vec({ tormenta: 0.88, cielo_despejado: 0.08 }));
     expect(d.reliability).toBe("media");
     expect(d.messageBand).toBe("media");
   });
 
-  it("suaviza con la 2ª clase justo en el umbral (conf2 = 0.15)", () => {
-    const d = evaluateForecast(vec({ tormenta: 0.75, cielo_despejado: 0.15 }));
+  it("suaviza con la 2ª clase justo en el umbral (conf2 = 0.10)", () => {
+    const d = evaluateForecast(vec({ tormenta: 0.8, cielo_despejado: 0.1 }));
     expect(d.reliability).toBe("media");
     expect(d.messageBand).toBe("baja");
   });
@@ -162,6 +162,12 @@ describe("clases vecinas reñidas (sin caso especial de ambigüedad)", () => {
 describe("inferencia incoherente → repetir foto", () => {
   it("tormenta 0.45 / cielo 0.40 (par no esperado, reñido) → retake", () => {
     const d = evaluateForecast(vec({ tormenta: 0.45, cielo_despejado: 0.4 }));
+    expect(d.action).toBe("retake");
+    expect(d.tone).toBe("reintentar");
+  });
+
+  it("tormenta 0.64 / cielo 0.36 (par no esperado, margen 0.28 < 0.35) → retake", () => {
+    const d = evaluateForecast(vec({ tormenta: 0.64, cielo_despejado: 0.36 }));
     expect(d.action).toBe("retake");
     expect(d.tone).toBe("reintentar");
   });

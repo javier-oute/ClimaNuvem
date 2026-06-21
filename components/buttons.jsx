@@ -4,8 +4,8 @@ import { useCallback } from "react";
 import { Pressable, Text, View } from "react-native";
 import CargarImagen from "../hooks/useCargarImagen";
 import useTomarFoto from "../hooks/useTomarFoto";
-import { tryGetCoordsAndPlace } from "../lib/location";
 import { useSavePhoto, useSaveSupabasePhoto } from "../lib/savePhotos";
+import { FloatingHeaderButton } from "./floating-header-button";
 import { DownloadIcon, IconoCamera, IconoImage, SaveIcon } from "./icons";
 
 export function BotonTomarFoto() {
@@ -17,16 +17,18 @@ export function BotonTomarFoto() {
       const foto = await abrirCamara();
       if (!foto) return;
 
-      const loc = await tryGetCoordsAndPlace();
-
+      // Navegamos YA, sin esperar al GPS (antes se hacía `await
+      // tryGetCoordsAndPlace()` aquí y bloqueaba la transición varios segundos
+      // dejando la Home congelada). La ubicación se resuelve dentro de
+      // forecast-screen sin bloquear la pantalla de carga.
       router.push({
         pathname: "/forecast-screen",
         params: {
           imageUri: foto.uri,
           source: "camera",
-          lat: loc ? String(loc.coords.latitude) : "",
-          lon: loc ? String(loc.coords.longitude) : "",
-          placeNameAuto: loc?.placeNameAuto ?? "",
+          lat: "",
+          lon: "",
+          placeNameAuto: "",
         },
       });
     } catch (e) {
@@ -66,7 +68,10 @@ export function SaveButton({ onSave, isSaving }) {
   );
 }
 
-export function DownloadPhotoButton({ uri, color }) {
+// `floating`: en Android se renderiza como botón flotante circular (el header
+// transparente nativo no recibe toques en Android). En iOS se usa la versión
+// normal dentro de headerRight.
+export function DownloadPhotoButton({ uri, color, floating = false }) {
   const { saveCameraPhoto } = useSavePhoto();
 
   const handleDownload = useCallback(async () => {
@@ -76,6 +81,14 @@ export function DownloadPhotoButton({ uri, color }) {
       console.error("Error al guardar la foto:", e);
     }
   }, [uri, saveCameraPhoto]);
+
+  if (floating) {
+    return (
+      <FloatingHeaderButton side="right" onPress={handleDownload}>
+        <DownloadIcon color={color} />
+      </FloatingHeaderButton>
+    );
+  }
 
   return (
     <Pressable
@@ -87,7 +100,7 @@ export function DownloadPhotoButton({ uri, color }) {
   );
 }
 
-export function DownloadSupabaseImageButton({ uri, color }) {
+export function DownloadSupabaseImageButton({ uri, color, floating = false }) {
   const { saveSupabasePhoto } = useSaveSupabasePhoto();
 
   const handleDownload = useCallback(async () => {
@@ -97,6 +110,18 @@ export function DownloadSupabaseImageButton({ uri, color }) {
       console.error("Error al guardar la foto:", e);
     }
   }, [uri, saveSupabasePhoto]);
+
+  if (floating) {
+    return (
+      <FloatingHeaderButton
+        side="right"
+        onPress={handleDownload}
+        disabled={!uri}
+      >
+        <DownloadIcon color={color} />
+      </FloatingHeaderButton>
+    );
+  }
 
   return (
     <Pressable

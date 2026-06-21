@@ -289,8 +289,8 @@ export default {
       titulo: "Overcast sky, possible rain",
       tituloDudoso: "Possibly overcast",
       mensaje: {
-        alta: "Overcast sky: rain or snow may arrive. Be ready in case it worsens.",
-        media: "Overcast sky. Precipitation may be near; bring protection.",
+        alta: "Overcast sky: rain or snow may arrive.",
+        media: "Overcast sky. Precipitation may be near.",
         baja: "There may be overcast skies and rain ahead. Not certain; keep an eye on the weather.",
       },
     },
@@ -298,10 +298,10 @@ export default {
       titulo: "Fog or low clouds",
       tituloDudoso: "Maybe fog",
       mensaje: {
-        alta: "Fog or low clouds: reduced visibility and risk of disorientation. Take extra care.",
+        alta: "Fog or low clouds: reduced visibility and risk of disorientation.",
         media:
           "Possible fog or low clouds. Visibility may worsen; mind your orientation.",
-        baja: "There may be fog. Not certain; watch visibility before moving on.",
+        baja: "There may be fog. Not certain; watch visibility.",
       },
     },
     conveccion_desarrollo: {
@@ -320,7 +320,7 @@ export default {
       mensaje: {
         alta: "Active storm. Seek shelter and leave ridges and summits immediately.",
         media:
-          "Clear signs of a storm. Move away from exposed areas and consider descending now.",
+          "Clear signs of a storm. Move away from exposed areas and consider descending.",
         baja: "There may be storm activity, though it's not certain. Watch the sky and avoid exposed areas.",
       },
     },
@@ -333,6 +333,9 @@ export default {
       reintentarTitulo: "Unclear image",
       reintentarMensaje:
         "The model is unsure about this image. Retake the photo framing the sky well and avoiding obstacles.",
+      errorTitulo: "Error analysing the photo",
+      errorMensaje:
+        "Something went wrong while analysing the image. Try again with another photo.",
       repetirFoto: "Retake photo",
     },
     fiabilidad: {
@@ -400,9 +403,6 @@ export default {
     publishError: "Could not publish",
     publishLimit:
       "You have reached the maximum of 3 active posts. Unpublish one to publish a new one.",
-    locationOffTitle: "Turn on location",
-    locationOffMsg:
-      "Turn on location to see and publish predictions from your area on the map.",
     unpublishTitle: "Unpublish prediction",
     unpublishMsg: "It will be removed from the community map. Continue?",
     reportConfirmTitle: "Report post",

@@ -7,6 +7,7 @@ import { publishPrediction } from "@/lib/communityMap";
 import { forecastTitleKey, RISK_COLORS } from "@/lib/forecast/model-meta";
 import { useT } from "@/lib/i18n";
 import { promptMapPublishConsent } from "@/lib/mapConsent";
+import { tryGetCoordsAndPlace } from "@/lib/location";
 import { selectIsLoggedIn, useAuthStore } from "@/stores/auth.store";
 import { hasMapPublishConsent } from "@/stores/settings.store";
 import BottomSheet, {
@@ -14,7 +15,7 @@ import BottomSheet, {
   useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -27,6 +28,9 @@ import {
 } from "react-native";
 import { useColorScheme } from "nativewind";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FloatingHeaderButton } from "@/components/floating-header-button";
+import { BackIcon } from "@/components/icons";
+import { PlainStateHeader } from "@/components/plain-state-header";
 import { DownloadPhotoButton, SaveButton } from "../components/buttons";
 import "../global.css";
 import { useModel } from "../hooks/useModel";
@@ -66,13 +70,21 @@ export default function ConfirmForecast() {
     restSpeedThreshold: 0.5,
   });
 
-  const coords = useMemo(
+  // Coordenadas que pudieran venir por params (hoy solo si en el futuro se vuelve
+  // a pasar desde el botón). En cámara llegan más tarde vía GPS (ver efecto abajo).
+  const coordsFromParams = useMemo(
     () =>
       latStr && lonStr
         ? { latitude: Number(latStr), longitude: Number(lonStr) }
         : null,
     [latStr, lonStr],
   );
+  const [coords, setCoords] = useState(coordsFromParams);
+  // Nombre de lugar auto-detectado (referencia para marcar placeNameSource).
+  const [autoPlace, setAutoPlace] = useState(placeNameAuto);
+  // Marca si el usuario ha tocado el campo de lugar (para no pisar lo que escriba
+  // cuando el GPS resuelva tarde).
+  const placeEdited = useRef(false);
 
   const bottomConstant = Platform.OS === "ios" ? 22 : 72;
   const topConstant = Platform.OS === "ios" ? 90 : 140;
@@ -88,7 +100,26 @@ export default function ConfirmForecast() {
   const [placeName, setPlaceName] = useState(placeNameAuto);
   const [description, setDescription] = useState("");
 
-  const [isLoading, setIsLoading] = useState(false);
+  // Ubicación en segundo plano: solo para fotos de cámara y solo si no vino ya por
+  // params. No bloquea la pantalla de carga ni la inferencia; cuando resuelve,
+  // rellena las coords (habilita publicar) y el campo de lugar (si no se ha tocado).
+  useEffect(() => {
+    if (source !== "camera" || coordsFromParams) return;
+    let cancelled = false;
+    (async () => {
+      const loc = await tryGetCoordsAndPlace();
+      if (cancelled || !loc) return;
+      setCoords(loc.coords);
+      setAutoPlace(loc.placeNameAuto);
+      if (!placeEdited.current && loc.placeNameAuto) {
+        setPlaceName(loc.placeNameAuto);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [source, coordsFromParams]);
+
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -97,10 +128,17 @@ export default function ConfirmForecast() {
   const probability = 0.78;
   */
 
-  const { resultado, cargando } = useModel(image);
+  const { resultado, cargando, error } = useModel(image);
+
+  // Loading derivado directamente del hook: así el PRIMER frame de la pantalla
+  // ya es la vista de carga (antes un useEffect lo activaba un render tarde).
+  const isLoading = cargando;
 
   // El top-1 siempre manda (sin escalado). El tono/banda solo modulan el mensaje y la UI.
   const tone = resultado?.tone ?? null;
+  // Fallo de inferencia (decodificar/ejecutar el modelo): se trata como "repetir foto"
+  // con un mensaje de error, en vez de mostrar un resultado vacío ("-").
+  const hasError = !!error;
   const isRetake = resultado?.action === "retake";
   const clase = resultado?.clase ?? null;
   const confianza = resultado?.confianza ?? 0;
@@ -131,7 +169,7 @@ export default function ConfirmForecast() {
       let placeNameSource = "none";
 
       if (finalPlace) {
-        if (finalPlace === placeNameAuto) placeNameSource = "auto";
+        if (finalPlace === autoPlace) placeNameSource = "auto";
         else placeNameSource = "user";
       }
 
@@ -155,7 +193,7 @@ export default function ConfirmForecast() {
   }, [
     name,
     placeName,
-    placeNameAuto,
+    autoPlace,
     source,
     coords,
     image,
@@ -184,7 +222,7 @@ export default function ConfirmForecast() {
       const finalPlace = placeName.trim();
       let placeNameSource = "none";
       if (finalPlace) {
-        placeNameSource = finalPlace === placeNameAuto ? "auto" : "user";
+        placeNameSource = finalPlace === autoPlace ? "auto" : "user";
       }
       const finalDescription = description.trim() || null;
 
@@ -208,7 +246,7 @@ export default function ConfirmForecast() {
         forecast: clase,
         probability: confianza,
         imagePath: row.image_path,
-        placeName: placeNameAuto || null,
+        placeName: autoPlace || null,
         description: finalDescription,
       });
 
@@ -225,7 +263,7 @@ export default function ConfirmForecast() {
   }, [
     name,
     placeName,
-    placeNameAuto,
+    autoPlace,
     coords,
     image,
     clase,
@@ -256,13 +294,10 @@ export default function ConfirmForecast() {
     reliability,
   });
 
-  useEffect(() => {
-    setIsLoading(cargando);
-  }, [cargando]);
-
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
+        <PlainStateHeader />
         <ActivityIndicator />
         <Text className="mt-2 text-slate-500 dark:text-zinc-400">
           {t("forecast.loading")}
@@ -274,6 +309,7 @@ export default function ConfirmForecast() {
   if (!image) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900 p-6">
+        <PlainStateHeader />
         <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
           {t("forecast.notFound")}
         </Text>
@@ -281,22 +317,27 @@ export default function ConfirmForecast() {
     );
   }
 
-  // Inferencia no fiable (foto inválida o incoherente): pedir repetir la foto en vez de
-  // mostrar una alerta engañosa. No se ofrece guardar.
-  if (isRetake) {
-    const retakeTitle =
-      tone === "invalida"
-        ? t("alerts.foto_invalida.titulo")
-        : t("alerts.tone.reintentarTitulo");
-    const retakeMsg =
-      tone === "invalida"
-        ? t("alerts.foto_invalida.mensaje")
-        : t("alerts.tone.reintentarMensaje");
+  // Inferencia no fiable (error de análisis, foto inválida o incoherente): pedir repetir
+  // la foto en vez de mostrar una alerta engañosa o un resultado vacío. No se ofrece guardar.
+  if (hasError || isRetake) {
+    let retakeTitle;
+    let retakeMsg;
+    if (hasError) {
+      retakeTitle = t("alerts.tone.errorTitulo");
+      retakeMsg = t("alerts.tone.errorMensaje");
+    } else if (tone === "invalida") {
+      retakeTitle = t("alerts.foto_invalida.titulo");
+      retakeMsg = t("alerts.foto_invalida.mensaje");
+    } else {
+      retakeTitle = t("alerts.tone.reintentarTitulo");
+      retakeMsg = t("alerts.tone.reintentarMensaje");
+    }
     return (
       <View className="flex-1">
         <Stack.Screen
           options={{
-            headerShown: true,
+            // Android: sin header nativo; el botón de atrás va flotante. iOS intacto.
+            headerShown: Platform.OS === "ios",
             headerTransparent: true,
             headerTitle: "",
             headerBackTitle: "",
@@ -308,8 +349,19 @@ export default function ConfirmForecast() {
           source={{ uri: image }}
           className="absolute inset-0 w-full h-full"
         />
+        {Platform.OS === "android" ? (
+          <FloatingHeaderButton side="left" onPress={() => router.back()}>
+            <BackIcon color="white" />
+          </FloatingHeaderButton>
+        ) : null}
         <View className="flex-1 justify-end">
-          <View className="m-4 gap-4 rounded-3xl bg-white p-6 dark:bg-zinc-800">
+          <View
+            className="m-4 gap-4 rounded-3xl bg-white p-6 dark:bg-zinc-800"
+            style={{
+              marginBottom:
+                16 + (Platform.OS === "android" ? insets.bottom : 0),
+            }}
+          >
             <Text className="text-center text-2xl font-bold text-slate-900 dark:text-zinc-100">
               {retakeTitle}
             </Text>
@@ -335,24 +387,40 @@ export default function ConfirmForecast() {
       <Stack.Screen
         options={{
           headerBackTitleVisible: false,
-          headerShown: true,
+          // Android: sin header nativo; atrás + descarga van flotantes. iOS intacto.
+          headerShown: Platform.OS === "ios",
           headerTitle: "",
           headerBackTitle: "",
           headerTransparent: true,
           headerShadowVisible: false,
-          headerRight: () =>
-            source === "gallery" ? null : (
-              <DownloadPhotoButton
-                uri={image}
-                color={colorScheme === "dark" ? "white" : "black"}
-              />
-            ),
+          // iOS: descarga en el header transparente. Android: botón flotante (abajo).
+          headerRight:
+            Platform.OS === "ios"
+              ? () =>
+                  source === "gallery" ? null : (
+                    <DownloadPhotoButton
+                      uri={image}
+                      color={colorScheme === "dark" ? "white" : "black"}
+                    />
+                  )
+              : undefined,
         }}
       />
       <Image
         source={{ uri: image }}
         className="absolute inset-0 w-full h-full"
       />
+      {/* Android (sin header nativo): botones flotantes (icono blanco + sombra). */}
+      {Platform.OS === "android" ? (
+        <>
+          <FloatingHeaderButton side="left" onPress={() => router.back()}>
+            <BackIcon color="white" />
+          </FloatingHeaderButton>
+          {source !== "gallery" ? (
+            <DownloadPhotoButton uri={image} color="white" floating />
+          ) : null}
+        </>
+      ) : null}
 
       <BottomSheet
         index={1} // empieza en el primer snap point
@@ -385,7 +453,10 @@ export default function ConfirmForecast() {
       >
         <BottomSheetScrollView
           className="pt-5 px-8"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 10 }}
+          contentContainerStyle={{
+            paddingBottom:
+              insets.bottom + (Platform.OS === "android" ? 32 : 10),
+          }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={
             Platform.OS === "ios" ? "interactive" : "on-drag"
@@ -487,7 +558,10 @@ export default function ConfirmForecast() {
                   <EditableBottomSheetField
                     label={t("forecast.place")}
                     value={placeName}
-                    onChangeText={setPlaceName}
+                    onChangeText={(v) => {
+                      placeEdited.current = true;
+                      setPlaceName(v);
+                    }}
                     returnKeyType="done"
                     placeholder={
                       source === "camera"

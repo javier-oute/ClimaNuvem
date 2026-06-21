@@ -291,9 +291,8 @@ export default {
       titulo: "Cielo cubierto, posible lluvia",
       tituloDudoso: "Posible cielo cubierto",
       mensaje: {
-        alta: "Cielo cubierto: puede llegar lluvia o nieve. Prepárate por si empeora.",
-        media:
-          "Cielo cubierto. Posible precipitación próxima; lleva protección.",
+        alta: "Cielo cubierto: puede llegar lluvia o nieve.",
+        media: "Cielo cubierto. Posible precipitación próxima.",
         baja: "Podría haber cielo cubierto y lluvia próxima. Sin certeza; vigila el tiempo.",
       },
     },
@@ -301,10 +300,10 @@ export default {
       titulo: "Niebla o nubes bajas",
       tituloDudoso: "Quizá haya niebla",
       mensaje: {
-        alta: "Niebla o nubes bajas: visibilidad reducida y riesgo de desorientación. Extrema la precaución.",
+        alta: "Niebla o nubes bajas: visibilidad reducida y riesgo de desorientación.",
         media:
           "Posible niebla o nubes bajas. La visibilidad puede empeorar; atento a la orientación.",
-        baja: "Podría haber niebla. Sin certeza; vigila la visibilidad antes de avanzar.",
+        baja: "Podría haber niebla. Sin certeza; vigila la visibilidad.",
       },
     },
     conveccion_desarrollo: {
@@ -323,7 +322,7 @@ export default {
       mensaje: {
         alta: "Tormenta activa. Busca refugio y abandona crestas y cumbres de inmediato.",
         media:
-          "Hay indicios claros de tormenta. Aléjate de zonas expuestas y valora descender ya.",
+          "Hay indicios claros de tormenta. Aléjate de zonas expuestas y valora descender.",
         baja: "Podría haber actividad tormentosa, sin certeza. Vigila el cielo y evita zonas expuestas.",
       },
     },
@@ -336,6 +335,9 @@ export default {
       reintentarTitulo: "Imagen poco clara",
       reintentarMensaje:
         "El modelo no está seguro de esta imagen. Repite la foto encuadrando bien el cielo y evitando obstáculos.",
+      errorTitulo: "Error al analizar la foto",
+      errorMensaje:
+        "Ocurrió un problema al analizar la imagen. Inténtalo de nuevo con otra foto.",
       repetirFoto: "Repetir foto",
     },
     fiabilidad: {
@@ -403,9 +405,6 @@ export default {
     publishError: "No se pudo publicar",
     publishLimit:
       "Has alcanzado el máximo de 3 publicaciones activas. Despublica alguna para publicar una nueva.",
-    locationOffTitle: "Activa la ubicación",
-    locationOffMsg:
-      "Activa la ubicación para ver y publicar predicciones de tu zona en el mapa.",
     unpublishTitle: "Despublicar predicción",
     unpublishMsg: "Se quitará del mapa comunitario. ¿Quieres continuar?",
     reportConfirmTitle: "Reportar publicación",

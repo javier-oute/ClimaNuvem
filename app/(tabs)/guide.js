@@ -1,7 +1,8 @@
 import { useT } from "@/lib/i18n";
 import { Link } from "expo-router";
 import { useMemo } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import "../../global.css";
 
 const IMAGENES = {
@@ -32,12 +33,15 @@ const ABREVIATURAS = {
 
 function NubeCard({ nube }) {
   return (
-    <View className="flex-row bg-white dark:bg-zinc-800 rounded-xl shadow-sm">
+    <View
+      className="flex-row bg-white dark:bg-zinc-800 rounded-xl shadow-sm"
+      style={{ height: 180 }}
+    >
       <Image
         source={nube.imagen}
         style={{
           width: 130,
-          height: 140,
+          height: "100%",
           borderTopLeftRadius: 12,
           borderBottomLeftRadius: 12,
         }}
@@ -62,6 +66,7 @@ function NubeCard({ nube }) {
 
 export default function Guide() {
   const t = useT();
+  const insets = useSafeAreaInsets();
 
   const categorias = useMemo(
     () => [
@@ -94,7 +99,7 @@ export default function Guide() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,
-          paddingTop: 24,
+          paddingTop: 24 + (Platform.OS === "android" ? insets.top : 0),
           paddingBottom: 40,
           gap: 24,
         }}

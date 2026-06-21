@@ -2,8 +2,10 @@ import AuthBootstrap from "@/providers/AuthBootstrap";
 import { applyStoredTheme } from "@/stores/settings.store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 import { useEffect } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   SafeAreaProvider,
@@ -34,6 +36,10 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView className="flex-1 bg-white dark:bg-[#1e2a44]">
+      {/* Color de los iconos de la barra de estado según el tema (oscuros en claro,
+          claros en oscuro). En Android edge-to-edge evita que el reloj/notificaciones
+          se vuelvan blancos e ilegibles sobre fondos claros. */}
+      <StatusBar style="auto" />
       <SafeAreaProvider initialMetrics={initialWindowMetrics ?? undefined}>
         <BottomSheetModalProvider>
           <AuthBootstrap>
@@ -50,7 +56,10 @@ export default function RootLayout() {
                 name="[id]"
                 options={{
                   headerBackTitleVisible: false,
-                  headerShown: true,
+                  // Android: sin header nativo desde el primer frame (evita el
+                  // flash del botón atrás negro al abrir); la pantalla dibuja su
+                  // propio botón flotante. iOS mantiene su header transparente.
+                  headerShown: Platform.OS === "ios",
                   headerTitle: "",
                   headerBackTitle: "",
                   headerTransparent: true,
@@ -61,7 +70,7 @@ export default function RootLayout() {
                 name="forecast-screen"
                 options={{
                   headerBackTitleVisible: false,
-                  headerShown: true,
+                  headerShown: Platform.OS === "ios",
                   headerTitle: "",
                   headerBackTitle: "",
                   headerTransparent: true,
@@ -81,7 +90,7 @@ export default function RootLayout() {
                 name="map-prediction/[id]"
                 options={{
                   headerBackTitleVisible: false,
-                  headerShown: true,
+                  headerShown: Platform.OS === "ios",
                   headerTitle: "",
                   headerBackTitle: "",
                   headerTransparent: true,
@@ -92,7 +101,7 @@ export default function RootLayout() {
                 name="cloud/[type]"
                 options={{
                   headerBackTitleVisible: false,
-                  headerShown: true,
+                  headerShown: Platform.OS === "ios",
                   headerTitle: "",
                   headerBackTitle: "",
                   headerTransparent: true,

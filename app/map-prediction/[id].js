@@ -2,7 +2,9 @@ import {
   ReportForecastButton,
   UnpublishForecastButton,
 } from "@/components/forecast/forecast-buttons";
-import { UserIcon } from "@/components/icons";
+import { FloatingHeaderButton } from "@/components/floating-header-button";
+import { BackIcon, UserIcon } from "@/components/icons";
+import { PlainStateHeader } from "@/components/plain-state-header";
 import {
   getPredictionById,
   reportPrediction,
@@ -165,7 +167,7 @@ export default function CommunityPredictionDetail() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
-        <Stack.Screen options={{ headerShown: true, headerTitle: "" }} />
+        <PlainStateHeader />
         <ActivityIndicator />
       </View>
     );
@@ -174,7 +176,7 @@ export default function CommunityPredictionDetail() {
   if (!item) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900 p-6">
-        <Stack.Screen options={{ headerShown: true, headerTitle: "" }} />
+        <PlainStateHeader />
         <Text className="text-lg font-semibold text-slate-900 dark:text-zinc-100">
           {t("community.notFound")}
         </Text>
@@ -197,7 +199,8 @@ export default function CommunityPredictionDetail() {
       <Stack.Screen
         options={{
           headerBackTitleVisible: false,
-          headerShown: true,
+          // Android: sin header nativo; el botón de atrás va flotante. iOS intacto.
+          headerShown: Platform.OS === "ios",
           headerTitle: "",
           headerBackTitle: "",
           headerTransparent: true,
@@ -214,6 +217,12 @@ export default function CommunityPredictionDetail() {
         className="absolute inset-0 w-full h-full"
         resizeMode="cover"
       />
+      {/* Android (sin header nativo): botón de atrás flotante (icono blanco + sombra). */}
+      {Platform.OS === "android" ? (
+        <FloatingHeaderButton side="left" onPress={() => router.back()}>
+          <BackIcon color="white" />
+        </FloatingHeaderButton>
+      ) : null}
 
       <BottomSheet
         index={1}

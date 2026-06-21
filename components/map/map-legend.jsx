@@ -15,7 +15,7 @@ const RISK_ROWS = [
   { level: 0, color: RISK_COLORS.cielo_despejado },
   { level: 1, color: RISK_COLORS.nubes_altas_medias },
   { level: 2, color: RISK_COLORS.lenticular_viento },
-  { level: 3, color: RISK_COLORS.niebla_stratus },
+  { level: 3, color: RISK_COLORS.conveccion_desarrollo },
   { level: 4, color: RISK_COLORS.tormenta },
 ];
 
