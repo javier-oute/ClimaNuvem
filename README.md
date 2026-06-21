@@ -99,15 +99,15 @@ incoherente se pide repetir la foto. El top-1 siempre manda (la alerta nunca se 
 
 ---
 
-## Estado del proyecto (2026-06-20)
+## Estado del proyecto (2026-06-21)
 
-- ✅ Auth (Apple / Google / invitado), inferencia on-device (modelo v3), historial, perfil + avatar, baja de cuenta.
+- ✅ Auth (Apple / Google / invitado), inferencia on-device (modelo **v3, final**), historial, perfil + avatar, baja de cuenta.
 - ✅ **Alertas graduadas por confianza** (bandas de fiabilidad calibradas, "repetir foto").
-- ✅ i18n (es/gl/en), modo oscuro, guía de nubes, pantalla de ayuda.
+- ✅ i18n (es/gl/en), modo oscuro, guía de nubes, pantalla de ayuda, visor de foto a pantalla completa.
 - ✅ **Mapa comunitario Fase 2** (backend Supabase real: publicar/despublicar/reportar, privacidad por snap de coords, expiración 6 h).
-- ✅ Suite de tests (163 passing + 3 todo).
-- ⏳ Modelo v4 definitivo: pendiente de entrenar e integrar.
-- 🧹 Higiene de repo (2026-06-20): apk/modelos viejos untrackeados + `.gitignore`, mock del mapa eliminado, `RECORD_AUDIO` retirado. Pendiente: `console.*` y deps sin usar.
+- ✅ Username robusto (registro + editor). Suite de tests (164 passing + 3 todo).
+- 🎯 Cierre/demo: probar el mapa Fase 2 **en dispositivo** (build nativo + Google Maps API key Android) es lo principal pendiente.
+- 🧹 Higiene: mock del mapa eliminado y `RECORD_AUDIO` retirado (hecho); pendiente `git rm --cached` del apk y modelos viejos (en `.gitignore` pero aún trackeados), limpieza de `console.*` y deps sin usar.
 
 > Análisis de estado completo y realista en **[`docs/estado-proyecto.md`](./docs/estado-proyecto.md)**.
 

@@ -1,8 +1,0 @@
-cielo_despejado
-conveccion_desarrollo
-cubierto_precipitacion
-foto_invalida
-lenticular_viento
-niebla_stratus
-nubes_altas_medias
-tormenta

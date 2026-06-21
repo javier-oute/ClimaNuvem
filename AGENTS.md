@@ -21,7 +21,7 @@ ClimaNuvem es una app React Native / Expo (TFG, USC + HP SCDS) de seguridad para
 - **Este repo es la raíz de git.** La carpeta padre del workspace NO está versionada.
 - Trabaja en ramas de feature (p. ej. `feature-mapa`). **No cambies de rama sin que te lo pidan.**
 - No commitees secretos. `.env` está en `.gitignore` (usa `.env.example` si existe).
-- Avisos: `climanuvem.apk` está **trackeado por error** — hoy es un fichero de **191 B con un JSON de error** de un build EAS fallido (antes era un APK de ~13 MB); debería estar en `.gitignore`. `ios/` y `android/` están ignorados (proyecto prebuild). También están trackeados pesos de modelo que la app ya no usa: `assets/models/climanuvem_v2.tflite` (sustituido por v3) y `assets/models/mejor_modelo.pt` (checkpoint PyTorch, no es asset de app).
+- Avisos: `climanuvem.apk` (hoy un fichero de **191 B con un JSON de error** de un build EAS fallido), `assets/models/climanuvem_v2.tflite` (sustituido por v3), `assets/models/climanuvem_labels.txt` y `assets/models/mejor_modelo.pt` (checkpoint PyTorch, no es asset de app) están **en `.gitignore` PERO todavía trackeados**: `.gitignore` no destrackea lo ya versionado, así que siguen pesando en el repo hasta hacer `git rm --cached <fichero>` (sin borrarlos de disco). `ios/` y `android/` están ignorados (proyecto prebuild). El activo `climanuvem_v3.tflite` SÍ debe seguir versionado.
 - **Rama de trabajo actual:** `feature-mapa` (mapa comunitario Fase 2).
 
 ---
@@ -126,38 +126,38 @@ __tests__/                 unit/ · integration/ · pending/
 ## 7. Tests
 
 - Jest + `jest-expo`, entorno Node. Config: `jest.config.js` (alias `@/`, `collectCoverageFrom`), mocks nativos en `jest.setup.js`.
-- Estado: **163 passing + 3 `it.todo`** (166 total) en 9 suites de `__tests__/{unit,integration,pending}`.
+- Estado: **164 passing + 3 `it.todo`** (167 total) en 9 suites de `__tests__/{unit,integration,pending}`.
 - Cubren lógica pura e integración con Supabase mockeado (`lib/format`, `lib/mlNormalize`, `lib/forecast/evaluateForecast`, `utils/phone`, `utils/username`, `lib/forecastHistory`, `stores/forecast.store`, `lib/resetSupabaseAuth`).
 - **Fuera de alcance actual:** tests de componentes (requieren `@testing-library/react-native` + mocks de Expo Router/NativeWind/BottomSheet), `useModel` completo, `LargeSecureStore`, E2E.
 - Al corregir un bug con `it.todo` pendiente, conviértelo en test activo. Detalle en `../Testing.md`.
 
 ---
 
-## 8. Estado y pendientes (2026-06-20)
+## 8. Estado y pendientes (2026-06-21)
 
-> Análisis de estado realista y completo en **`docs/estado-proyecto.md`**.
+> Análisis de estado realista y completo en **`docs/estado-proyecto.md`**. **Se asume `climanuvem_v3.tflite`
+> como modelo FINAL del TFG**: el cierre es solidez + pruebas en dispositivo + higiene + demo, no entrenar otro modelo.
 
 **Hecho (verificado en código):**
 - **Modelo v3** activo (`climanuvem_v3.tflite`) con preprocesado de evaluación fiel y probs calibradas.
 - **Alertas graduadas por confianza** (`lib/forecast/*`): bandas de fiabilidad, suavizado por 2ª clase, "repetir foto".
-- **Mapa comunitario Fase 2** (backend Supabase real): publicar/despublicar/reportar, snap de coords, expiración 6 h, límite 3, consentimiento versionado, moderación.
-- i18n (es/gl/en, default gallego), modo oscuro, guía de nubes, ayuda, avatar de perfil, baja de cuenta (Edge Function), suite de tests (163).
+- **Mapa comunitario Fase 2** (backend Supabase real): publicar/despublicar/reportar, snap de coords, expiración 6 h, límite 3, consentimiento versionado, moderación, sin filtro de distancia.
+- **Username robusto** (registro vía `unique_username`/`handle_new_user` + validación en el editor).
+- **Visor de foto a pantalla completa** (`components/fullscreen-image-viewer.jsx`) con pista "Toca para ampliar", aviso de privacidad en el mapa, tarjetas de guía con cuadre estable, mensaje de carga descriptivo.
+- i18n (es/gl/en, default gallego), modo oscuro, guía de nubes, ayuda, avatar de perfil, baja de cuenta (Edge Function), suite de tests (164).
 
-**Pendiente:**
-- **Modelo v4 definitivo:** entrenar e integrar (sustituir `.tflite`, re-verificar labels, **re-derivar umbrales de `model-meta.js`**).
-- **Probar el mapa Fase 2 end-to-end en dispositivo** (módulo nativo; requiere build reciente + Google Maps API key Android).
+**Pendiente (cierre/demo):**
+- **Probar el mapa Fase 2 end-to-end en dispositivo** (módulo nativo; requiere build reciente + Google Maps API key Android). **Lo más importante sin verificar en runtime.**
+- **Higiene git:** `git rm --cached` de `climanuvem.apk`, `climanuvem_v2.tflite`, `climanuvem_labels.txt`, `mejor_modelo.pt` (ya en `.gitignore` pero aún trackeados).
+- **`console.*`** en producción (19 ficheros).
 - **3 `it.todo`** (cobertura del pipeline `useModel`).
 - Decidir sobre filas históricas inconsistentes de `forecast_history` (mensaje vs clave de clase).
+- Dependencias instaladas sin usar (auditar; candidatas detectadas sin imports: `react-native-paper`, `expo-sqlite`, `react-native-vector-icons`, `base64-arraybuffer`, entre otras — verificar antes de quitar).
 
-**Higiene aplicada (2026-06-20, en working tree, sin commitear):**
-- `climanuvem.apk` + `*.apk`/`*.aab` → `.gitignore`; el apk dejó de trackearse.
-- Modelos sin uso (`climanuvem_v2.tflite`, `climanuvem_labels.txt`, `mejor_modelo.pt`) → untrackeados (conservados en disco) + `.gitignore`. El activo `climanuvem_v3.tflite` sigue versionado.
-- `services/communityMap.mock.js` (código muerto) → **eliminado**.
+**Higiene ya aplicada (commiteada):**
+- `services/communityMap.mock.js` (código muerto) → **eliminado** (la carpeta `services/` ya no existe).
 - `RECORD_AUDIO` retirado de `app.json` (`permissions: []`). **Requiere rebuild nativo** para surtir efecto.
-
-**Deuda técnica restante (`../Revision.md`):**
-- `console.*` en producción (~20 ficheros).
-- Dependencias instaladas sin usar (pendiente de analizar; no entró en esta tanda de higiene).
+- `*.apk`/`*.aab` y los modelos sin uso → añadidos a `.gitignore` (pero ver "Higiene git" arriba: falta destrackearlos).
 
 ---
 
