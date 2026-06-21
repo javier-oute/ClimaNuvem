@@ -20,6 +20,9 @@ bun.lockb
 *.tsbuildinfo
 expo-env.d.ts
 
+# Tests (informes de cobertura generados)
+coverage/
+
 # OS / Editor
 .DS_Store
 .idea/
