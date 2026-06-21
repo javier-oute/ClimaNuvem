@@ -75,7 +75,6 @@
       ],
       "expo-video",
       "expo-secure-store",
-      "expo-sqlite",
       "expo-apple-authentication",
       "expo-font",
       "@react-native-community/datetimepicker",
