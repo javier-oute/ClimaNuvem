@@ -4,6 +4,12 @@ export default {
     subtitle:
       "Saca una foto a las nubes que te preocupan y te daremos el pronóstico",
   },
+  onboarding: {
+    title: "Aprende a utilizar ClimaNuvem",
+    message:
+      "¿Es tu primera vez aquí? Te enseñamos a fotografiar el cielo y a sacar el máximo partido a la app.",
+    help: "Ayuda",
+  },
   guide: {
     title: "Tipos de nubes",
     subtitle: "Los 10 géneros del Atlas Internacional de Nubes (OMM).",
@@ -202,15 +208,15 @@ export default {
     loadingHint: "Esto puede tardar unos segundos.",
     notFound: "No se encontró la imagen",
     saveError: "No se pudo guardar",
-    name: "Nombre",
-    place: "Lugar",
+    name: "Nombre (opcional)",
+    place: "Lugar (opcional)",
     namePlaceholder: "Ej: Nubes negras en casa",
     placeCamera: "Lugar detectado...",
-    placeGallery: "Lugar (opcional)",
+    placeGallery: "Ej: Pico Sacro",
     probability: "Probabilidad",
     defaultName: "Predicción",
-    description: "Descripción",
-    descriptionPlaceholder: "Añade un comentario (opcional)",
+    description: "Descripción (opcional)",
+    descriptionPlaceholder: "Ej: Cielo muy oscuro al oeste",
     descriptionHint:
       "Si publicas la predicción, esta descripción se verá en el mapa.",
   },
@@ -349,14 +355,12 @@ export default {
     },
   },
   share: {
-    predictionPrefix: "🌤️ Predicción: ",
     locationPrefix: "📍 ",
     forecastLabel: "Pronóstico: ",
     recommendationLabel: "Recomendación: ",
     reliabilityLabel: "Fiabilidad: ",
-    probabilityLabel: "Probabilidad: ",
     footer: "\n— Enviado desde ClimaNuvem",
-    defaultTitle: "Predicción",
+    defaultTitle: "🌤️ Predicción",
     error: "No se pudo compartir",
   },
   camera: {
@@ -364,6 +368,19 @@ export default {
     permissionMsg: "Activa la cámara en Ajustes para poder tomar fotos.",
     cancel: "Cancelar",
     openSettings: "Abrir Ajustes",
+  },
+  permissions: {
+    cancel: "Cancelar",
+    openSettings: "Abrir Ajustes",
+    photosTitle: "Permiso de fotos",
+    photosMsg: "Activa el acceso a tus fotos en Ajustes para guardar imágenes.",
+  },
+  save: {
+    noImageTitle: "Sin imagen",
+    noImageMsg: "No hay imagen para guardar.",
+    successTitle: "Guardada ✅",
+    successMsg: "La imagen se guardó en tu galería.",
+    error: "No se pudo guardar",
   },
   settings: {
     title: "Preferencias",
@@ -419,6 +436,18 @@ export default {
   },
   help: {
     title: "Ayuda",
+    intro: {
+      title: "¿Qué es ClimaNuvem?",
+      body: "Saca una foto del cielo y ClimaNuvem te cuenta qué está pasando ahí arriba. En segundos tendrás un pronóstico a corto plazo y un aviso si hay nubes de riesgo cerca, para que tus salidas a la montaña sean más seguras.",
+    },
+    map: {
+      title: "El mapa de la comunidad",
+      body: "Con el mapa no estás solo: comparte tu predicción y consulta las de otra gente que ya está en la montaña. Un vistazo y sabes qué tiempo hace en distintas zonas, perfecto para decidir adónde ir y preparar la salida con más seguridad.",
+    },
+    features: {
+      title: "Más cosas que puedes hacer",
+      body: "Además, ClimaNuvem incluye una guía de nubes para aprender a identificarlas, un historial con todas tus predicciones guardadas, y un perfil donde ajustar el tema (claro u oscuro), el idioma y tus datos de usuario.",
+    },
     goodPhotos: {
       title: "Cómo hacer buenas fotos",
       body: "Sujeta el móvil en horizontal, con el cielo arriba y sin inclinarlo. Apunta directamente al cielo y deja que las nubes llenen el encuadre, con buena iluminación y sin disparar contra el sol. Mantén el móvil estable para que la foto no salga movida y, si hay pocas nubes, incluye el horizonte para dar contexto.",
@@ -432,10 +461,6 @@ export default {
         "Evita fotos con mala visibilidad, como de noche o a contraluz. El modelo necesita ver el cielo y las nubes con claridad.",
       blurry:
         "Evita fotos borrosas o movidas, y cuidado con tapar el objetivo con el dedo (el mítico dedo).",
-    },
-    howItWorks: {
-      title: "Cómo funciona ClimaNuvem",
-      body: "1. Haz una foto del cielo o elige una imagen de tu galería.\n2. La IA analiza el tipo de nubes y su grado de desarrollo.\n3. ClimaNuvem clasifica el riesgo en una de 8 categorías y te muestra una alerta.\n4. Guarda la predicción en tu historial para consultarla cuando quieras.",
     },
   },
 };

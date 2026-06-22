@@ -3,7 +3,6 @@ import { useCallback } from "react";
 import { Alert, Share } from "react-native";
 
 export function useShareForecast({
-  name,
   placeName,
   forecast,
   recommendation,
@@ -15,10 +14,10 @@ export function useShareForecast({
       ? `${t("share.reliabilityLabel")}${t(`alerts.fiabilidad.${reliability}`)}`
       : null;
 
+    // El título es siempre genérico ("🌤️ Predicción"): nunca se comparte el nombre
+    // que el usuario le haya puesto a la predicción.
     const shareText = [
-      (name ?? "").trim()
-        ? `${t("share.predictionPrefix")}${name}`
-        : t("share.defaultTitle"),
+      t("share.defaultTitle"),
       (placeName ?? "").trim()
         ? `${t("share.locationPrefix")}${placeName}`
         : null,
@@ -37,7 +36,7 @@ export function useShareForecast({
     } catch (e) {
       Alert.alert(t("share.error"), e?.message ?? "Error");
     }
-  }, [name, placeName, forecast, recommendation, reliability]);
+  }, [placeName, forecast, recommendation, reliability]);
 
   return { onShare };
 }

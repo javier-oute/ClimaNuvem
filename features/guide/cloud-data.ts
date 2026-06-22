@@ -48,7 +48,7 @@ const META: Record<CloudKey, Omit<CloudMeta, "riesgoColor">> = {
   altostratus: { category: "mid", abrev: "As", riesgo: 2 },
   altocumulus: { category: "mid", abrev: "Ac", riesgo: 1 },
   nimbostratus: { category: "mid", abrev: "Ns", riesgo: 2 },
-  stratus: { category: "low", abrev: "St", riesgo: 3 },
+  stratus: { category: "low", abrev: "St", riesgo: 2 },
   stratocumulus: { category: "low", abrev: "Sc", riesgo: 1 },
   cumulus: { category: "vertical", abrev: "Cu", riesgo: 2 },
   cumulonimbus: { category: "vertical", abrev: "Cb", riesgo: 4 },

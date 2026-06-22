@@ -2,6 +2,7 @@ import { useT } from "@/lib/i18n";
 import { useAuthStore } from "@/stores/auth.store";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { router } from "expo-router";
+import { useColorScheme } from "nativewind";
 import { useEffect } from "react";
 import { Image, Text, View } from "react-native";
 import AppleSignInButton from "../../components/social-auth-buttons/apple/apple-sign-in-button";
@@ -11,6 +12,7 @@ import GoogleSignInButton from "../../components/social-auth-buttons/google-sign
 
 export default function LoginScreen() {
   const t = useT();
+  const { colorScheme } = useColorScheme();
 
   const appleProps = {
     buttonType: AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN,
@@ -32,7 +34,13 @@ export default function LoginScreen() {
     <View className="flex-1 justify-start bg-white dark:bg-zinc-900">
       <View className="pt-8">
         <Image
-          source={require("@/assets/images/icon.png")}
+          // Logo según tema: en oscuro, el blanco que rodea nube+gota es el negro del
+          // login (#18181b); la nube y la gota mantienen su color. En claro, sin cambios.
+          source={
+            colorScheme === "dark"
+              ? require("@/assets/images/icon-login-dark.png")
+              : require("@/assets/images/icon.png")
+          }
           style={{ width: 200, height: 200, alignSelf: "center" }}
           resizeMode="contain"
         />

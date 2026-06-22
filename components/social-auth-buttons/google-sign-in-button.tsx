@@ -243,14 +243,14 @@ export default function GoogleSignInButton() {
         source={{
           uri: "https://developers.google.com/identity/images/g-logo.png",
         }}
-        style={{ width: 14, height: 14, marginRight: 5 }}
+        style={{ width: 17, height: 17, marginRight: 7 }}
       />
       <Text
         numberOfLines={1}
         style={{
-          fontSize: 14,
+          fontSize: 16,
           color: "#757575",
-          fontWeight: "500",
+          fontWeight: "600",
         }}
       >
         {t("login.google")}

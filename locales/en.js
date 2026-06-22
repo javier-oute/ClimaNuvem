@@ -4,6 +4,12 @@ export default {
     subtitle:
       "Take a photo of the clouds that concern you and we will give you the forecast",
   },
+  onboarding: {
+    title: "Learn how to use ClimaNuvem",
+    message:
+      "First time here? Learn how to photograph the sky and get the most out of the app.",
+    help: "Help",
+  },
   guide: {
     title: "Cloud types",
     subtitle: "The 10 genera of the International Cloud Atlas (WMO).",
@@ -202,15 +208,15 @@ export default {
     loadingHint: "This may take a few seconds.",
     notFound: "Image not found",
     saveError: "Could not save",
-    name: "Name",
-    place: "Location",
+    name: "Name (optional)",
+    place: "Location (optional)",
     namePlaceholder: "E.g. Dark clouds at home",
     placeCamera: "Detected location...",
-    placeGallery: "Location (optional)",
+    placeGallery: "E.g. Pico Sacro",
     probability: "Probability",
     defaultName: "Prediction",
-    description: "Description",
-    descriptionPlaceholder: "Add a comment (optional)",
+    description: "Description (optional)",
+    descriptionPlaceholder: "E.g. Very dark sky to the west",
     descriptionHint:
       "If you publish the prediction, this description will be shown on the map.",
   },
@@ -347,14 +353,12 @@ export default {
     },
   },
   share: {
-    predictionPrefix: "🌤️ Prediction: ",
     locationPrefix: "📍 ",
     forecastLabel: "Forecast: ",
     recommendationLabel: "Recommendation: ",
     reliabilityLabel: "Reliability: ",
-    probabilityLabel: "Probability: ",
     footer: "\n— Sent from ClimaNuvem",
-    defaultTitle: "Prediction",
+    defaultTitle: "🌤️ Prediction",
     error: "Could not share",
   },
   camera: {
@@ -362,6 +366,19 @@ export default {
     permissionMsg: "Enable camera access in Settings to take photos.",
     cancel: "Cancel",
     openSettings: "Open Settings",
+  },
+  permissions: {
+    cancel: "Cancel",
+    openSettings: "Open Settings",
+    photosTitle: "Photos permission",
+    photosMsg: "Enable access to your photos in Settings to save images.",
+  },
+  save: {
+    noImageTitle: "No image",
+    noImageMsg: "There is no image to save.",
+    successTitle: "Saved ✅",
+    successMsg: "The image was saved to your gallery.",
+    error: "Couldn't save",
   },
   settings: {
     title: "Preferences",
@@ -416,6 +433,18 @@ export default {
   },
   help: {
     title: "Help",
+    intro: {
+      title: "What is ClimaNuvem?",
+      body: "Take a photo of the sky and ClimaNuvem tells you what's going on up there. In seconds you'll get a short-term forecast and a heads-up if there are risky clouds nearby, so your trips to the mountains are safer.",
+    },
+    map: {
+      title: "The community map",
+      body: "With the map you're not alone: share your prediction and check those of other people already out in the mountains. One glance and you know what the weather is like in different areas, perfect for deciding where to go and getting ready more safely.",
+    },
+    features: {
+      title: "More things you can do",
+      body: "ClimaNuvem also includes a cloud guide to learn to identify them, a history with all your saved predictions, and a profile where you can adjust the theme (light or dark), the language and your user details.",
+    },
     goodPhotos: {
       title: "How to take good photos",
       body: "Hold the phone horizontally, with the sky up and without tilting it. Point directly at the sky and let the clouds fill the frame, with good lighting and without shooting into the sun. Keep the phone steady so the photo doesn't come out blurry and, if there are few clouds, include the horizon for context.",
@@ -430,10 +459,6 @@ export default {
         "Avoid photos with poor visibility, such as at night or against the light. The model needs to see the sky and clouds clearly.",
       blurry:
         "Avoid blurry or shaky photos, and be careful not to cover the lens with your finger (the classic finger).",
-    },
-    howItWorks: {
-      title: "How ClimaNuvem works",
-      body: "1. Take a photo of the sky or pick one from your gallery.\n2. The AI analyses the type of clouds and how developed they are.\n3. ClimaNuvem classifies the risk into one of 8 categories and shows you an alert.\n4. Save the prediction to your history to check it whenever you want.",
     },
   },
 };

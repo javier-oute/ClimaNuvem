@@ -1,6 +1,6 @@
 import { t } from "@/lib/i18n";
+import { alertPermissionBlocked } from "@/lib/permissions";
 import * as ImagePicker from "expo-image-picker";
-import { Alert, Linking } from "react-native";
 
 export default function useTomarFoto() {
   const [permission, requestPermission] = ImagePicker.useCameraPermissions();
@@ -12,13 +12,11 @@ export default function useTomarFoto() {
       const res = await requestPermission();
       if (!res.granted) {
         if (res.canAskAgain === false) {
-          Alert.alert(t("camera.permissionTitle"), t("camera.permissionMsg"), [
-            { text: t("camera.cancel"), style: "cancel" },
-            {
-              text: t("camera.openSettings"),
-              onPress: () => Linking.openSettings(),
-            },
-          ]);
+          alertPermissionBlocked({
+            t,
+            title: t("camera.permissionTitle"),
+            message: t("camera.permissionMsg"),
+          });
         }
         return;
       }

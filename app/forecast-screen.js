@@ -552,9 +552,13 @@ export default function ConfirmForecast() {
                     maxLength={280}
                     style={{ minHeight: 88, textAlignVertical: "top" }}
                   />
-                  <Text className="text-xs text-slate-400 dark:text-zinc-500 -mt-2">
-                    {t("forecast.descriptionHint")}
-                  </Text>
+                  {/* Aviso solo si la predicción es publicable: no tiene sentido avisar de que
+                      la descripción se verá en el mapa cuando no se puede publicar. */}
+                  {canPublish ? (
+                    <Text className="text-xs text-slate-400 dark:text-zinc-500 -mt-2">
+                      {t("forecast.descriptionHint")}
+                    </Text>
+                  ) : null}
                 </View>
               ) : null}
               {/* Botones */}

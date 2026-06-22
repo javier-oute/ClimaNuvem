@@ -181,11 +181,27 @@ export default function ItemDetail() {
     ]);
   }, [item, isUnpublishing, t]);
 
+  // Mismo criterio que en vivo: título dudoso y banda de fiabilidad según la probabilidad guardada.
+  // Se calcula aquí (null-safe) para reutilizarlo tanto en el render como al compartir.
+  const band = bandForConfidence(item?.probability ?? 0);
+  const forecastTitle = t(forecastTitleKey(item?.forecast, band));
+  const forecastDisplay = forecastTitle.startsWith("alerts.")
+    ? item?.forecast
+    : forecastTitle;
+  const lowBand = band === "baja";
+  // Recomendación de seguridad derivada de la banda guardada (la 2ª clase no se
+  // almacena, así que se usa la banda de fiabilidad directamente).
+  const recommendationText = t(`alerts.${item?.forecast}.mensaje.${band}`);
+  const recommendation = recommendationText.startsWith("alerts.")
+    ? null
+    : recommendationText;
+
+  // Nunca se comparte el nombre de la predicción: el título es siempre genérico.
   const { onShare } = useShareForecast({
-    name: item?.name,
     placeName: item?.place_name,
-    forecast: item?.forecast,
-    reliability: bandForConfidence(item?.probability ?? 0),
+    forecast: forecastDisplay,
+    recommendation,
+    reliability: band,
   });
 
   if (isLoading) {
@@ -212,19 +228,6 @@ export default function ItemDetail() {
   }
 
   const { texto } = formatDateTimeWithWeekday(item.created_at, locale);
-  // Mismo criterio que en vivo: título dudoso y banda de fiabilidad según la probabilidad guardada.
-  const band = bandForConfidence(item.probability ?? 0);
-  const forecastTitle = t(forecastTitleKey(item.forecast, band));
-  const forecastDisplay = forecastTitle.startsWith("alerts.")
-    ? item.forecast
-    : forecastTitle;
-  const lowBand = band === "baja";
-  // Recomendación de seguridad derivada de la banda guardada (la 2ª clase no se
-  // almacena, así que se usa la banda de fiabilidad directamente).
-  const recommendationText = t(`alerts.${item.forecast}.mensaje.${band}`);
-  const recommendation = recommendationText.startsWith("alerts.")
-    ? null
-    : recommendationText;
 
   return (
     <View className="flex-1">

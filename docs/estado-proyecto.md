@@ -1,6 +1,6 @@
 # Estado real del proyecto — ClimaNuvem
 
-> Análisis técnico del estado **real** del código a fecha **2026-06-21**, hecho leyendo el árbol
+> Análisis técnico del estado **real** del código a fecha **2026-06-22**, hecho leyendo el árbol
 > completo (app, hooks, stores, lib, features, services, supabase, tests y documentación). Su objetivo
 > es dar una visión realista —no optimista— de qué está hecho, qué está a medias, qué puede romperse y
 > qué conviene priorizar. Complementa a `AGENTS.md` (guía operativa) y `docs/database.md` (esquema BD).
@@ -27,16 +27,17 @@ El estado es **sólido para un TFG**. Los riesgos pendientes son sobre todo de *
 trackeados, modelo viejo sin usar, documentación desincronizada) y de **cierre** (modelo v4 definitivo,
 pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
 
-> **Higiene — estado real a 2026-06-21 (verificado con `git ls-files`).**
+> **Higiene — estado real a 2026-06-22 (verificado con `git ls-files`).**
 > - ✅ **Hecho y commiteado:** `services/communityMap.mock.js` (código muerto) **eliminado** (la carpeta
 >   `services/` ya no existe); `RECORD_AUDIO` retirado de `app.json` (`permissions: []`, **requiere rebuild
 >   nativo** para surtir efecto); username robusto implementado (migración `robust_username` + `utils/username.js`).
-> - ⚠️ **A medias (la parte importante NO está hecha):** `climanuvem.apk`, `climanuvem_v2.tflite`,
->   `climanuvem_labels.txt` y `mejor_modelo.pt` se añadieron a `.gitignore`, **pero siguen TRACKEADOS**.
->   `.gitignore` no destrackea ficheros ya versionados: hay que ejecutar `git rm --cached <fichero>` (sin
->   borrarlos de disco) para que dejen de versionarse. Hasta entonces siguen pesando en el repo (`v2.tflite`
->   ~13 MB, `mejor_modelo.pt` ~13 MB). El activo `climanuvem_v3.tflite` (~16 MB) SÍ debe seguir versionado.
-> - ⏳ **Pendiente:** limpiar `console.*` de producción (19 ficheros) y analizar dependencias sin usar.
+> - ✅ **Artefactos destrackeados (ya resuelto):** `climanuvem.apk`, `climanuvem_v2.tflite`,
+>   `climanuvem_labels.txt` y `mejor_modelo.pt` están en `.gitignore` y **ya NO se versionan** (`git rm
+>   --cached` hecho). Verificado: `git ls-files` solo lista `climanuvem_v3.tflite` + `climanuvem_v3_labels.txt`
+>   en `assets/models/`. Los ficheros siguen en disco (peso local: `v2.tflite` ~13 MB, `mejor_modelo.pt`
+>   ~13 MB) pero fuera del repo.
+> - ✅ **Tests:** los 3 antiguos `it.todo` se convirtieron en tests reales → **224 passing, 0 todo** (13 suites).
+> - ⏳ **Pendiente:** limpiar `console.*` de producción (~90 ocurrencias en 21 ficheros) y auditar dependencias sin usar.
 
 ---
 
@@ -80,28 +81,21 @@ pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
 - **Datos históricos inconsistentes en `forecast_history`.** Quedan ~4 filas de prueba antiguas que
   guardan el *mensaje* de alerta en `forecast` en vez de la *clave de clase*. El historial lo tolera, pero
   conviene decidir (borrar filas de prueba / reasignar / dejar).
-- **3 `it.todo`** pendientes en `__tests__/pending/known-bugs.test.js` (cobertura del pipeline `useModel`
-  completo). No son bugs, es cobertura aún no escrita.
+- ~~**3 `it.todo`** pendientes~~ → **resuelto**: `__tests__/pending/known-bugs.test.js` ya contiene 5
+  tests reales sobre `evaluateForecast` (mapeo de clases del pipeline). Suite total: **224 passing, 0 todo**.
 
 ---
 
 ## 4. Qué puede romperse / riesgos técnicos
 
-- **Modelo viejo trackeado y sin uso.** `assets/models/climanuvem_v2.tflite` ya no se carga (la app usa
-  v3) pero sigue en el repo y en git. Riesgo bajo, pero es peso muerto y fuente de confusión (varios docs
-  aún lo nombran como "activo"). `assets/models/mejor_modelo.pt` (checkpoint PyTorch) tampoco pinta nada en
-  un repo de app móvil.
-- **`climanuvem.apk` trackeado.** Ya **no** son ~13 MB (como decía la auditoría): hoy es un fichero de
-  **191 B con un JSON de error de un build EAS fallido** (`GCS_FILE_NOT_FOUND`). Está en `.gitignore` pero
-  **sigue trackeado** → hay que `git rm --cached climanuvem.apk`. Riesgo nulo funcional, pero es basura versionada.
-- **Modelos viejos trackeados pese al `.gitignore`.** `climanuvem_v2.tflite` (~13 MB), `climanuvem_labels.txt`
-  y `mejor_modelo.pt` (~13 MB) están listados en `.gitignore` pero **siguen versionados** (mismo caso que el
-  apk: el `.gitignore` no destrackea lo ya añadido). Pendiente `git rm --cached` para sacarlos del repo
-  conservándolos en disco.
-- **`console.*` en producción.** Persisten en 19 ficheros de `app/`, `lib/`, `stores/`, `hooks/`,
-  `components/` (deuda ya señalada en la auditoría). No rompe, pero ensucia logs y puede filtrar datos.
-- **Permiso `RECORD_AUDIO` (Android) sin uso evidente** en `app.json`. La app no graba audio; conviene
-  retirarlo para no pedir un permiso injustificado (mala señal de privacidad en review de tienda).
+- ~~**Modelos/apk viejos trackeados**~~ → **resuelto**: `climanuvem_v2.tflite`, `climanuvem_labels.txt`,
+  `mejor_modelo.pt` y `climanuvem.apk` (191 B, JSON de error de un build EAS fallido) están en `.gitignore`
+  y **destrackeados** (`git ls-files` solo versiona `climanuvem_v3.tflite` + `_labels`). Siguen en disco
+  como peso local (~13 MB cada `.tflite`/`.pt`) pero ya no en el repo. Conviene borrarlos de disco si no se necesitan.
+- **`console.*` en producción.** Persisten **~90 ocurrencias en 21 ficheros** de `app/`, `lib/`, `stores/`,
+  `hooks/`, `components/`, `providers/`, `features/`. No rompe, pero ensucia logs y puede filtrar datos.
+- ~~**Permiso `RECORD_AUDIO`**~~ → **resuelto** en `app.json` (`permissions: []`); requiere rebuild nativo
+  para que surta efecto en el binario.
 - **`unpublishAllMine` borra por cliente con filtro `user_id`.** Es seguro porque la RLS
   `cp_delete_own_or_admin` restringe el borrado a filas propias; el filtro es solo una optimización. Quien
   lo mantenga debe saber que **la barrera real es la RLS**, no el `.eq("user_id", …)` del cliente.
@@ -122,7 +116,7 @@ pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
 - **Bloques de código comentado al final de varios ficheros** (p. ej. `forecast-screen.js`): son
   referencias históricas marcadas como "no borrar" por convención. No es deuda urgente, pero hace los
   ficheros más largos y difíciles de leer.
-- **Conteo de tests** en la doc: real **164 passing + 3 `it.todo`** (167) a 2026-06-21.
+- **Conteo de tests**: real **224 passing, 0 `it.todo`** en 13 suites a 2026-06-22 (la doc previa decía 164/167).
 - **Funcionalidades de UI recientes ya integradas** (no estaban en la versión previa de este doc): visor de
   foto a pantalla completa con pista "Toca para ampliar" (`components/fullscreen-image-viewer.jsx`, usado en
   forecast + detalles), aviso de privacidad bajo la leyenda del mapa, tarjetas de la guía más bajas con
@@ -140,30 +134,28 @@ pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
 1. **Probar el mapa Fase 2 end-to-end en dispositivo** (build nativo): publicar, ver pins propios/ajenos,
    detalle, reportar/ocultar, expiración 6 h, límite de 3, desactivar-compartir, Google Maps API key
    Android. Es lo único grande sin verificar en runtime y lo que más riesgo aporta a la demo.
-2. **Higiene de repo (rápido y de bajo riesgo):** `git rm --cached` de `climanuvem.apk`,
-   `climanuvem_v2.tflite`, `climanuvem_labels.txt` y `mejor_modelo.pt` (ya están en `.gitignore` pero
-   siguen trackeados; conservarlos en disco). `services/communityMap.mock.js` y `RECORD_AUDIO` ya están hechos.
-3. **Limpieza de `console.*`** de producción (19 ficheros) o sustituir por un logger silenciable en release.
-4. **Convertir los 3 `it.todo`** en tests reales del pipeline `useModel` y revisar que la cobertura
-   declarada (`collectCoverageFrom`) sigue siendo representativa. Cerrar así el frente de testing.
-5. **Pasada de UX para la demo:** recorrer los flujos completos (foto→resultado→guardar/publicar/compartir,
+2. **Pasada de UX para la demo:** recorrer los flujos completos (foto→resultado→guardar/publicar/compartir,
    invitado, historial, mapa, perfil/avatar, baja de cuenta) en iOS y Android buscando textos sin traducir,
    estados de error y casos límite.
-6. **Decidir sobre las filas históricas inconsistentes** de `forecast_history`.
-7. **Memoria del TFG:** el estado actual (modelo v3 calibrado, alertas graduadas justificadas con métricas,
+3. **Limpieza de `console.*`** de producción (~90 ocurrencias en 21 ficheros) o sustituir por un logger
+   silenciable en release. (Único frente de deuda de código que queda.)
+4. **Decidir sobre las filas históricas inconsistentes** de `forecast_history`.
+5. **Memoria del TFG:** el estado actual (modelo v3 calibrado, alertas graduadas justificadas con métricas,
    mapa con privacidad por diseño, baja de cuenta y RLS auditada) da material sólido para documentar
    decisiones técnicas.
+
+> **Ya resuelto desde la revisión anterior** (no rehacer): higiene git (`git rm --cached` de apk/modelos
+> viejos), `RECORD_AUDIO`, mock del mapa, y los 3 `it.todo` (hoy tests reales → 224 passing).
 
 ---
 
 ## 7. Qué deberías decidir tú antes de seguir
 
-- **¿`git rm --cached` de `v2.tflite`, `climanuvem_labels.txt`, `mejor_modelo.pt` y `climanuvem.apk`?**
-  (recomendado sí; ya están en `.gitignore` pero siguen trackeados — el `.pt` no es un asset de app).
 - **¿Consentimiento del mapa local por dispositivo o ligado a la cuenta?** Hoy es local; decidir si se
   acepta esa limitación para el TFG.
 - **¿Qué hacemos con las filas de prueba inconsistentes** en `forecast_history`?
 - **¿Activamos limpieza de `console.*` ya** o se deja para el cierre de junio?
+- **¿Borramos de disco** `v2.tflite`/`mejor_modelo.pt`/`climanuvem.apk`? (ya fuera del repo; solo ocupan local).
 - **Privacidad del mapa:** confirmar que el snap ~2 km, la expiración 6 h y el límite de 3 son los valores
   finales (hoy fijados en las RPC del servidor).
 

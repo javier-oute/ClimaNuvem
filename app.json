@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ClimaNuvem-prueba",
+    "name": "ClimaNuvem",
     "slug": "climanuvem-prueba",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -52,7 +52,7 @@
           "backgroundColor": "#FFFFFF",
           "dark": {
             "image": "./assets/images/splash-dark-square.png",
-            "backgroundColor": "#1e2a44"
+            "backgroundColor": "#18181b"
           },
           "android": {
             "image": "./assets/images/splash-icon.png",
@@ -61,7 +61,7 @@
             "backgroundColor": "#FFFFFF",
             "dark": {
               "image": "./assets/images/splash-icon-dark.png",
-              "backgroundColor": "#1e2a44"
+              "backgroundColor": "#18181b"
             }
           }
         }

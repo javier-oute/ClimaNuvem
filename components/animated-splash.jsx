@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/stores/auth.store";
+import { useUiStore } from "@/stores/ui.store";
 import { useColorScheme } from "nativewind";
 import { useCallback, useEffect, useState } from "react";
 import { Platform, StyleSheet } from "react-native";
@@ -57,7 +58,7 @@ const EXIT_MS = 650;
 const LOGO_WIDTH = 200;
 
 const BG_LIGHT = "#ffffff";
-const BG_DARK = "#1e2a44";
+const BG_DARK = "#18181b";
 
 /**
  * Overlay React que replica la splash nativa (mismo lockup) y hace un zoom-in + fade-out
@@ -109,7 +110,11 @@ export default function AnimatedSplash() {
 
   // Salida: cuando (sesión lista Y mínimo cumplido) o se agota el tope. El zoom CONTINÚA
   // creciendo (misma dirección) mientras se desvanece → transición suave, sin tirón.
-  const hide = useCallback(() => setVisible(false), []);
+  const hide = useCallback(() => {
+    setVisible(false);
+    // Señal para que el onboarding de la home no lance su Alert hasta que el splash desaparezca.
+    useUiStore.getState().setSplashDone();
+  }, []);
   useEffect(() => {
     const shouldExit = (ready && minElapsed) || capReached;
     if (!shouldExit) return;

@@ -57,7 +57,7 @@ function DeleteAction({
     <View
       style={{
         width: 80,
-        backgroundColor: colorScheme === "dark" ? "#27272a" : "white",
+        backgroundColor: colorScheme === "dark" ? "#18181b" : "white",
         justifyContent: "center",
         alignItems: "center",
       }}
@@ -286,11 +286,12 @@ export default function Historial() {
                   //textColor: "#0F172A",
                 }
               : {
-                  // Android look (props específicas)
-                  //textColor: "#0F172A",
-                  headerIconColor: "black",
-                  //hintTextColor: "#94a3b8",
-                  //headerIconColor: "#314468",
+                  // Android look (props específicas). Colores según el tema: el ThemeProvider no
+                  // controla la SearchView nativa, así que se ajustan a mano para que el icono, el
+                  // texto y el placeholder sean legibles sobre el header oscuro.
+                  textColor: colorScheme === "dark" ? "#FFFFFF" : "#0F172A",
+                  headerIconColor: colorScheme === "dark" ? "white" : "black",
+                  hintTextColor: colorScheme === "dark" ? "#a1a1aa" : "#94a3b8",
                   // opcional: si quieres que al abrir se enfoque
                   autoFocus: false,
                 }),

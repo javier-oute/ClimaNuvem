@@ -3,10 +3,14 @@ import { FloatingHeaderButton } from "@/components/floating-header-button";
 import { HelpIcon, UserIcon } from "@/components/icons";
 import DemoVideo from "@/components/videoComponent";
 import { useT } from "@/lib/i18n";
+import { promptOnboarding } from "@/lib/onboarding";
 import { useAuthStore } from "@/stores/auth.store";
+import { useSettingsStore } from "@/stores/settings.store";
+import { useUiStore } from "@/stores/ui.store";
 import { makeRedirectUri } from "expo-auth-session";
 import { router, Stack } from "expo-router";
 import { useColorScheme } from "nativewind";
+import { useEffect, useRef } from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 import "../../../global.css";
 
@@ -14,6 +18,37 @@ export default function Index() {
   const t = useT();
   const { colorScheme } = useColorScheme();
   const session = useAuthStore((s) => s.session);
+
+  // Aviso de bienvenida: se muestra UNA sola vez por dispositivo (la primera vez que se llega a la
+  // home, como invitado o con cuenta). Condiciones para no romper la experiencia:
+  //   1) el splash ya ha desaparecido (un Alert nativo se dibuja por encima del overlay del splash),
+  //   2) el store persistido (AsyncStorage) ya está hidratado (no leer el flag por defecto),
+  //   3) aún no se ha visto (hasSeenOnboarding === false).
+  // El ref evita que se lance dos veces si la home se re-monta o re-renderiza.
+  const onboardingShown = useRef(false);
+  // Ref con el `t` actual: permite usar el idioma vigente sin meter `t` (que cambia en cada render)
+  // en las deps del efecto, evitando re-suscripciones innecesarias.
+  const tRef = useRef(t);
+  tRef.current = t;
+  useEffect(() => {
+    const tryShow = () => {
+      if (onboardingShown.current) return;
+      if (!useUiStore.getState().splashDone) return;
+      if (!useSettingsStore.persist.hasHydrated()) return;
+      if (useSettingsStore.getState().hasSeenOnboarding) return;
+      onboardingShown.current = true;
+      useSettingsStore.getState().setOnboardingSeen(); // marcar al MOSTRARSE (no reaparece)
+      promptOnboarding({ t: tRef.current, onHelp: () => router.push("/help") });
+    };
+
+    tryShow(); // por si las tres condiciones ya se cumplen al montar
+    const unsubSplash = useUiStore.subscribe(tryShow);
+    const unsubHydrate = useSettingsStore.persist.onFinishHydration(tryShow);
+    return () => {
+      unsubSplash();
+      unsubHydrate?.();
+    };
+  }, []);
 
   const redirectTo = makeRedirectUri({ useProxy: true });
   console.log("REDIRECT:", redirectTo);

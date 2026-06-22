@@ -15,6 +15,8 @@ export const useSettingsStore = create(
       // Consentimiento de publicación en el mapa (por dispositivo). null = no consentido.
       // Guarda la versión aceptada para poder forzar la reaparición del aviso.
       mapPublishConsentVersion: null,
+      // ¿Ya se mostró el aviso de bienvenida/onboarding en este dispositivo? (una sola vez)
+      hasSeenOnboarding: false,
       setLanguage: (language) => set({ language }),
       setTheme: (theme) => {
         Appearance.setColorScheme(theme === "system" ? null : theme);
@@ -23,6 +25,7 @@ export const useSettingsStore = create(
       // version = CURRENT_MAP_CONSENT_VERSION para conceder; null para retirar.
       setMapPublishConsent: (version) =>
         set({ mapPublishConsentVersion: version }),
+      setOnboardingSeen: () => set({ hasSeenOnboarding: true }),
     }),
     {
       name: "climanuvem-settings",

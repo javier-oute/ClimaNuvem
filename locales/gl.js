@@ -4,6 +4,12 @@ export default {
     subtitle:
       "Fai unha foto ás nubes que che preocupan e darémosche o prognóstico",
   },
+  onboarding: {
+    title: "Aprende a utilizar ClimaNuvem",
+    message:
+      "É a túa primeira vez aquí? Ensinámosche a fotografar o ceo e a sacarlle o máximo partido á app.",
+    help: "Axuda",
+  },
   guide: {
     title: "Tipos de nubes",
     subtitle: "Os 10 xéneros do Atlas Internacional de Nubes (OMM).",
@@ -44,7 +50,7 @@ export default {
         altitud: "Alta (6–12 km)",
         precipita: "Non",
         identificacion:
-          "Filamentos brancos finos e separados, sen sombras e translúcidos. Ás veces con ganchos («colas de egua»).",
+          "Filamentos brancos finos e separados, sen sombras e translúcidos. Ás veces con ganchos («rabos de galo»).",
         montana:
           "Risco baixo. Se aumentan e se espesan cara ao oeste, anuncian choiva en 12–24 h.",
       },
@@ -62,7 +68,7 @@ export default {
       cirrostratus: {
         nombre: "Cirrostratus",
         descripcion:
-          "Veo transparente e branquecino que cobre o ceo. Produce halos solares e lunares. Non precipita.",
+          "Veo transparente e abrancazado que cobre o ceo. Produce halos solares e lunares. Non precipita.",
         altitud: "Alta (6–12 km)",
         precipita: "Non",
         identificacion:
@@ -82,18 +88,18 @@ export default {
       altocumulus: {
         nombre: "Altocumulus",
         descripcion:
-          "Banco de nubes brancas ou grises en forma de losetas ou roliños con sombras propias. Forman o popular «ceo empedrado».",
+          "Banco de nubes brancas ou grises en forma de lousas ou roliños con sombras propias. Forman o popular «ceo empedrado».",
         altitud: "Media (2–7 km)",
         precipita: "Poucas veces",
         identificacion:
-          "Losetas ou roliños brancos e grises con sombras propias («ceo empedrado»).",
+          "Lousas ou roliños brancos e grises con sombras propias («ceo empedrado»).",
         montana:
           "Estable en xeral; se forman torreciñas pola mañá, posibles tormentas pola tarde.",
       },
       nimbostratus: {
         nombre: "Nimbostratus",
         descripcion:
-          "Capa gris escura velada pola chuvia ou neve continua que chega ao chan. Oculta completamente o sol.",
+          "Capa gris escura velada pola choiva ou neve continua que chega ao chan. Oculta completamente o sol.",
         altitud: "Media a baixa (base 0,5–3 km)",
         precipita: "Si, choiva ou neve continua",
         identificacion:
@@ -113,11 +119,11 @@ export default {
       stratocumulus: {
         nombre: "Stratocumulus",
         descripcion:
-          "Manto de nubes grises ou branquecinas con partes escuras, en forma de losas ou roliños. A nube baixa máis frecuente.",
+          "Manto de nubes grises ou abrancazadas con partes escuras, en forma de lousas ou roliños. A nube baixa máis frecuente.",
         altitud: "Baixa (0–2 km)",
         precipita: "Ocasional e feble",
         identificacion:
-          "Losas ou roliños grises e brancos con claros entre eles. A nube baixa máis frecuente.",
+          "Lousas ou roliños grises e brancos con claros entre eles. A nube baixa máis frecuente.",
         montana: "Tempo tranquilo aínda que cuberto; pode tapar os cumes.",
       },
       cumulus: {
@@ -200,15 +206,15 @@ export default {
     loadingHint: "Pode tardar uns segundos.",
     notFound: "Non se atopou a imaxe",
     saveError: "Non se puido gardar",
-    name: "Nome",
-    place: "Lugar",
+    name: "Nome (opcional)",
+    place: "Lugar (opcional)",
     namePlaceholder: "Ex: Nubes negras na casa",
     placeCamera: "Lugar detectado...",
-    placeGallery: "Lugar (opcional)",
+    placeGallery: "Ex: Pico Sacro",
     probability: "Probabilidade",
     defaultName: "Predición",
-    description: "Descrición",
-    descriptionPlaceholder: "Engade un comentario (opcional)",
+    description: "Descrición (opcional)",
+    descriptionPlaceholder: "Ex: Ceo moi escuro ao oeste",
     descriptionHint: "Se publicas a predición, esta descrición verase no mapa.",
   },
   detail: {
@@ -217,7 +223,7 @@ export default {
     invalidId: "ID non válida.",
     deleteTitle: "Eliminar predición",
     deleteMsg:
-      "¿Seguro que queres eliminala? Esta acción non se pode desfacer.",
+      "Seguro que queres eliminala? Esta acción non se pode desfacer.",
     deleteMsgPublished:
       "Esta predición está publicada no mapa. Se a eliminas, tamén se quitará do mapa. Esta acción non se pode desfacer.",
     deleteError: "Non se puido eliminar",
@@ -229,7 +235,7 @@ export default {
     error: "Erro",
   },
   login: {
-    title: "¡Benvido a ClimaNuvem!",
+    title: "Benvido a ClimaNuvem!",
     subtitle:
       "Inicia sesión para gardar as túas predicións e acceder a funcións exclusivas",
     guest: "Entrar como convidado",
@@ -258,7 +264,7 @@ export default {
   alerts: {
     cielo_despejado: {
       titulo: "Ceo despexado",
-      tituloDudoso: "Talvez ceo despexado",
+      tituloDudoso: "Quizais ceo despexado",
       mensaje: {
         alta: "Non se observan riscos meteorolóxicos. Boas condicións para a actividade.",
         media: "O ceo parece despexado. Aínda así, revísao de cando en vez.",
@@ -279,19 +285,19 @@ export default {
       titulo: "Sinal de vento forte en altura",
       tituloDudoso: "Posible vento forte en altura",
       mensaje: {
-        alta: "Nubes lenticulares: vento forte nas cumes. Precaución en zonas expostas.",
+        alta: "Nubes lenticulares: vento forte nos cumes. Precaución en zonas expostas.",
         media:
           "Posibles sinais de vento forte en altura. Ten coidado nas cristas.",
-        baja: "Podería haber vento forte nas cumes. Sen certeza; valórao antes de exporte.",
+        baja: "Podería haber vento forte nos cumes. Sen certeza; valórao antes de exporte.",
       },
     },
     cubierto_precipitacion: {
-      titulo: "Ceo cuberto, posible chuvia",
+      titulo: "Ceo cuberto, posible choiva",
       tituloDudoso: "Posible ceo cuberto",
       mensaje: {
-        alta: "Ceo cuberto: pode chegar chuvia ou neve.",
+        alta: "Ceo cuberto: pode chegar choiva ou neve.",
         media: "Ceo cuberto. Posible precipitación próxima.",
-        baja: "Podería haber ceo cuberto e chuvia próxima. Sen certeza; vixía o tempo.",
+        baja: "Podería haber ceo cuberto e choiva próxima. Sen certeza; vixía o tempo.",
       },
     },
     niebla_stratus: {
@@ -346,14 +352,12 @@ export default {
     },
   },
   share: {
-    predictionPrefix: "🌤️ Predición: ",
     locationPrefix: "📍 ",
     forecastLabel: "Prognóstico: ",
     recommendationLabel: "Recomendación: ",
     reliabilityLabel: "Fiabilidade: ",
-    probabilityLabel: "Probabilidade: ",
     footer: "\n— Enviado desde ClimaNuvem",
-    defaultTitle: "Predición",
+    defaultTitle: "🌤️ Predición",
     error: "Non se puido compartir",
   },
   camera: {
@@ -361,6 +365,19 @@ export default {
     permissionMsg: "Activa a cámara en Axustes para poder facer fotos.",
     cancel: "Cancelar",
     openSettings: "Abrir Axustes",
+  },
+  permissions: {
+    cancel: "Cancelar",
+    openSettings: "Abrir Axustes",
+    photosTitle: "Permiso de fotos",
+    photosMsg: "Activa o acceso ás túas fotos en Axustes para gardar imaxes.",
+  },
+  save: {
+    noImageTitle: "Sen imaxe",
+    noImageMsg: "Non hai imaxe para gardar.",
+    successTitle: "Gardada ✅",
+    successMsg: "A imaxe gardouse na túa galería.",
+    error: "Non se puido gardar",
   },
   settings: {
     title: "Preferencias",
@@ -398,24 +415,36 @@ export default {
     userDescription: "Descrición do usuario",
     yourPublications: "As túas publicacións",
     locationApproxNotice:
-      "Por privacidade, a ubicación das predicións é aproximada",
+      "Por privacidade, a localización das predicións é aproximada",
     consentTitle: "Publicar no mapa",
     consentMsg:
-      "A túa foto será visible para a comunidade xunto cunha ubicación aproximada (non exacta) de onde se tomou. A publicación verase ata que expire (unhas 6 horas) e poderás despublicala cando queiras.",
+      "A túa foto será visible para a comunidade xunto cunha localización aproximada (non exacta) de onde se tomou. A publicación verase ata que expire (unhas 6 horas) e poderás despublicala cando queiras.",
     publishError: "Non se puido publicar",
     publishLimit:
       "Acadaches o máximo de 3 publicacións activas. Despublica algunha para publicar unha nova.",
     unpublishTitle: "Despublicar predición",
-    unpublishMsg: "Quitarase do mapa comunitario. ¿Queres continuar?",
+    unpublishMsg: "Quitarase do mapa comunitario. Queres continuar?",
     reportConfirmTitle: "Reportar publicación",
     reportConfirmMsg:
-      "¿Seguro que queres reportar esta publicación? É unha acción importante; faino só se o contido é inapropiado.",
+      "Seguro que queres reportar esta publicación? É unha acción importante; faino só se o contido é inapropiado.",
     reportThanksTitle: "Grazas",
     reportThanksMsg: "Recibimos o teu reporte e revisarémolo.",
     actionError: "Non se puido completar a acción",
   },
   help: {
     title: "Axuda",
+    intro: {
+      title: "Que é ClimaNuvem?",
+      body: "Saca unha foto do ceo e ClimaNuvem cóntache que está a pasar aí arriba. En segundos terás un prognóstico a curto prazo e un aviso se hai nubes de risco preto, para que as túas saídas á montaña sexan máis seguras.",
+    },
+    map: {
+      title: "O mapa da comunidade",
+      body: "Co mapa non estás só: comparte a túa predición e consulta as doutra xente que xa está na montaña. Un vistazo e sabes que tempo fai en distintas zonas, perfecto para decidir a onde ir e preparar a saída con máis seguridade.",
+    },
+    features: {
+      title: "Máis cousas que podes facer",
+      body: "Ademais, ClimaNuvem inclúe unha guía de nubes para aprender a identificalas, un historial con todas as túas predicións gardadas, e un perfil onde axustar o tema (claro ou escuro), o idioma e os teus datos de usuario.",
+    },
     goodPhotos: {
       title: "Como facer boas fotos",
       body: "Suxeita o móbil en horizontal, co ceo arriba e sen inclinalo. Apunta directamente ao ceo e deixa que as nubes enchan o encadre, con boa iluminación e sen disparar contra o sol. Mantén o móbil estable para que a foto non saia movida e, se hai poucas nubes, inclúe o horizonte para dar contexto.",
@@ -429,10 +458,6 @@ export default {
         "Evita fotos con mala visibilidade, como de noite ou a contraluz. O modelo necesita ver o ceo e as nubes con claridade.",
       blurry:
         "Evita fotos borrosas ou movidas, e coidado con tapar o obxectivo co dedo (o mítico dedo).",
-    },
-    howItWorks: {
-      title: "Como funciona ClimaNuvem",
-      body: "1. Fai unha foto do ceo ou elixe unha imaxe da túa galería.\n2. A IA analiza o tipo de nubes e o seu grao de desenvolvemento.\n3. ClimaNuvem clasifica o risco nunha de 8 categorías e amósache unha alerta.\n4. Garda a predición no teu historial para consultala cando queiras.",
     },
   },
 };

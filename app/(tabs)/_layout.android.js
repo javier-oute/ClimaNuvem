@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/stores/auth.store";
 import { useT } from "@/lib/i18n";
 import { Tabs } from "expo-router";
+import { useColorScheme } from "nativewind";
 import {
   ClockIcon,
   CloudIcon,
@@ -12,13 +13,18 @@ import "../../global.css";
 
 export default function TabsLayout() {
   const t = useT();
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
   const isLoggedIn = useAuthStore((s) => !!s.session);
   return (
     <Tabs
       screenOptions={{
-        tabBarStyle: { backgroundColor: "white", borderTopColor: "#b0aeaf" },
-        tabBarActiveTintColor: "#314468",
-        tabBarInactiveTintColor: "#b0aeaf",
+        tabBarStyle: {
+          backgroundColor: isDark ? "#18181b" : "white",
+          borderTopColor: isDark ? "#3f3f46" : "#b0aeaf",
+        },
+        tabBarActiveTintColor: isDark ? "#7B9BD0" : "#314468",
+        tabBarInactiveTintColor: isDark ? "#71717a" : "#b0aeaf",
         headerShown: false,
       }}
     >
