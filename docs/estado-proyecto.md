@@ -74,10 +74,9 @@ pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
   planificado pero no entrenado/integrado. Al integrarlo: sustituir el `.tflite`, **re-verificar el orden
   de labels** y **re-derivar los umbrales de `model-meta.js`** con la nueva matriz de confusión y tabla de
   calibración (el propio fichero lo advierte).
-- **Mapa Fase 2 — verificación en dispositivo.** El backend y el front están escritos, pero el mapa es un
-  **módulo nativo** (`react-native-maps`): requiere un build nativo reciente para probarlo de verdad
-  (markers, RPC reales, expiración, reportes, Google Maps API key en Android). Es lo más importante a
-  probar end-to-end antes de darlo por cerrado.
+- ~~**Mapa Fase 2 — verificación en dispositivo.**~~ → **HECHO (2026-06-22): probado en dispositivo y
+  funciona correctamente.** Markers, RPC reales, publicar/despublicar/reportar y Google Maps en Android
+  verificados en runtime. Deja de ser el riesgo abierto principal.
 - **Datos históricos inconsistentes en `forecast_history`.** Quedan ~4 filas de prueba antiguas que
   guardan el *mensaje* de alerta en `forecast` en vez de la *clave de clase*. El historial lo tolera, pero
   conviene decidir (borrar filas de prueba / reasignar / dejar).

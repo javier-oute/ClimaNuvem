@@ -141,13 +141,13 @@ __tests__/                 unit/ · integration/ · pending/
 **Hecho (verificado en código):**
 - **Modelo v3** activo (`climanuvem_v3.tflite`) con preprocesado de evaluación fiel y probs calibradas.
 - **Alertas graduadas por confianza** (`lib/forecast/*`): bandas de fiabilidad, suavizado por 2ª clase, "repetir foto".
-- **Mapa comunitario Fase 2** (backend Supabase real): publicar/despublicar/reportar, snap de coords, expiración 6 h, límite 3, consentimiento versionado, moderación, sin filtro de distancia.
+- **Mapa comunitario Fase 2** (backend Supabase real): publicar/despublicar/reportar, snap de coords, expiración 6 h, límite 3, consentimiento versionado, moderación, sin filtro de distancia. **Probado en dispositivo (2026-06-22): OK.**
 - **Username robusto** (registro vía `unique_username`/`handle_new_user` + validación en el editor).
 - **Visor de foto a pantalla completa** (`components/fullscreen-image-viewer.jsx`) con pista "Toca para ampliar", aviso de privacidad en el mapa, tarjetas de guía con cuadre estable, mensaje de carga descriptivo.
 - i18n (es/gl/en, default gallego), modo oscuro, guía de nubes, ayuda (ampliada: presentación de la app + mockups), avatar de perfil, baja de cuenta (Edge Function), suite de tests (224).
 
 **Pendiente (cierre/demo):**
-- **Probar el mapa Fase 2 end-to-end en dispositivo** (módulo nativo; requiere build reciente + Google Maps API key Android). **Lo más importante sin verificar en runtime.**
+- **Pasada de UX en iOS y Android** de todos los flujos (foto→resultado→guardar/publicar/compartir, invitado, historial, mapa, perfil/avatar, baja) buscando textos sin traducir y estados de error.
 - **`console.*`** en producción (~90 ocurrencias en 21 ficheros): limpiar o sustituir por un logger silenciable en release.
 - Decidir sobre filas históricas inconsistentes de `forecast_history` (mensaje vs clave de clase).
 - Auditar dependencias sin imports en el código (candidatas: `react-native-url-polyfill`, `@react-navigation/bottom-tabs`, `react-native-web`/`react-dom` —solo web—; verificar antes de quitar, algunas pueden ser transitivas o de entry).
