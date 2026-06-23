@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { InteractionManager, Platform } from "react-native";
 import { preloadModel } from "@/lib/tflite/modelLoader";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import {
   SafeAreaProvider,
   initialWindowMetrics,
@@ -85,85 +86,87 @@ export default function RootLayout() {
           claros en oscuro). En Android edge-to-edge evita que el reloj/notificaciones
           se vuelvan blancos e ilegibles sobre fondos claros. */}
       <StatusBar style="auto" />
-      <SafeAreaProvider initialMetrics={initialWindowMetrics ?? undefined}>
-        <BottomSheetModalProvider>
-          <AuthBootstrap>
-            <ThemeProvider
-              value={colorScheme === "dark" ? CN_DarkTheme : CN_LightTheme}
-            >
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen
-                  name="(tabs)"
-                  options={{
-                    title: "",
-                  }}
-                />
-                <Stack.Screen
-                  name="[id]"
-                  options={{
-                    headerBackTitleVisible: false,
-                    // Android: sin header nativo desde el primer frame (evita el
-                    // flash del botón atrás negro al abrir); la pantalla dibuja su
-                    // propio botón flotante. iOS mantiene su header transparente.
-                    headerShown: Platform.OS === "ios",
-                    headerTitle: "",
-                    headerBackTitle: "",
-                    headerTransparent: true,
-                    headerShadowVisible: false,
-                  }}
-                />
-                <Stack.Screen
-                  name="forecast-screen"
-                  options={{
-                    headerBackTitleVisible: false,
-                    headerShown: Platform.OS === "ios",
-                    headerTitle: "",
-                    headerBackTitle: "",
-                    headerTransparent: true,
-                    headerShadowVisible: false,
-                  }}
-                />
-                <Stack.Screen
-                  name="help"
-                  options={{
-                    headerBackTitleVisible: false,
-                    headerShown: true,
-                    headerBackTitle: "",
-                    headerShadowVisible: false,
-                  }}
-                />
-                <Stack.Screen
-                  name="map-prediction/[id]"
-                  options={{
-                    headerBackTitleVisible: false,
-                    headerShown: Platform.OS === "ios",
-                    headerTitle: "",
-                    headerBackTitle: "",
-                    headerTransparent: true,
-                    headerShadowVisible: false,
-                  }}
-                />
-                <Stack.Screen
-                  name="cloud/[type]"
-                  options={{
-                    headerBackTitleVisible: false,
-                    headerShown: Platform.OS === "ios",
-                    headerTitle: "",
-                    headerBackTitle: "",
-                    headerTransparent: true,
-                    headerShadowVisible: false,
-                  }}
-                />
-              </Stack>
-            </ThemeProvider>
-          </AuthBootstrap>
-          {/* Overlay de splash animada (zoom-in + fade). Sobre toda la app, incluido
+      <KeyboardProvider>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics ?? undefined}>
+          <BottomSheetModalProvider>
+            <AuthBootstrap>
+              <ThemeProvider
+                value={colorScheme === "dark" ? CN_DarkTheme : CN_LightTheme}
+              >
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{
+                      title: "",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="[id]"
+                    options={{
+                      headerBackTitleVisible: false,
+                      // Android: sin header nativo desde el primer frame (evita el
+                      // flash del botón atrás negro al abrir); la pantalla dibuja su
+                      // propio botón flotante. iOS mantiene su header transparente.
+                      headerShown: Platform.OS === "ios",
+                      headerTitle: "",
+                      headerBackTitle: "",
+                      headerTransparent: true,
+                      headerShadowVisible: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="forecast-screen"
+                    options={{
+                      headerBackTitleVisible: false,
+                      headerShown: Platform.OS === "ios",
+                      headerTitle: "",
+                      headerBackTitle: "",
+                      headerTransparent: true,
+                      headerShadowVisible: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="help"
+                    options={{
+                      headerBackTitleVisible: false,
+                      headerShown: true,
+                      headerBackTitle: "",
+                      headerShadowVisible: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="map-prediction/[id]"
+                    options={{
+                      headerBackTitleVisible: false,
+                      headerShown: Platform.OS === "ios",
+                      headerTitle: "",
+                      headerBackTitle: "",
+                      headerTransparent: true,
+                      headerShadowVisible: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="cloud/[type]"
+                    options={{
+                      headerBackTitleVisible: false,
+                      headerShown: Platform.OS === "ios",
+                      headerTitle: "",
+                      headerBackTitle: "",
+                      headerTransparent: true,
+                      headerShadowVisible: false,
+                    }}
+                  />
+                </Stack>
+              </ThemeProvider>
+            </AuthBootstrap>
+            {/* Overlay de splash animada (zoom-in + fade). Sobre toda la app, incluido
               el login. Toma el relevo de la splash nativa y se desmonta al cargar. */}
-          <AnimatedSplash />
-        </BottomSheetModalProvider>
-      </SafeAreaProvider>
+            <AnimatedSplash />
+          </BottomSheetModalProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

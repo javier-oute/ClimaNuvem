@@ -11,6 +11,7 @@ import { promptMapPublishConsent } from "@/lib/mapConsent";
 import { tryGetCoordsAndPlace } from "@/lib/location";
 import { selectIsLoggedIn, useAuthStore } from "@/stores/auth.store";
 import { hasMapPublishConsent } from "@/stores/settings.store";
+import { BottomSheetKeyboardAwareScrollView } from "@/components/bottom-sheet-keyboard-aware-scroll-view";
 import BottomSheet, {
   BottomSheetScrollView,
   useBottomSheetSpringConfigs,
@@ -41,6 +42,14 @@ import "../global.css";
 import { useModel } from "../hooks/useModel";
 import { useShareForecast } from "../hooks/useShareForecast";
 import { saveForecastWithPhoto } from "../stores/forecast.store";
+
+// Android: scroll que mantiene el input enfocado sobre el teclado (react-native-keyboard-controller),
+// porque gorhom no hace auto-scroll al input y el campo quedaba tapado. iOS sigue con el scroll normal
+// del sheet + automaticallyAdjustKeyboardInsets, que ya funcionaba bien.
+const FormScrollView =
+  Platform.OS === "android"
+    ? BottomSheetKeyboardAwareScrollView
+    : BottomSheetScrollView;
 
 export default function ConfirmForecast() {
   const params = useLocalSearchParams();
@@ -438,14 +447,11 @@ export default function ConfirmForecast() {
           borderRadius: 999,
           backgroundColor: "#CBD5E1", // slate-300
         }}
-        keyboardBehavior={Platform.OS === "android" ? "interactive" : "none"}
-        keyboardBlurBehavior={Platform.OS === "android" ? "restore" : "none"}
-        enableBlurKeyboardOnGesture={Platform.OS === "android"}
-        android_keyboardInputMode={
-          Platform.OS === "android" ? "adjustPan" : undefined
-        }
+        // El teclado lo gestiona el scroll, no el sheet: en Android keyboard-controller hace
+        // auto-scroll al input; en iOS automaticallyAdjustKeyboardInsets. Por eso "none".
+        keyboardBehavior="none"
       >
-        <BottomSheetScrollView
+        <FormScrollView
           className="pt-5 px-8"
           contentContainerStyle={{
             paddingBottom:
@@ -456,6 +462,8 @@ export default function ConfirmForecast() {
             Platform.OS === "ios" ? "interactive" : "on-drag"
           }
           automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
+          // Android (keyboard-controller): separación entre el input enfocado y el teclado.
+          bottomOffset={Platform.OS === "android" ? 24 : undefined}
           showsVerticalScrollIndicator={false}
         >
           <View
@@ -577,7 +585,7 @@ export default function ConfirmForecast() {
               )}
             </View>
           </View>
-        </BottomSheetScrollView>
+        </FormScrollView>
       </BottomSheet>
       <FullscreenImageViewer
         visible={viewerOpen}
