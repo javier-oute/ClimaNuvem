@@ -400,6 +400,9 @@ export default {
       "Si desactivas esta opción, todas tus publicaciones actuales del mapa se eliminarán. Podrás volver a publicar nuevas predicciones si activas esta opción de nuevo.",
     mapConsentDisableConfirm: "Desactivar",
     mapConsentDisableError: "No se pudo desactivar",
+    locationNeededTitle: "Ubicación necesaria",
+    locationNeededMsg:
+      "Para publicar tus predicciones en el mapa necesitas permitir el acceso a la ubicación. Puedes activarlo en Ajustes.",
   },
   tabs: {
     home: "Home",

@@ -37,7 +37,9 @@ describe("hardResetSupabaseAuth", () => {
   });
 
   it("aún limpia el almacenamiento aunque signOut falle (token inválido)", async () => {
-    supabase.auth.signOut.mockRejectedValueOnce(new Error("Invalid Refresh Token"));
+    supabase.auth.signOut.mockRejectedValueOnce(
+      new Error("Invalid Refresh Token"),
+    );
 
     await hardResetSupabaseAuth();
 

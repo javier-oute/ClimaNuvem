@@ -222,8 +222,7 @@ export default {
     notFound: "Non se atopou a predición",
     invalidId: "ID non válida.",
     deleteTitle: "Eliminar predición",
-    deleteMsg:
-      "Seguro que queres eliminala? Esta acción non se pode desfacer.",
+    deleteMsg: "Seguro que queres eliminala? Esta acción non se pode desfacer.",
     deleteMsgPublished:
       "Esta predición está publicada no mapa. Se a eliminas, tamén se quitará do mapa. Esta acción non se pode desfacer.",
     deleteError: "Non se puido eliminar",
@@ -397,6 +396,9 @@ export default {
       "Se desactivas esta opción, todas as túas publicacións actuais do mapa eliminaranse. Poderás volver publicar novas predicións se activas esta opción de novo.",
     mapConsentDisableConfirm: "Desactivar",
     mapConsentDisableError: "Non se puido desactivar",
+    locationNeededTitle: "Localización necesaria",
+    locationNeededMsg:
+      "Para publicar as túas predicións no mapa necesitas permitir o acceso á localización. Podes activalo en Axustes.",
   },
   tabs: {
     home: "Inicio",

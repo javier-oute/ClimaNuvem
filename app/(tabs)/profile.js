@@ -16,6 +16,8 @@ import {
   promptMapPublishConsent,
   promptMapPublishDisable,
 } from "@/lib/mapConsent";
+import { alertPermissionBlocked } from "@/lib/permissions";
+import * as Location from "expo-location";
 import { useAuthStore } from "@/stores/auth.store";
 import {
   CURRENT_MAP_CONSENT_VERSION,
@@ -284,7 +286,33 @@ export default function Profile() {
               // consentimiento al aceptar). "No" avisa de que se borrarán las publicaciones del mapa;
               // solo al confirmar y borrar con éxito se retira el consentimiento.
               if (key === "on") {
-                if (!mapConsentGranted) promptMapPublishConsent({ t });
+                if (!mapConsentGranted) {
+                  // Tras conceder el consentimiento, aseguramos el permiso de ubicación
+                  // (hace falta para publicar): la primera vez se pide el diálogo del SO y,
+                  // si se deniega (o ya estaba denegado de forma permanente), se ofrece abrir Ajustes.
+                  promptMapPublishConsent({
+                    t,
+                    onAccept: async () => {
+                      const perm =
+                        await Location.getForegroundPermissionsAsync();
+                      if (perm.status === "granted") return;
+
+                      let status = perm.status;
+                      if (perm.canAskAgain) {
+                        ({ status } =
+                          await Location.requestForegroundPermissionsAsync());
+                      }
+
+                      if (status !== "granted") {
+                        alertPermissionBlocked({
+                          t,
+                          title: t("settings.locationNeededTitle"),
+                          message: t("settings.locationNeededMsg"),
+                        });
+                      }
+                    },
+                  });
+                }
                 return;
               }
               if (!mapConsentGranted) return; // ya estaba en "No"

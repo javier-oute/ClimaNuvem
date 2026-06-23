@@ -8,7 +8,10 @@
 // El service_role vive SOLO aquí (inyectado por el runtime); nunca llega al cliente. El cliente solo
 // invoca esta función con su JWT de usuario.
 
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  createClient,
+  SupabaseClient,
+} from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,9 +43,7 @@ async function removeUserFolder(
     if (error) throw error;
     if (!data || data.length === 0) return;
 
-    const paths = data
-      .filter((o) => o.name)
-      .map((o) => `${uid}/${o.name}`);
+    const paths = data.filter((o) => o.name).map((o) => `${uid}/${o.name}`);
     if (paths.length === 0) return;
 
     const { error: rmErr } = await admin.storage.from(bucket).remove(paths);

@@ -398,6 +398,9 @@ export default {
       "If you disable this option, all your current map posts will be deleted. You can publish new predictions again if you re-enable this option.",
     mapConsentDisableConfirm: "Disable",
     mapConsentDisableError: "Couldn't disable",
+    locationNeededTitle: "Location required",
+    locationNeededMsg:
+      "To publish your predictions on the map you need to allow location access. You can enable it in Settings.",
   },
   tabs: {
     home: "Home",
