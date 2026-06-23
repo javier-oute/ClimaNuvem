@@ -8,9 +8,6 @@ export async function uploadPhoto({ uri, userId }) {
 
   const bytes = await new File(uri).bytes();
 
-  console.log("UPLOAD path:", path);
-  console.log("userId:", userId);
-
   const { error } = await supabase.storage.from(bucket).upload(path, bytes, {
     contentType: "image/jpeg",
     upsert: true,

@@ -37,7 +37,9 @@ pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
 >   en `assets/models/`. Los ficheros siguen en disco (peso local: `v2.tflite` ~13 MB, `mejor_modelo.pt`
 >   ~13 MB) pero fuera del repo.
 > - ✅ **Tests:** los 3 antiguos `it.todo` se convirtieron en tests reales → **224 passing, 0 todo** (13 suites).
-> - ⏳ **Pendiente:** limpiar `console.*` de producción (~90 ocurrencias en 21 ficheros) y auditar dependencias sin usar.
+> - ✅ **`console.log`/`debug` de depuración eliminados** del código activo (se conservan los `console.error`/`warn`
+>   de manejo de error en `catch`; los `console.log` restantes están en bloques comentados históricos).
+> - ⏳ **Pendiente (menor):** auditar dependencias sin usar.
 
 ---
 
@@ -91,8 +93,11 @@ pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
   `mejor_modelo.pt` y `climanuvem.apk` (191 B, JSON de error de un build EAS fallido) están en `.gitignore`
   y **destrackeados** (`git ls-files` solo versiona `climanuvem_v3.tflite` + `_labels`). Siguen en disco
   como peso local (~13 MB cada `.tflite`/`.pt`) pero ya no en el repo. Conviene borrarlos de disco si no se necesitan.
-- **`console.*` en producción.** Persisten **~90 ocurrencias en 21 ficheros** de `app/`, `lib/`, `stores/`,
-  `hooks/`, `components/`, `providers/`, `features/`. No rompe, pero ensucia logs y puede filtrar datos.
+- ~~**`console.*` en producción.**~~ → **resuelto**: eliminados los `console.log`/`console.debug` de
+  depuración del código activo. Se conservan a propósito los `console.error`/`console.warn` dentro de
+  `catch` (manejo de error). Los `console.log` que aún aparezcan en grep están dentro de bloques comentados
+  históricos (no se borran por convención). Si se quisiera, esos `error`/`warn` podrían moverse a un logger
+  silenciable en release.
 - ~~**Permiso `RECORD_AUDIO`**~~ → **resuelto** en `app.json` (`permissions: []`); requiere rebuild nativo
   para que surta efecto en el binario.
 - **`unpublishAllMine` borra por cliente con filtro `user_id`.** Es seguro porque la RLS
@@ -112,9 +117,22 @@ pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
   todo desfasado respecto al código. `docs/database.md` sí recogía la Fase 2 en su §9, pero su §4 seguía
   describiendo la vista `public_profiles` como existente cuando la migración `20260620120400` la **elimina**
   (contradicción interna). Esta revisión corrige esos documentos.
-- **Bloques de código comentado al final de varios ficheros** (p. ej. `forecast-screen.js`): son
-  referencias históricas marcadas como "no borrar" por convención. No es deuda urgente, pero hace los
-  ficheros más largos y difíciles de leer.
+- ~~**Bloques de código comentado al final de varios ficheros**~~ → **resuelto (2026-06-22)**: se
+  eliminaron los 27 bloques `/* … */` de código muerto y las líneas `//` que comentaban código, además
+  de 3 ficheros huérfanos (`components/history/history-header.jsx`, `components/tabBar.jsx`,
+  `components/basicCard.jsx`). Solo quedan JSDoc y comentarios explicativos. **Efecto colateral ya
+  resuelto:** al borrar `history-header.jsx`, `@rneui/base` y `@rneui/themed` quedaron sin uso y se
+  **desinstalaron**.
+- **Auditoría de dependencias (2026-06-22) — COMPLETA.** Se revisaron las 49 dependencias contra
+  imports, plugins de `app.json`, babel/metro, `eas.json` y el árbol `npm ls`. **Únicas eliminadas por
+  estar muertas:** `@rneui/base`, `@rneui/themed` y **`expo-auth-session`** (esta última quedó sin uso al
+  borrar el botón de Google comentado; el flujo activo usa `expo-web-browser` + parseo manual). El resto
+  está **justificado**: importadas en código, plugins de `app.json` (`expo-font`, etc.), peers/transitivas
+  de runtime (`react-native-screens`, `react-native-worklets`, `expo-linking`, `expo-constants`,
+  `@react-navigation/bottom-tabs` vía expo-router Tabs), polyfills de `lib/supabase.ts`
+  (`react-native-url-polyfill`, `react-native-get-random-values`), `expo-dev-client`
+  (`eas.json → developmentClient`), o transitivas de soporte web (`react-dom`, `react-native-web`,
+  `@expo/metro-runtime`). **No quedan dependencias muertas.**
 - **Conteo de tests**: real **224 passing, 0 `it.todo`** en 13 suites a 2026-06-22 (la doc previa decía 164/167).
 - **Funcionalidades de UI recientes ya integradas** (no estaban en la versión previa de este doc): visor de
   foto a pantalla completa con pista "Toca para ampliar" (`components/fullscreen-image-viewer.jsx`, usado en
@@ -130,21 +148,17 @@ pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
 > dispositivo, higiene y demo/memoria**, NO entrenar otro modelo. (Si en el futuro hubiera un v4, el
 > procedimiento de integración sigue documentado en §3/`model-meta.js`, pero no es un paso de cierre.)
 
-1. **Probar el mapa Fase 2 end-to-end en dispositivo** (build nativo): publicar, ver pins propios/ajenos,
-   detalle, reportar/ocultar, expiración 6 h, límite de 3, desactivar-compartir, Google Maps API key
-   Android. Es lo único grande sin verificar en runtime y lo que más riesgo aporta a la demo.
-2. **Pasada de UX para la demo:** recorrer los flujos completos (foto→resultado→guardar/publicar/compartir,
+1. **Pasada de UX para la demo:** recorrer los flujos completos (foto→resultado→guardar/publicar/compartir,
    invitado, historial, mapa, perfil/avatar, baja de cuenta) en iOS y Android buscando textos sin traducir,
    estados de error y casos límite.
-3. **Limpieza de `console.*`** de producción (~90 ocurrencias en 21 ficheros) o sustituir por un logger
-   silenciable en release. (Único frente de deuda de código que queda.)
-4. **Decidir sobre las filas históricas inconsistentes** de `forecast_history`.
-5. **Memoria del TFG:** el estado actual (modelo v3 calibrado, alertas graduadas justificadas con métricas,
+2. **Decidir sobre las filas históricas inconsistentes** de `forecast_history`.
+3. **Memoria del TFG:** el estado actual (modelo v3 calibrado, alertas graduadas justificadas con métricas,
    mapa con privacidad por diseño, baja de cuenta y RLS auditada) da material sólido para documentar
    decisiones técnicas.
 
 > **Ya resuelto desde la revisión anterior** (no rehacer): higiene git (`git rm --cached` de apk/modelos
-> viejos), `RECORD_AUDIO`, mock del mapa, y los 3 `it.todo` (hoy tests reales → 224 passing).
+> viejos), `RECORD_AUDIO`, mock del mapa, los 3 `it.todo` (hoy tests reales → 224 passing), la verificación
+> del **mapa Fase 2 en dispositivo** (OK) y la limpieza de `console.log`/`debug` de depuración.
 
 ---
 
@@ -153,8 +167,8 @@ pruebas en dispositivo del mapa Fase 2, decisiones de UX/privacidad).
 - **¿Consentimiento del mapa local por dispositivo o ligado a la cuenta?** Hoy es local; decidir si se
   acepta esa limitación para el TFG.
 - **¿Qué hacemos con las filas de prueba inconsistentes** en `forecast_history`?
-- **¿Activamos limpieza de `console.*` ya** o se deja para el cierre de junio?
 - **¿Borramos de disco** `v2.tflite`/`mejor_modelo.pt`/`climanuvem.apk`? (ya fuera del repo; solo ocupan local).
+- **¿Quieres también mover los `console.error`/`warn` a un logger silenciable** en release, o se dejan tal cual?
 - **Privacidad del mapa:** confirmar que el snap ~2 km, la expiración 6 h y el límite de 3 son los valores
   finales (hoy fijados en las RPC del servidor).
 

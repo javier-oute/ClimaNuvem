@@ -30,14 +30,12 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
   // Para evitar flicker en isLoading por operaciones solapadas
   let loadingCount = 0;
-  const beginLoading = (reason: string) => {
+  const beginLoading = (_reason: string) => {
     loadingCount++;
-    console.log("[loading] +", loadingCount, reason);
     set({ isLoading: true });
   };
-  const endLoading = (reason: string) => {
+  const endLoading = (_reason: string) => {
     loadingCount = Math.max(0, loadingCount - 1);
-    console.log("[loading] -", loadingCount, reason);
     if (loadingCount === 0) set({ isLoading: false });
   };
 
@@ -118,12 +116,6 @@ export const useAuthStore = create<AuthState>((set, get) => {
             return; // salimos: ya está limpio, el user verá login
           }
 
-          console.log("INIT getSession:", {
-            hasSession: !!session,
-            userId: session?.user?.id,
-            expiresAt: session?.expires_at,
-          });
-
           if (error) console.warn("getSession:", error.message);
 
           safeSet({ session: session ?? null });
@@ -132,40 +124,8 @@ export const useAuthStore = create<AuthState>((set, get) => {
           endLoading("initializa: getSession");
         }
       })();
-      /*
-      // 2) suscripción (sync)
-      const { data } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          console.log("Auth event:", event, "hasSession:", !!session);
-          // Opcional “perfecto”: no recargar perfil en refresh de token si no cambia el usuario
-          const prevUserId = get().session?.user?.id;
-          const nextUserId = session?.user?.id;
-
-          safeSet({ session: session ?? null });
-
-          const userChanged = prevUserId !== nextUserId;
-
-          if (
-            userChanged ||
-            event === "SIGNED_IN" ||
-            event === "USER_UPDATED"
-          ) {
-            beginLoading(`auth:${event}`);
-            try {
-              await loadProfileForSession(session ?? null, safeSet, isAlive);
-            } finally {
-              endLoading(`auth:${event}`);
-            }
-          } else if (!session) {
-            safeSet({ profile: null });
-          }
-        },
-      );
-*/
 
       const { data } = supabase.auth.onAuthStateChange((event, session) => {
-        console.log("Auth event:", event, "hasSession:", !!session);
-
         const prevUserId = get().session?.user?.id;
         const nextUserId = session?.user?.id;
 
@@ -286,24 +246,3 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
   };
 });
-
-/*
-        const { data: userData, error: userErr } =
-          await supabase.auth.getUser();
-
-        console.log("SERVER getUser:", {
-          ok: !userErr,
-          userId: userData?.user?.id,
-          err: userErr?.message,
-        });
-
-        if (userErr) {
-          // sesión local vieja → límpiala
-          await supabase.auth.signOut();
-          set({ session: null, profile: null });
-        }
-
-        await supabase.auth.signOut(); // limpia storage (si puede)
-
-        await SecureStore.deleteItemAsync("sb-egefjrnnjyuazdoabebd-auth-token");
-*/

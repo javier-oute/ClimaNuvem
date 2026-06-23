@@ -107,7 +107,7 @@ incoherente se pide repetir la foto. El top-1 siempre manda (la alerta nunca se 
 - ✅ **Mapa comunitario Fase 2** (backend Supabase real: publicar/despublicar/reportar, privacidad por snap de coords, expiración 6 h). **Probado en dispositivo (2026-06-22): funciona correctamente.**
 - ✅ Username robusto (registro + editor). Suite de tests (**224 passing**, 13 suites).
 - 🎯 Cierre/demo: pasada de UX en iOS/Android y limpieza de `console.*`; el resto es pulido de bajo riesgo.
-- 🧹 Higiene: mock del mapa eliminado, `RECORD_AUDIO` retirado y apk/modelos viejos **destrackeados** del repo (`git rm --cached`, hecho). Pendiente: limpieza de `console.*` y auditoría de deps sin usar.
+- 🧹 Higiene: mock del mapa eliminado, `RECORD_AUDIO` retirado, apk/modelos viejos **destrackeados** (`git rm --cached`) y **logs de depuración (`console.log`/`debug`) eliminados** (se conservan los `console.error`/`warn` de manejo de error). Pendiente menor: auditoría de deps sin usar.
 
 > Análisis de estado completo y realista en **[`docs/estado-proyecto.md`](./docs/estado-proyecto.md)**.
 

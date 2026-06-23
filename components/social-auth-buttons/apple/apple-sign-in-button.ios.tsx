@@ -30,24 +30,10 @@ async function onApplePress() {
       throw new Error("Apple no devolvió identityToken (cancelado o fallo).");
     }
 
-    console.log("Apple credential:", {
-      hasIdentityToken: !!credential.identityToken,
-      hasAuthCode: !!credential.authorizationCode,
-      email: credential.email,
-      fullName: credential.fullName,
-      user: credential.user,
-    });
-
-    const { data, error } = await supabase.auth.signInWithIdToken({
+    const { error } = await supabase.auth.signInWithIdToken({
       provider: "apple",
       token: credential.identityToken,
       // nonce: si lo generas y lo envías en signInAsync, también pásalo aquí
-    });
-
-    console.log("Supabase signInWithIdToken:", {
-      error: error?.message,
-      hasSession: !!data?.session,
-      userId: data?.user?.id,
     });
 
     if (error) throw error;
@@ -67,9 +53,7 @@ async function onApplePress() {
     }
 
     // 4) Navegación (mejor replace para que no vuelva a Login con back)
-    console.log("NAV: going to /(tabs)");
     router.replace("/(tabs)/home");
-    console.log("NAV: replace called");
   } catch (e: any) {
     if (e?.code === "ERR_REQUEST_CANCELED") {
       // El usuario canceló -> no es un error real

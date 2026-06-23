@@ -2,17 +2,14 @@ import { useAuthStore } from "@/stores/auth.store";
 import { useT } from "@/lib/i18n";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { Platform } from "react-native";
-//import { useSafeAreaInsets } from "react-native-safe-area-context";
 import "../../global.css";
 
 export default function TabsLayout() {
   const t = useT();
-  //const insets = useSafeAreaInsets();
   const session = useAuthStore((s) => s.session);
 
   return (
     <NativeTabs
-      //minimizeBehavior="onScrollDown"
       tintColor="#314468" // color activo
       iconColor="#314468"
       backgroundColor="transparent"
@@ -46,45 +43,3 @@ export default function TabsLayout() {
     </NativeTabs>
   );
 }
-
-/*
-import { Tabs } from "expo-router";
-import { IconoHome } from "../../components/icons";
-import "../../global.css";
-
-const isLoggedIn = false; // Simulación del estado de autenticación
-
-export default function TabsLayout() {
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarStyle: { backgroundColor: "white" },
-        tabBarActiveTintColor: "black",
-        headerShown: true,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color }) => <IconoHome color={color} />,
-          headerShown: false,
-        }}
-      />
-      <Tabs.Screen
-        name="historial"
-        options={{
-          title: "Historial",
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Perfil",
-        }}
-      />
-    </Tabs>
-  );
-}
-
-*/

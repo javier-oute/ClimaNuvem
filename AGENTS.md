@@ -119,7 +119,7 @@ __tests__/                 unit/ · integration/ · pending/
 - **Platform-specific:** Expo resuelve `.ios.*` / `.android.*` automáticamente (tabs, botón Apple, etc.).
 - **Bottom sheets** (`@gorhom/bottom-sheet`): snap points dinámicos con `onLayout`, `index={1}`, `enableDynamicSizing={false}`; constantes de offset distintas por plataforma.
 - **Imágenes:** `require()` estáticos (Metro no admite `require` dinámico). El manifiesto de la guía vive en `features/guide/cloud-data.ts`.
-- **Código comentado al final de ficheros:** son referencias históricas. NO lo borres salvo que se pida explícitamente.
+- **Nada de código muerto comentado.** En la limpieza 2026-06-22 se eliminaron todos los bloques `/* … */` y líneas `//` que comentaban código (versiones viejas de componentes, imports/props sueltos, etc.), además de ficheros huérfanos (`components/history/history-header.jsx`, `components/tabBar.jsx`, `components/basicCard.jsx`). **No reintroduzcas código comentado**: si algo ya no se usa, bórralo (git conserva el historial). Sí se conservan los comentarios **JSDoc** (`/** … */`) y los **explicativos** (el porqué de una decisión).
 
 ---
 
@@ -148,15 +148,16 @@ __tests__/                 unit/ · integration/ · pending/
 
 **Pendiente (cierre/demo):**
 - **Pasada de UX en iOS y Android** de todos los flujos (foto→resultado→guardar/publicar/compartir, invitado, historial, mapa, perfil/avatar, baja) buscando textos sin traducir y estados de error.
-- **`console.*`** en producción (~90 ocurrencias en 21 ficheros): limpiar o sustituir por un logger silenciable en release.
 - Decidir sobre filas históricas inconsistentes de `forecast_history` (mensaje vs clave de clase).
-- Auditar dependencias sin imports en el código (candidatas: `react-native-url-polyfill`, `@react-navigation/bottom-tabs`, `react-native-web`/`react-dom` —solo web—; verificar antes de quitar, algunas pueden ser transitivas o de entry).
 
 **Higiene ya aplicada (verificada):**
 - `services/communityMap.mock.js` (código muerto) → **eliminado** (la carpeta `services/` ya no existe).
 - `RECORD_AUDIO` retirado de `app.json` (`permissions: []`). **Requiere rebuild nativo** para surtir efecto.
 - `climanuvem.apk`, `climanuvem_v2.tflite`, `climanuvem_labels.txt`, `mejor_modelo.pt` → en `.gitignore` y **destrackeados** (`git rm --cached` hecho; siguen en disco, fuera del repo).
 - Los 3 `it.todo` del pipeline `useModel` → **convertidos en tests reales** (224 passing, 0 todo).
+- **`console.log`/`console.debug` de depuración eliminados** del código activo. Se **conservan** los `console.error`/`console.warn` dentro de `catch` (manejo de error legítimo).
+- **Código muerto eliminado (2026-06-22):** 27 bloques `/* … */` + líneas `//` de código comentado, y 3 ficheros huérfanos (`history-header.jsx`, `tabBar.jsx`, `basicCard.jsx`). Ver convención §6.
+- **Auditoría de dependencias completa:** desinstaladas `@rneui/base`, `@rneui/themed` y `expo-auth-session` (muertas). El resto está justificado (imports, plugins, peers/transitivas, polyfills, web). No quedan deps muertas.
 
 ---
 

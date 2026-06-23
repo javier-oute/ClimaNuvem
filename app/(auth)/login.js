@@ -8,7 +8,6 @@ import { Image, Text, View } from "react-native";
 import AppleSignInButton from "../../components/social-auth-buttons/apple/apple-sign-in-button";
 import GuestButton from "../../components/social-auth-buttons/apple/guest-button";
 import GoogleSignInButton from "../../components/social-auth-buttons/google-sign-in-button";
-//import DemoVideo from "../../components/videoComponent";
 
 export default function LoginScreen() {
   const t = useT();
@@ -25,7 +24,6 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (session) {
-      console.log("Para home con session: ", session);
       router.replace("/(tabs)/home");
     }
   }, [session]);
@@ -61,60 +59,3 @@ export default function LoginScreen() {
     </View>
   );
 }
-
-/*
-export default function LoginScreen() {
-  const appleProps = {
-    buttonType: AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN,
-    buttonStyle: AppleAuthentication.AppleAuthenticationButtonStyle.BLACK,
-    cornerRadius: 6,
-    style: { width: 200, height: 44 }, // w: 200 h: 44
-  };
-
-  return (
-    <View className="flex-1">
-      <DemoVideo />
-      <View className="flex-1 flex-grow justify-end">
-        <View className=" bg-white rounded-t-3xl text-balance">
-          <View className="pt-8 pl-8 pb-12 pr-8 gap-3">
-            <Text className="font-bold text-3xl item">
-              ¡Bienvenido a ClimaNuvem!
-            </Text>
-            <Text className="font-normal text-lg">
-              Inicia sesión para guardar tus predicciones y acceder a funciones
-              exclusivas
-            </Text>
-          </View>
-          <View className="items-center pb-24 gap-8">
-            <AppleSignInButton {...appleProps} />
-            <GuestButton />
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-    <View className="flex-1">
-      <DemoVideo />
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="flex-grow justify-end"
-      >
-        <View className=" bg-white rounded-t-3xl text-balance">
-          <View className="pt-8 pl-8 pb-12 pr-8 gap-3">
-            <Text className="font-bold text-3xl">Bienvenido a ClimaNuvem</Text>
-            <Text className="font-normal text-lg">
-              Saca una foto a las nubes que te preocupan y te daremos el
-              pronóstico{" "}
-            </Text>
-          </View>
-          <View className="items-center pb-12 gap-8">
-            <BotonTomarFoto />
-            <BotonCargarImagen />
-          </View>
-        </View>
-      </ScrollView>
-    </View>
-
-    */

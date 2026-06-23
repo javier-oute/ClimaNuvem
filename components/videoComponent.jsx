@@ -18,14 +18,14 @@ export default function DemoVideo() {
     useCallback(() => {
       try {
         player.play();
-      } catch (e) {
-        console.log("Salto el catch en player.play, ", e);
+      } catch {
+        // el player puede no estar listo todavía; se ignora
       }
       return () => {
         try {
           player.pause();
-        } catch (e) {
-          console.log("Salto el catch en player.play, ", e);
+        } catch {
+          // el player puede no estar listo todavía; se ignora
         }
       };
     }, [player]),
@@ -37,8 +37,8 @@ export default function DemoVideo() {
       if (state === "active")
         try {
           player.play();
-        } catch (e) {
-          console.log("Salto el catch en player.play, ", e);
+        } catch {
+          // el player puede no estar listo todavía; se ignora
         }
     });
     return () => sub.remove();
@@ -56,29 +56,3 @@ export default function DemoVideo() {
     </View>
   );
 }
-
-/*
-import { useVideoPlayer, VideoView } from "expo-video";
-import { View } from "react-native";
-import "../global.css";
-
-const videoNubes = require("@/assets/images/videoNubes.mp4");
-
-export default function DemoVideo() {
-  const player = useVideoPlayer(videoNubes, (p) => {
-    p.loop = true;
-    p.play();
-  });
-
-  return (
-    <View className="w-full h-full absolute inset-0 ">
-      <VideoView
-        player={player}
-        style={{ width: "100%", height: "100%" }}
-        contentFit="cover"
-        pointerEvents="none"
-      />
-    </View>
-  );
-}
-*/

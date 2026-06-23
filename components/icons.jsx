@@ -17,8 +17,6 @@ export const IconoCamera = () => (
 );
 
 export const IconoImage = () => (
-  //<FontAwesome name="image" size={24} color="white" />
-  //<Feather name="image" size={24} color="white" />
   <FontAwesome6 name="image" size={24} color="white" />
 );
 

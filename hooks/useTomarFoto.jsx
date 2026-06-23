@@ -6,8 +6,6 @@ export default function useTomarFoto() {
   const [permission, requestPermission] = ImagePicker.useCameraPermissions();
 
   const abrirCamara = async () => {
-    console.log("perm: ", permission);
-
     if (!permission?.granted) {
       const res = await requestPermission();
       if (!res.granted) {
@@ -29,7 +27,6 @@ export default function useTomarFoto() {
     });
     if (result.canceled) return;
 
-    console.log(result.assets[0]);
     return result.assets[0];
   };
 
