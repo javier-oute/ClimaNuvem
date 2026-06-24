@@ -155,7 +155,9 @@ export default {
   history: {
     title: "History",
     search: "Search...",
-    empty: "No data",
+    emptyTitle: "Your sky is clear",
+    emptySubtitle: "You haven't saved any forecast yet. Make your first one!",
+    noResults: "No results for your search",
     prediction: "Prediction",
     date: "Date",
     forecast: "Forecast",

@@ -7,6 +7,7 @@ import {
 import { bandForConfidence, forecastTitleKey } from "@/lib/forecast/model-meta";
 import { ReliabilityRow } from "@/components/forecast/reliability-row";
 import { PublishedBadge } from "@/components/published-badge";
+import HistoryEmpty from "@/components/history/history-empty";
 import { formatDateTimeWithWeekday } from "@/lib/format";
 import { LOCALE_MAP, useT } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settings.store";
@@ -295,6 +296,7 @@ export default function Historial() {
         data={items}
         className="flex-1 bg-white dark:bg-zinc-900"
         contentContainerStyle={{
+          flexGrow: 1,
           paddingHorizontal: 24,
           paddingTop: 24,
           gap: 24,
@@ -318,6 +320,7 @@ export default function Historial() {
           ) : null
         }
         contentInsetAdjustmentBehavior="automatic"
+        scrollEnabled={items.length > 0}
         keyExtractor={(item) => String(item.id)}
         refreshing={isRefreshing}
         /* FLATLIST TIENE UN MONTON DE OPCIONES, SEGUIR MIRANDO */
@@ -325,11 +328,17 @@ export default function Historial() {
         ListEmptyComponent={
           isLoading ? (
             <ActivityIndicator />
-          ) : (
-            <Text className="text-slate-600 dark:text-zinc-400">
-              {t("history.empty")}
-            </Text>
-          )
+          ) : debouncedSearch || day ? (
+            // Hay búsqueda o filtro de fecha activos pero sin resultados: mensaje neutro (no el
+            // empty-state con "¡haz tu primera predicción!", que solo aplica al historial real vacío).
+            <View className="flex-1 items-center justify-center px-8">
+              <Text className="text-center text-base text-slate-500 dark:text-zinc-400">
+                {t("history.noResults")}
+              </Text>
+            </View>
+          ) : null
+          // El empty-state real (historial vacío sin filtros) se renderiza como capa centrada
+          // fuera del FlatList (ver abajo), para centrarlo en la pantalla pese al inset del header.
         }
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
@@ -422,6 +431,14 @@ export default function Historial() {
           );
         }}
       />
+      {/* Empty-state real (historial vacío, sin búsqueda ni filtro de fecha): capa centrada en la
+          pantalla. Va fuera del FlatList para no verse afectada por el inset del header transparente.
+          pointerEvents="none" deja pasar los toques al FlatList que queda debajo. */}
+      {!isLoading && items.length === 0 && !debouncedSearch && !day && (
+        <View pointerEvents="none" className="absolute inset-0">
+          <HistoryEmpty />
+        </View>
+      )}
       {/* ANDROID: picker nativo modal */}
       {Platform.OS === "android" && showPicker && (
         <DateTimePicker

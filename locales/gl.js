@@ -153,7 +153,9 @@ export default {
   history: {
     title: "Historial",
     search: "Buscar...",
-    empty: "Non hai datos",
+    emptyTitle: "O teu ceo está despexado",
+    emptySubtitle: "Aínda non gardaches ningunha predición. Fai a primeira!",
+    noResults: "Non hai resultados para a túa busca",
     prediction: "Predición",
     date: "Data",
     forecast: "Prognóstico",
