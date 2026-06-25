@@ -238,6 +238,9 @@ export default {
     probability: "Probability",
     place: "Location",
     error: "Error",
+    errorTitle: "Something went wrong",
+    errorSubtitle:
+      "Couldn't load the prediction. Check your connection and try again.",
   },
   login: {
     title: "Welcome to ClimaNuvem!",
@@ -259,6 +262,7 @@ export default {
     unpublish: "Unpublish",
     unpublishing: "Unpublishing…",
     report: "Report",
+    retry: "Retry",
     accept: "Accept",
     editProfile: "Edit profile",
     cancel: "Cancel",
@@ -435,6 +439,14 @@ export default {
     reportThanksTitle: "Thank you",
     reportThanksMsg: "We have received your report and will review it.",
     actionError: "Could not complete the action",
+    errorTitle: "Something went wrong",
+    errorSubtitle:
+      "Couldn't load the post. Check your connection and try again.",
+    mapEmptyTitle: "No posts yet",
+    mapEmptySubtitle:
+      "Be the first to share the sky: publish a forecast on the map.",
+    mapErrorTitle: "Couldn't load the posts",
+    mapErrorSubtitle: "Check your connection and try again.",
   },
   help: {
     title: "Help",

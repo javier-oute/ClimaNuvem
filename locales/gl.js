@@ -234,6 +234,9 @@ export default {
     probability: "Probabilidade",
     place: "Lugar",
     error: "Erro",
+    errorTitle: "Algo saíu mal",
+    errorSubtitle:
+      "Non se puido cargar a predición. Comproba a túa conexión e téntao de novo.",
   },
   login: {
     title: "Benvido a ClimaNuvem!",
@@ -256,6 +259,7 @@ export default {
     unpublish: "Despublicar",
     unpublishing: "Despublicando…",
     report: "Reportar",
+    retry: "Tentar de novo",
     accept: "Aceptar",
     editProfile: "Editar perfil",
     cancel: "Cancelar",
@@ -434,6 +438,14 @@ export default {
     reportThanksTitle: "Grazas",
     reportThanksMsg: "Recibimos o teu reporte e revisarémolo.",
     actionError: "Non se puido completar a acción",
+    errorTitle: "Algo saíu mal",
+    errorSubtitle:
+      "Non se puido cargar a publicación. Comproba a túa conexión e téntao de novo.",
+    mapEmptyTitle: "Aínda non hai publicacións",
+    mapEmptySubtitle:
+      "Sé o primeiro en compartir o ceo: publica unha predición no mapa.",
+    mapErrorTitle: "Non se puideron cargar as publicacións",
+    mapErrorSubtitle: "Comproba a túa conexión e téntao de novo.",
   },
   help: {
     title: "Axuda",

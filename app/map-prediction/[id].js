@@ -5,6 +5,7 @@ import {
 import { FloatingHeaderButton } from "@/components/floating-header-button";
 import { BackIcon, UserIcon } from "@/components/icons";
 import { PlainStateHeader } from "@/components/plain-state-header";
+import { StateMessage } from "@/components/state-message";
 import {
   getPredictionById,
   reportPrediction,
@@ -59,6 +60,9 @@ export default function CommunityPredictionDetail() {
 
   const [item, setItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Error de carga ≠ "no encontrado": un fallo de red no debe decir "no existe".
+  const [loadError, setLoadError] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
   const [signedUrl, setSignedUrl] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -90,6 +94,8 @@ export default function CommunityPredictionDetail() {
 
   useEffect(() => {
     let cancelled = false;
+    setIsLoading(true);
+    setLoadError(false);
     (async () => {
       try {
         const data = await getPredictionById(id);
@@ -114,7 +120,7 @@ export default function CommunityPredictionDetail() {
         }
       } catch (err) {
         console.error("Error fetching community prediction:", err);
-        if (!cancelled) setItem(null);
+        if (!cancelled) setLoadError(true);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -122,7 +128,7 @@ export default function CommunityPredictionDetail() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, reloadToken]);
 
   const onUnpublish = useCallback(() => {
     if (!item) return;
@@ -179,6 +185,22 @@ export default function CommunityPredictionDetail() {
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
         <PlainStateHeader />
         <ActivityIndicator />
+      </View>
+    );
+  }
+
+  // Error de carga (red/servidor): mensaje con "Reintentar", distinto del 404.
+  if (loadError) {
+    return (
+      <View className="flex-1 bg-white dark:bg-zinc-900">
+        <PlainStateHeader />
+        <StateMessage
+          logo
+          title={t("community.errorTitle")}
+          subtitle={t("community.errorSubtitle")}
+          actionLabel={t("buttons.retry")}
+          onAction={() => setReloadToken((x) => x + 1)}
+        />
       </View>
     );
   }

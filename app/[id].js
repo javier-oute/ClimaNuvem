@@ -25,6 +25,7 @@ import {
 import { FloatingHeaderButton } from "@/components/floating-header-button";
 import { BackIcon } from "@/components/icons";
 import { PlainStateHeader } from "@/components/plain-state-header";
+import { StateMessage } from "@/components/state-message";
 import {
   FullscreenImageViewer,
   ImageZoomHint,
@@ -48,6 +49,10 @@ export default function ItemDetail() {
 
   const [item, setItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Error de carga ≠ "no encontrado": un fallo de red no debe decir "no existe".
+  const [loadError, setLoadError] = useState(false);
+  // Cambiar este token re-dispara el efecto de carga (botón "Reintentar").
+  const [reloadToken, setReloadToken] = useState(0);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUnpublishing, setIsUnpublishing] = useState(false);
@@ -79,6 +84,8 @@ export default function ItemDetail() {
 
   useEffect(() => {
     let cancelled = false;
+    setIsLoading(true);
+    setLoadError(false);
 
     (async () => {
       try {
@@ -86,7 +93,7 @@ export default function ItemDetail() {
         if (!cancelled) setItem(data);
       } catch (err) {
         console.error("Error fetching forecast detail:", err);
-        if (!cancelled) setItem(null);
+        if (!cancelled) setLoadError(true);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -95,7 +102,7 @@ export default function ItemDetail() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, reloadToken]);
 
   const onDelete = useCallback(async () => {
     if (isDeleting) return;
@@ -196,6 +203,22 @@ export default function ItemDetail() {
         <Text className="mt-2 text-slate-500 dark:text-zinc-400">
           {t("detail.loading")}
         </Text>
+      </View>
+    );
+  }
+
+  // Error de carga (red/servidor): mensaje con "Reintentar", distinto del 404.
+  if (loadError) {
+    return (
+      <View className="flex-1 bg-white dark:bg-zinc-900">
+        <PlainStateHeader />
+        <StateMessage
+          logo
+          title={t("detail.errorTitle")}
+          subtitle={t("detail.errorSubtitle")}
+          actionLabel={t("buttons.retry")}
+          onAction={() => setReloadToken((x) => x + 1)}
+        />
       </View>
     );
   }

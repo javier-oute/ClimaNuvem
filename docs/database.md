@@ -130,7 +130,7 @@ Dos buckets **privados** (`public = false`): `forecast-images` (predicciones) y 
 ### Límites de los buckets
 | Bucket | `file_size_limit` | `allowed_mime_types` | Nota |
 |---|---|---|---|
-| `forecast-images` | sin límite (`null`) | sin límite (`null`) | — |
+| `forecast-images` | **10 MB** (`10485760`) | **`image/jpeg, image/png, image/webp`** | Endurecido el 2026-06-25 (`harden_forecast_images_bucket`). |
 | `avatars` | **5 MB** (`5242880`) | **`image/jpeg, image/png, image/webp`** | Endurecido en M7 (2026-06-17). |
 
 > El límite de `avatars` es **defensa en profundidad**: las políticas RLS controlan QUIÉN sube
@@ -224,7 +224,7 @@ Migraciones `20260620120000…120600`. Resumen del esquema añadido:
   `reporter_id` (FK→profiles, CASCADE), `created_at`, **UNIQUE(prediction_id, reporter_id)**.
 
 ### Columnas añadidas
-- `public.profiles.is_admin boolean default false` — rol admin (se activa **manualmente en BD**).
+- `public.profiles.is_admin boolean default false` — rol admin (se activa **manualmente en BD**). Protegido por el trigger `profiles_guard_is_admin` (migración `20260625100000`): un usuario normal **no** puede modificarlo (ni auto-asignárselo) pese a la RLS UPDATE por fila; solo el contexto interno o un admin existente.
 - `public.forecast_history.description text` (≤280) — comentario del autor (también se ve en el mapa).
 - `public.forecast_history.published_at timestamptz` — marca durable "fue publicada" (badge gris).
 
@@ -397,6 +397,8 @@ Cada una está en `supabase/migrations/<version>_<name>.sql`:
 | `20260620120500` | `community_map_cron_cleanup` | Fase 2: `pg_cron` horario borra publicaciones caducadas > 1 h. |
 | `20260620120600` | `community_map_revoke_anon` | Fase 2: revoca `SELECT` de `anon` en las tablas del mapa. |
 | `20260620130000` | `robust_username` | `username` siempre válido y único en el registro + columna **NOT NULL**. |
+| `20260625100000` | `guard_profiles_is_admin` | **Seguridad:** trigger `BEFORE INSERT/UPDATE` en `profiles` que impide a un usuario auto-asignarse `is_admin` (la RLS UPDATE solo filtra la fila, no las columnas → escalada). El contexto interno (sin `auth.uid()`) y los admins no se restringen. `EXECUTE` revocado (no es RPC). |
+| `20260625100100` | `harden_forecast_images_bucket` | **Seguridad:** límite 10 MB + MIME `image/jpeg,png,webp` en `forecast-images` (antes sin límite), igual que `avatars` (M7). |
 
 ## A.4. Comandos de shell ejecutados
 
