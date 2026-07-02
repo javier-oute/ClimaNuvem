@@ -112,3 +112,16 @@ incoherente se pide repetir la foto. El top-1 siempre manda (la alerta nunca se 
 > Análisis de estado completo y realista en **[`docs/estado-proyecto.md`](./docs/estado-proyecto.md)**.
 
 Autor: Javier Outeiriño Cortés.
+
+---
+
+## Licencia
+
+ClimaNuvem se publica bajo un esquema **no comercial**: se permite su uso, estudio y modificación con fines no comerciales, pero **no su explotación comercial**.
+
+- **Código fuente** (esta aplicación): [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) — ver el fichero [`LICENSE`](./LICENSE). Copyright © 2026 Javier Outeiriño Cortés.
+- **Memoria y documentación del TFG**: [Creative Commons Atribución-NoComercial 4.0 (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/).
+- **Modelo entrenado** (`.tflite`): se distribuye con la aplicación para uso no comercial y queda sujeto a las condiciones de los datos con los que fue entrenado.
+- **Datos y dependencias de terceros**: los conjuntos de datos utilizados (GLOBE Observer, muestra pública del IMGW-PIB, etc.) y las dependencias de software conservan **sus propias licencias y condiciones de uso**.
+
+Esto implica que ClimaNuvem **no es** software libre/open source en sentido formal. No constituye asesoramiento jurídico.
