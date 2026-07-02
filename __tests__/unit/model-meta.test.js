@@ -1,11 +1,4 @@
-/**
- * Tests de lib/forecast/model-meta.js — fuente única de verdad del motor de alertas.
- *
- * Cubre los helpers puros (isExpectedConfusion, bandForConfidence, forecastTitleKey) y un bloque de
- * INVARIANTES de integridad pensado para atrapar errores al integrar un futuro modelo (v4): si se
- * añade/renombra una clase y no se actualizan RISK/RISK_COLORS o el grafo de confusión, estos tests
- * fallan en seco en vez de fallar silenciosamente en producción.
- */
+// Tests de model-meta.js: helpers puros e invariantes de integridad para atrapar errores al integrar un futuro modelo (v4).
 const {
   CLASS_ORDER,
   RISK,

@@ -1,17 +1,6 @@
 import { normalizeRGBA, IMAGENET_MEAN, IMAGENET_STD } from "@/lib/mlNormalize";
 
-// Valores de referencia calculados manualmente con la fórmula:
-// output = (pixel/255.0 - MEAN[canal]) / STD[canal]
-//
-// Píxel negro (R=0, G=0, B=0):
-//   R: (0/255 - 0.485) / 0.229 = -0.485/0.229 ≈ -2.11790
-//   G: (0/255 - 0.456) / 0.224 = -0.456/0.224 ≈ -2.03571
-//   B: (0/255 - 0.406) / 0.225 = -0.406/0.225 ≈ -1.80444
-//
-// Píxel blanco (R=255, G=255, B=255):
-//   R: (1.0 - 0.485) / 0.229 = 0.515/0.229  ≈ +2.24891
-//   G: (1.0 - 0.456) / 0.224 = 0.544/0.224  ≈ +2.42857
-//   B: (1.0 - 0.406) / 0.225 = 0.594/0.225  ≈ +2.64000
+// Valores de referencia calculados a mano con output = (pixel/255 - MEAN)/STD (píxel negro y blanco).
 
 // ─── Constantes exportadas ────────────────────────────────────────────────────
 

@@ -1,5 +1,4 @@
-// Tests de integración para lib/forecastHistory.js
-// Mockean @/lib/supabase y @/stores/forecast.store.image para no tocar red real.
+// Tests de integración de lib/forecastHistory.js (mockea supabase y forecast.store.image, sin red real).
 
 jest.mock("@/lib/supabase", () => ({
   supabase: {
@@ -26,9 +25,7 @@ import {
 
 // ─── Helper: query builder thenable ──────────────────────────────────────────
 
-// El cliente de Supabase devuelve objetos "thenable" (implementan .then()).
-// Al hacer `const { data, error } = await query`, Jest necesita que el objeto
-// se comporte como una Promise. Modelamos eso con .then() explícito.
+// El cliente Supabase devuelve thenables; se modela con .then() explícito para que await funcione en Jest.
 function makeQueryBuilder(resolvedValue) {
   const builder = {
     select: jest.fn().mockReturnThis(),

@@ -2,13 +2,7 @@ import { ReliabilityRow } from "@/components/forecast/reliability-row";
 import { useT } from "@/lib/i18n";
 import { Text, View } from "react-native";
 
-// Cuerpo común del detalle de una predicción (historial y mapa). Garantiza que ambas
-// pantallas comparten exactamente la misma tipografía/estructura. Las diferencias se
-// inyectan por props:
-//   identity         → cabecera de identidad (nombre+badge en historial / avatar+username en mapa)
-//   descriptionLabel → etiqueta opcional de la descripción ("Descripción del usuario" en el mapa)
-//   extraLines       → filas de meta adicionales (caducidad en el mapa), con el estilo de la fecha
-//   onLayoutInner    → mide el bloque colapsado (identidad + pronóstico + fiabilidad) para los snap points
+// Cuerpo común del detalle (historial y mapa) para compartir tipografía/estructura; las diferencias van por props.
 export function ForecastDetailBody({
   identity,
   clase,
@@ -29,9 +23,7 @@ export function ForecastDetailBody({
 
   return (
     <>
-      {/* Bloque superior. Solo identidad + pronóstico se MIDEN (onLayoutInner): es lo único que
-          queda visible en el snap colapsado del bottom sheet. La recomendación y la fiabilidad
-          van debajo, fuera de la medición, así que se esconden al colapsar. */}
+      {/* Bloque superior: solo identidad + pronóstico se miden (onLayoutInner), lo visible en el snap colapsado. */}
       <View className="flex">
         <View onLayout={onLayoutInner}>
           {identity}

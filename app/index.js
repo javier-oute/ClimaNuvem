@@ -7,8 +7,7 @@ export default function Index() {
   const session = useAuthStore((s) => s.session);
   const isLoading = useAuthStore((s) => s.isLoading);
 
-  // Mientras inicializa supabase (AuthBootstrap), no redirijas todavía. Loader con el fondo del tema
-  // (evita el flash en blanco) en lugar de null.
+  // Mientras inicializa Supabase (AuthBootstrap) no redirige aún: loader con el fondo del tema (evita el flash blanco).
   if (isLoading || session === undefined) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">

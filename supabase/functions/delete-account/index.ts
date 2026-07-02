@@ -1,12 +1,4 @@
-// Edge Function: delete-account
-//
-// Borra de forma COMPLETA e irreversible (hard delete) la cuenta del usuario que la invoca:
-//   1) elimina sus objetos de Storage en los buckets 'forecast-images' y 'avatars' (la BD cascadea,
-//      pero Storage NO → hay que borrarlo explícitamente vía Storage API),
-//   2) elimina la fila de auth.users con la admin API → cascada a profiles, forecast_history y auth.*.
-//
-// El service_role vive SOLO aquí (inyectado por el runtime); nunca llega al cliente. El cliente solo
-// invoca esta función con su JWT de usuario.
+// Edge Function delete-account: borrado completo (Storage de forecast-images/avatars + auth.users con cascada); el service_role vive solo aquí.
 
 import {
   createClient,

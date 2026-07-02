@@ -43,9 +43,7 @@ import { useModel } from "../hooks/useModel";
 import { useShareForecast } from "../hooks/useShareForecast";
 import { saveForecastWithPhoto } from "../stores/forecast.store";
 
-// Android: scroll que mantiene el input enfocado sobre el teclado (react-native-keyboard-controller),
-// porque gorhom no hace auto-scroll al input y el campo quedaba tapado. iOS sigue con el scroll normal
-// del sheet + automaticallyAdjustKeyboardInsets, que ya funcionaba bien.
+// Android: scroll que mantiene el input sobre el teclado (keyboard-controller); iOS usa el scroll normal del sheet.
 const FormScrollView =
   Platform.OS === "android"
     ? BottomSheetKeyboardAwareScrollView
@@ -64,8 +62,7 @@ export default function ConfirmForecast() {
   const t = useT();
   const { colorScheme } = useColorScheme();
 
-  // Modo invitado: sin sesión no se puede guardar ni publicar. Solo se muestra el
-  // resultado y el botón de compartir.
+  // Modo invitado: sin sesión no se guarda ni publica; solo resultado y compartir.
   const isLoggedIn = useAuthStore(selectIsLoggedIn);
 
   const insets = useSafeAreaInsets();
@@ -83,8 +80,7 @@ export default function ConfirmForecast() {
     restSpeedThreshold: 0.5,
   });
 
-  // Coordenadas que pudieran venir por params (hoy solo si en el futuro se vuelve
-  // a pasar desde el botón). En cámara llegan más tarde vía GPS (ver efecto abajo).
+  // Coordenadas que pudieran venir por params; en cámara llegan más tarde por GPS (ver efecto abajo).
   const coordsFromParams = useMemo(
     () =>
       latStr && lonStr
@@ -95,12 +91,10 @@ export default function ConfirmForecast() {
   const [coords, setCoords] = useState(coordsFromParams);
   // Nombre de lugar auto-detectado (referencia para marcar placeNameSource).
   const [autoPlace, setAutoPlace] = useState(placeNameAuto);
-  // Marca si el usuario ha tocado el campo de lugar (para no pisar lo que escriba
-  // cuando el GPS resuelva tarde).
+  // Marca si el usuario tocó el campo de lugar (para no pisar lo que escriba cuando el GPS resuelva tarde).
   const placeEdited = useRef(false);
 
-  // bottomConstant: ajusta el snap colapsado (debe verse hasta la fiabilidad). Si la fiabilidad
-  // queda cortada, súbelo; si asoma el aviso "poco fiable" de debajo, bájalo.
+  // bottomConstant: ajusta el snap colapsado (debe verse hasta la fiabilidad).
   const bottomConstant = Platform.OS === "ios" ? 48 : 78;
   const topConstant = Platform.OS === "ios" ? 90 : 140;
 
@@ -115,9 +109,7 @@ export default function ConfirmForecast() {
   const [placeName, setPlaceName] = useState(placeNameAuto);
   const [description, setDescription] = useState("");
 
-  // Ubicación en segundo plano: solo para fotos de cámara y solo si no vino ya por
-  // params. No bloquea la pantalla de carga ni la inferencia; cuando resuelve,
-  // rellena las coords (habilita publicar) y el campo de lugar (si no se ha tocado).
+  // Ubicación en segundo plano (solo cámara y si no vino por params): al resolver rellena coords (habilita publicar) y lugar.
   useEffect(() => {
     if (source !== "camera" || coordsFromParams) return;
     let cancelled = false;
@@ -142,14 +134,12 @@ export default function ConfirmForecast() {
 
   const { resultado, cargando, error } = useModel(image);
 
-  // Loading derivado directamente del hook: así el PRIMER frame de la pantalla
-  // ya es la vista de carga (antes un useEffect lo activaba un render tarde).
+  // Loading derivado directamente del hook: el primer frame ya es la vista de carga.
   const isLoading = cargando;
 
   // El top-1 siempre manda (sin escalado). El tono/banda solo modulan el mensaje y la UI.
   const tone = resultado?.tone ?? null;
-  // Fallo de inferencia (decodificar/ejecutar el modelo): se trata como "repetir foto"
-  // con un mensaje de error, en vez de mostrar un resultado vacío ("-").
+  // Fallo de inferencia: se trata como 'repetir foto' con mensaje de error, no un resultado vacío.
   const hasError = !!error;
   const isRetake = resultado?.action === "retake";
   const clase = resultado?.clase ?? null;
@@ -206,8 +196,7 @@ export default function ConfirmForecast() {
     t,
   ]);
 
-  // Solo se puede publicar una foto tomada en el momento (cámara), con coordenadas, clasificable y con
-  // fiabilidad NO baja (no se avisa a la comunidad con una detección poco fiable).
+  // Solo se publica una foto de cámara con coordenadas, clasificable y con fiabilidad no baja.
   const canPublish =
     source === "camera" &&
     !!coords &&
@@ -322,8 +311,7 @@ export default function ConfirmForecast() {
     );
   }
 
-  // Inferencia no fiable (error de análisis, foto inválida o incoherente): pedir repetir
-  // la foto en vez de mostrar una alerta engañosa o un resultado vacío. No se ofrece guardar.
+  // Inferencia no fiable (error, foto inválida o incoherente): pedir repetir foto, sin ofrecer guardar.
   if (hasError || isRetake) {
     let retakeTitle;
     let retakeMsg;
@@ -447,8 +435,7 @@ export default function ConfirmForecast() {
           borderRadius: 999,
           backgroundColor: "#CBD5E1", // slate-300
         }}
-        // El teclado lo gestiona el scroll, no el sheet: en Android keyboard-controller hace
-        // auto-scroll al input; en iOS automaticallyAdjustKeyboardInsets. Por eso "none".
+        // El teclado lo gestiona el scroll, no el sheet (Android keyboard-controller / iOS insets); por eso 'none'.
         keyboardBehavior="none"
       >
         <FormScrollView
@@ -472,11 +459,9 @@ export default function ConfirmForecast() {
               setTopBlockH((prev) => (prev === h ? prev : h));
             }}
           >
-            {/* Resultado (al renderizar aquí la carga ya ha terminado: ver el
-                early-return de isLoading arriba). */}
+            {/* Resultado (aquí la carga ya terminó, ver el early-return de isLoading arriba). */}
             <View className="items-center">
-              {/* Solo pronóstico + recomendación + fiabilidad se MIDEN (bottomBlockH): es lo que
-                    queda visible en el snap colapsado. */}
+              {/* Solo pronóstico + recomendación + fiabilidad se miden (bottomBlockH): lo visible en el snap colapsado. */}
               <View
                 className="items-center gap-3"
                 onLayout={(event) => {
@@ -499,8 +484,7 @@ export default function ConfirmForecast() {
                 <ReliabilityRow clase={clase} band={reliability} />
               </View>
 
-              {/* Aviso "poco fiable" (banda baja): fuera de la medición → oculto al colapsar,
-                    visible solo al ampliar. */}
+              {/* Aviso poco fiable (banda baja): fuera de la medición, visible solo al ampliar. */}
               {isLowBand ? (
                 <Text className="mt-3 text-center text-sm italic text-slate-500 dark:text-zinc-400">
                   {t("alerts.tone.pocoFiable")}
@@ -549,8 +533,7 @@ export default function ConfirmForecast() {
                     maxLength={280}
                     style={{ minHeight: 88, textAlignVertical: "top" }}
                   />
-                  {/* Aviso solo si la predicción es publicable: no tiene sentido avisar de que
-                      la descripción se verá en el mapa cuando no se puede publicar. */}
+                  {/* Aviso solo si la predicción es publicable. */}
                   {canPublish ? (
                     <Text className="text-xs text-slate-400 dark:text-zinc-500 -mt-2">
                       {t("forecast.descriptionHint")}

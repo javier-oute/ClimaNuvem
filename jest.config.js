@@ -12,17 +12,13 @@ module.exports = {
     "^@/(.*)$": "<rootDir>/$1",
   },
 
-  // Extendemos el transformIgnorePatterns de jest-expo para incluir módulos
-  // adicionales que pueden publicarse como ESM (nativewind, zustand v5).
-  // El patrón de jest-expo ya incluye expo, @expo, react-native, @react-native.
+  // Extiende transformIgnorePatterns de jest-expo con módulos ESM extra (nativewind, zustand v5).
   transformIgnorePatterns: [
     "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|nativewind|zustand|@supabase))",
     "/node_modules/react-native-reanimated/plugin/",
   ],
 
-  // Archivos que se ejecutan DESPUÉS de que Jest inicializa el entorno de test.
-  // Nota: jest-expo usa `setupFiles` (ANTES del entorno) para su propia config.
-  // Nosotros usamos `setupFilesAfterEnv` para mocks globales de módulos nativos.
+  // Archivos ejecutados tras inicializar el entorno (setupFilesAfterEnv) para mocks globales de módulos nativos.
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
 
   // Cobertura sobre la lógica crítica testeada (pura + capa de datos).

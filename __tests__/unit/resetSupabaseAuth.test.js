@@ -1,5 +1,4 @@
-// Tests para lib/resetSupabaseAuth.ts — hardResetSupabaseAuth (fix C03).
-// jest.setup.js ya mockea globalmente expo-secure-store y AsyncStorage.
+// Tests de hardResetSupabaseAuth (fix C03); secure-store y AsyncStorage ya mockeados en jest.setup.js.
 
 jest.mock("@/lib/supabase", () => ({
   supabase: {

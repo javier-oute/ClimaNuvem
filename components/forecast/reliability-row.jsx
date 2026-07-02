@@ -2,10 +2,7 @@ import { RISK_COLORS } from "@/lib/forecast/model-meta";
 import { useT } from "@/lib/i18n";
 import { Text, View } from "react-native";
 
-// Fila reutilizable de fiabilidad: punto de color de la clase + "Fiabilidad: Alta/Media/Baja".
-// Sustituye al porcentaje en todas las pantallas (resultado en vivo, detalle, mapa, historial).
-// El color es el de la clase (RISK_COLORS); se atenúa a gris cuando la banda es "baja" (poco fiable),
-// igual que el resultado en vivo. La alineación la decide el contenedor padre.
+// Fila de fiabilidad (punto de color + Alta/Media/Baja) que sustituye al porcentaje; se atenúa a gris en banda baja.
 export function ReliabilityRow({ clase, band }) {
   const t = useT();
   if (!band) return null;

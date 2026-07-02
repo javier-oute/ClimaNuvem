@@ -32,8 +32,7 @@ export default function LoginScreen() {
     <View className="flex-1 justify-start bg-white dark:bg-zinc-900">
       <View className="pt-8">
         <Image
-          // Logo según tema: en oscuro, el blanco que rodea nube+gota es el negro del
-          // login (#18181b); la nube y la gota mantienen su color. En claro, sin cambios.
+          // Logo según tema: en oscuro el blanco que rodea nube+gota es el negro del login; en claro sin cambios.
           source={
             colorScheme === "dark"
               ? require("@/assets/images/icon-login-dark.png")

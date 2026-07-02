@@ -1,7 +1,4 @@
-// Tests de stores/settings.store.js — idioma, tema y consentimiento del mapa.
-// hasMapPublishConsent es seguridad-relevante: garantiza que subir CURRENT_MAP_CONSENT_VERSION
-// vuelve a pedir consentimiento a todos los dispositivos. AsyncStorage ya está mockeado en
-// jest.setup.js; aquí mockeamos Appearance para verificar la aplicación del tema.
+// Tests de settings.store.js (idioma, tema, consentimiento); hasMapPublishConsent garantiza re-pedir consentimiento al subir la versión.
 
 jest.mock("react-native", () => ({
   Appearance: { setColorScheme: jest.fn() },

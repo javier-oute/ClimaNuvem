@@ -3,8 +3,7 @@ import { Appearance } from "react-native";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-// Versión del consentimiento del mapa comunitario. Si se cambian las condiciones de privacidad, basta
-// con subir este número: el aviso volverá a aparecer a todos (la versión guardada dejará de coincidir).
+// Versión del consentimiento del mapa: subir este número hace reaparecer el aviso a todos.
 export const CURRENT_MAP_CONSENT_VERSION = 1;
 
 export const useSettingsStore = create(
@@ -12,8 +11,7 @@ export const useSettingsStore = create(
     (set) => ({
       language: "gl", // 'es' | 'gl' | 'en'  (por defecto gallego)
       theme: "light", // 'light' | 'dark' | 'system'  (por defecto claro)
-      // Consentimiento de publicación en el mapa (por dispositivo). null = no consentido.
-      // Guarda la versión aceptada para poder forzar la reaparición del aviso.
+      // Consentimiento de publicación por dispositivo (null = no consentido); guarda la versión aceptada.
       mapPublishConsentVersion: null,
       // ¿Ya se mostró el aviso de bienvenida/onboarding en este dispositivo? (una sola vez)
       hasSeenOnboarding: false,

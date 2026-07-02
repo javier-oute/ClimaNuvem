@@ -5,14 +5,10 @@ import { useColorScheme } from "nativewind";
 import { Platform, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Color del pin propio (fuente única; lo importa también la pantalla del mapa para el Marker).
-// En iOS se respeta el hex exacto → azul marino de la app. En Android pinColor solo usa el TONO, y el
-// azul marino colisiona con el azul de "Vigilancia"; por eso allí usamos un magenta/rosa cuyo tono
-// (~315°) queda claramente separado de todos los demás (rojo, naranja, verde, azul, violeta).
+// Color del pin propio (fuente única); en Android usa un magenta cuyo tono no colisiona con el azul de Vigilancia.
 export const OWN_PIN_COLOR = Platform.OS === "android" ? "#D11FA3" : "#314468";
 
-// Niveles de riesgo (0..4) con su color representativo. Cada color de RISK_COLORS se comparte entre
-// clases del mismo nivel, por eso la leyenda agrupa por color/riesgo (5 entradas únicas).
+// Niveles de riesgo 0..4 con su color; la leyenda agrupa por color (5 entradas únicas).
 const RISK_ROWS = [
   { level: 0, color: RISK_COLORS.cielo_despejado },
   { level: 1, color: RISK_COLORS.nubes_altas_medias },
@@ -21,9 +17,7 @@ const RISK_ROWS = [
   { level: 4, color: RISK_COLORS.tormenta },
 ];
 
-// En Android el pin (pinColor) usa SOLO el tono (hue) del color, con saturación/brillo del marcador
-// estándar de Google → se ve más vivo que el hex. Para que la leyenda case con el pin real, en Android
-// reconstruimos el color a partir de su tono a plena saturación/brillo. En iOS el hex se respeta.
+// En Android el pin usa solo el tono del color; la leyenda lo reconstruye a plena saturación para casar con el pin real.
 function toPinColor(hex) {
   if (Platform.OS !== "android") return hex;
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -70,9 +64,7 @@ function LegendRow({ color, label }) {
   );
 }
 
-// Overlay fijo arriba-izquierda: leyenda de colores + aviso de privacidad, apilados con el MISMO ancho
-// (alignItems por defecto = stretch) y limitados con maxWidth para que el aviso largo no se desborde.
-// No intercepta gestos del mapa (pointerEvents none).
+// Overlay fijo arriba-izquierda: leyenda + aviso de privacidad, con maxWidth y sin interceptar gestos del mapa.
 export function MapLegend() {
   const t = useT();
   const insets = useSafeAreaInsets();

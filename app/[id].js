@@ -72,7 +72,6 @@ export default function ItemDetail() {
   });
 
   // bottomConstant: ajusta cuánto se esconde el sheet colapsado (identidad + pronóstico visibles).
-  // Si la recomendación asoma, bájalo; si corta el pronóstico, súbelo.
   const bottomConstant = Platform.OS === "ios" ? 52 : 96;
   const topConstant = Platform.OS === "ios" ? 90 : 140;
 
@@ -172,16 +171,14 @@ export default function ItemDetail() {
     ]);
   }, [item, isUnpublishing, t]);
 
-  // Mismo criterio que en vivo: título dudoso y banda de fiabilidad según la probabilidad guardada.
-  // Se calcula aquí (null-safe) para reutilizarlo tanto en el render como al compartir.
+  // Mismo criterio que en vivo: título dudoso y banda de fiabilidad desde la probabilidad guardada (null-safe).
   const band = bandForConfidence(item?.probability ?? 0);
   const forecastTitle = t(forecastTitleKey(item?.forecast, band));
   const forecastDisplay = forecastTitle.startsWith("alerts.")
     ? item?.forecast
     : forecastTitle;
   const lowBand = band === "baja";
-  // Recomendación de seguridad derivada de la banda guardada (la 2ª clase no se
-  // almacena, así que se usa la banda de fiabilidad directamente).
+  // Recomendación de seguridad derivada de la banda guardada (la 2ª clase no se almacena).
   const recommendationText = t(`alerts.${item?.forecast}.mensaje.${band}`);
   const recommendation = recommendationText.startsWith("alerts.")
     ? null
@@ -241,8 +238,7 @@ export default function ItemDetail() {
       <Stack.Screen
         options={{
           headerBackTitleVisible: false,
-          // Android: sin header nativo (intercepta toques y pinta sombra). Los
-          // botones (atrás + descarga) van flotantes. iOS mantiene su header.
+          // Android: sin header nativo, botones (atrás + descarga) flotantes; iOS mantiene su header.
           headerShown: Platform.OS === "ios",
           headerTitle: "",
           headerBackTitle: "",

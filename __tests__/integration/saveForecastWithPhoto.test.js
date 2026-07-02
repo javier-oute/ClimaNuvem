@@ -1,5 +1,4 @@
-// Tests de integración para stores/forecast.store.js — saveForecastWithPhoto
-// Incluye documentación del bug C01 (variable imagePath shadowed → cleanup nunca se ejecuta).
+// Tests de integración de saveForecastWithPhoto (stores/forecast.store.js), incluido el bug C01 de la imagen huérfana.
 
 jest.mock("@/lib/supabase", () => ({
   supabase: {
@@ -250,12 +249,7 @@ describe("saveForecastWithPhoto — errores en INSERT de Supabase", () => {
     ).rejects.toBeDefined();
   });
 
-  // ─── Bug C01 (CORREGIDO): limpieza de imagen huérfana ─────────────────────
-  //
-  // Antes, saveForecastWithPhoto() redeclaraba `const imagePath` dentro del try,
-  // ensombreciendo la `let imagePath = null` externa que el catch evalúa. El fix
-  // asigna a la variable externa y llama a deleteImage(imagePath) en el catch.
-  // Estos tests verifican el comportamiento correcto.
+  // Bug C01 (corregido): imagePath se asigna a la variable externa y el catch borra la imagen huérfana.
 
   it("[C01] cuando el INSERT falla tras subir la foto, deleteImage borra la imagen huérfana", async () => {
     mockSession();

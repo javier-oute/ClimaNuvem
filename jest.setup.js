@@ -1,19 +1,15 @@
-// Silenciar los 70+ console.log de producción durante los tests para output limpio.
-// console.error se mantiene visible para diagnóstico de fallos.
+// Silencia los console.log de producción en los tests; console.error se mantiene visible.
 global.console = {
   ...console,
   log: jest.fn(),
   warn: jest.fn(),
 };
 
-// lib/supabase.ts importa estos módulos como side effects en el nivel de módulo.
-// Si no se mockean antes de que se importe lib/supabase.ts, el proceso de Node falla
-// porque estas librerías intentan acceder a APIs nativas de React Native.
+// lib/supabase.ts importa estos módulos como side effects; hay que mockearlos antes o Node falla al acceder a APIs nativas.
 jest.mock("react-native-url-polyfill/auto", () => {});
 jest.mock("react-native-get-random-values", () => {});
 
-// react-native-keyboard-controller (nativo) no existe en el entorno Node de los tests:
-// usar el mock oficial que provee el propio paquete.
+// react-native-keyboard-controller no existe en Node: se usa el mock oficial del paquete.
 jest.mock("react-native-keyboard-controller", () =>
   require("react-native-keyboard-controller/jest"),
 );

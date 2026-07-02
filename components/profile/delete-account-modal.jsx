@@ -9,8 +9,7 @@ import {
   View,
 } from "react-native";
 
-// Modal de confirmación de borrado de cuenta: hay que teclear la palabra de confirmación
-// para habilitar el botón destructivo. Gestiona su propio estado de carga/error.
+// Modal de borrado de cuenta: exige teclear la palabra de confirmación; gestiona su carga/error.
 export function DeleteAccountModal({ visible, onClose, onConfirm }) {
   const t = useT();
   const [text, setText] = useState("");

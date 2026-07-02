@@ -282,14 +282,10 @@ export default function Profile() {
             label={t("settings.mapConsent")}
             value={mapConsentGranted ? "on" : "off"}
             onChange={(key) => {
-              // "Sí" muestra el MISMO aviso que el flujo de "Publicar" (el helper concede el
-              // consentimiento al aceptar). "No" avisa de que se borrarán las publicaciones del mapa;
-              // solo al confirmar y borrar con éxito se retira el consentimiento.
+              // 'Sí' muestra el mismo aviso que 'Publicar' (concede consentimiento); 'No' avisa de que se borrarán las publicaciones.
               if (key === "on") {
                 if (!mapConsentGranted) {
-                  // Tras conceder el consentimiento, aseguramos el permiso de ubicación
-                  // (hace falta para publicar): la primera vez se pide el diálogo del SO y,
-                  // si se deniega (o ya estaba denegado de forma permanente), se ofrece abrir Ajustes.
+                  // Tras conceder el consentimiento se asegura el permiso de ubicación (necesario para publicar), con ruta a Ajustes si se deniega.
                   promptMapPublishConsent({
                     t,
                     onAccept: async () => {

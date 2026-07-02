@@ -34,8 +34,7 @@ function SheetRow({ icon, label, onPress, danger }) {
   );
 }
 
-// Bottom sheet de origen del avatar (Cámara / Galería / Quitar).
-// El padre lo controla por ref: ref.current.present() / .dismiss().
+// Bottom sheet de origen del avatar (Cámara/Galería/Quitar); el padre lo controla por ref.
 export const AvatarSourceSheet = forwardRef(function AvatarSourceSheet(
   { hasAvatar, onCamera, onGallery, onRemove },
   ref,

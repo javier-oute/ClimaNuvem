@@ -1,6 +1,4 @@
-// Tests de integración de lib/communityMap.js (capa de datos del mapa comunitario Fase 2).
-// Mockea @/lib/supabase: las escrituras/lecturas pasan por RPC SECURITY DEFINER, salvo
-// unpublishAllMine que hace un delete directo (protegido por RLS) filtrando por user_id.
+// Tests de integración de lib/communityMap.js (mockea @/lib/supabase; escrituras/lecturas por RPC salvo unpublishAllMine).
 
 jest.mock("@/lib/supabase", () => ({
   supabase: {

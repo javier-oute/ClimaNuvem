@@ -161,8 +161,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
       beginLoading("refreshProfile");
       try {
         const session = get().session ?? null;
-        // safeSet “normal” aquí porque no hay un lifecycle de cleanup
-        // (si te preocupa, puedes hacer versión safe también)
+        // safeSet normal aquí porque no hay lifecycle de cleanup.
         const reqId = ++profileReqId;
 
         if (!session) {
@@ -225,9 +224,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
       }
     },
 
-    // Borrado COMPLETO e irreversible de la cuenta. La Edge Function 'delete-account'
-    // elimina Storage + auth.users (cascada a profiles/forecast_history). Aquí solo
-    // limpiamos lo local y redirigimos. El modal gestiona su propio loading/error.
+    // Borrado completo e irreversible: la Edge Function delete-account elimina Storage + auth.users (cascada); aquí solo limpiamos lo local.
     deleteAccount: async () => {
       const { error } = await supabase.functions.invoke("delete-account");
       if (error) throw new Error(error.message);

@@ -60,8 +60,7 @@ function LandscapeImage({ source, availWidth }) {
   );
 }
 
-// Mockup vertical: centrado y con ancho contenido para que el marco del
-// móvil no domine la pantalla.
+// Mockup vertical centrado y con ancho contenido para que el marco del móvil no domine.
 function PortraitImage({ source, availWidth }) {
   const width = Math.round(availWidth * 0.55);
   const height = Math.round(width / PORTRAIT_RATIO);
@@ -77,11 +76,7 @@ function PortraitImage({ source, availWidth }) {
   );
 }
 
-// Fila de mockups de móvil con ancho uniforme. El ancho lo marca la fila más
-// densa (3 móviles), de modo que las filas de 2 y de 3 muestran los móviles al
-// mismo tamaño y quedan centradas.
-// `widthFactor` permite agrandar levemente una fila respecto al tamaño base
-// (1 = ancho que hace caber 3 móviles). El ancho se limita para no desbordar.
+// Fila de mockups de ancho uniforme (lo marca la fila de 3); widthFactor agranda levemente una fila sin desbordar.
 function PhoneRow({ sources, availWidth, widthFactor = 1 }) {
   const base = Math.floor((availWidth - ROW_GAP * 2) / 3);
   const maxWidth = Math.floor(

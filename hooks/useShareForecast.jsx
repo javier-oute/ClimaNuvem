@@ -14,8 +14,7 @@ export function useShareForecast({
       ? `${t("share.reliabilityLabel")}${t(`alerts.fiabilidad.${reliability}`)}`
       : null;
 
-    // El título es siempre genérico ("🌤️ Predicción"): nunca se comparte el nombre
-    // que el usuario le haya puesto a la predicción.
+    // El título es siempre genérico ('Predicción'): nunca se comparte el nombre puesto por el usuario.
     const shareText = [
       t("share.defaultTitle"),
       (placeName ?? "").trim()

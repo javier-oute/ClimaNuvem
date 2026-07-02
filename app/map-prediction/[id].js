@@ -82,7 +82,6 @@ export default function CommunityPredictionDetail() {
   });
 
   // bottomConstant: ajusta cuánto se esconde el sheet colapsado (usuario + pronóstico visibles).
-  // Si la recomendación asoma, bájalo; si corta el pronóstico, súbelo.
   const bottomConstant = Platform.OS === "ios" ? 52 : 96;
   const topConstant = Platform.OS === "ios" ? 90 : 140;
 

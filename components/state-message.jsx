@@ -1,9 +1,7 @@
 import { useColorScheme } from "nativewind";
 import { Image, Pressable, Text, View } from "react-native";
 
-// Estado genérico centrado (vacío / error / no encontrado) con marca ClimaNuvem.
-// Reutilizable: logo opcional según tema (mismo par que el login, fondos que coinciden con
-// bg-white / dark:bg-zinc-900), título, subtítulo y una acción opcional (p. ej. "Reintentar").
+// Estado genérico centrado (vacío/error/no encontrado) con logo opcional según tema, título, subtítulo y acción opcional.
 export function StateMessage({
   logo = false,
   title,

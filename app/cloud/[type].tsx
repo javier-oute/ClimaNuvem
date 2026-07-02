@@ -44,8 +44,7 @@ function Section({ title, children }: { title: string; children: string }) {
   );
 }
 
-// Escala de peligrosidad: 5 círculos que se rellenan según el nivel (0..4).
-// Cada círculo relleno usa el color de su propio nivel (paleta de alertas).
+// Escala de peligrosidad: 5 círculos que se rellenan según el nivel (0..4), con el color de cada nivel.
 function RiskScale({ level }: { level: number }) {
   return (
     <View className="flex-row items-center gap-1.5">

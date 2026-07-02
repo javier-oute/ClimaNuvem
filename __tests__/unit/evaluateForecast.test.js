@@ -1,13 +1,4 @@
-/**
- * Tests de la lógica de alertas basada en confianza (lib/forecast/evaluateForecast.js).
- *
- * Los vectores de probabilidad reflejan situaciones reales de la matriz de confusión del modelo
- * (Ayuda/matrices_confusion.png) y su calibración empírica. Diseño:
- *   - Sin escalado: el top-1 SIEMPRE manda (la 2ª clase solo matiza el tono o se menciona).
- *   - Bandas conservadoras: alta ≥0.90 · media 0.70–0.90 · baja <0.70.
- *   - Suavizado por 2ª clase: si la ganadora es ≥2 niveles más grave que la 2ª y ésta tiene
- *     prob ≥0.10, el MENSAJE baja un escalón (messageBand), sin tocar la fiabilidad.
- */
+// Tests de la lógica de alertas por confianza (evaluateForecast.js).
 const fs = require("fs");
 const path = require("path");
 
@@ -20,8 +11,7 @@ const {
   RELIABILITY_LOW,
 } = require("@/lib/forecast/model-meta");
 
-// Construye un vector de 8 probabilidades a partir de un mapa {clase: prob}.
-// El resto de clases reparten la masa restante de forma uniforme y despreciable.
+// Construye un vector de 8 probabilidades desde {clase: prob}; el resto reparte la masa restante.
 function vec(map) {
   const explicit = Object.values(map).reduce((a, b) => a + b, 0);
   const rest = Math.max(0, 1 - explicit);

@@ -3,21 +3,7 @@ import { cloneElement, isValidElement } from "react";
 import { Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-/**
- * Botón de cabecera FLOTANTE para Android.
- *
- * En Android quitamos el header nativo (intercepta el toque y pinta sombra/
- * fondo fantasma); estos botones se dibujan como overlay absoluto -> reciben el
- * toque y controlamos el aspecto. En iOS NO se usa (se mantiene el header nativo
- * transparente intacto).
- *
- * Aspecto: círculo translúcido con el icono dentro, que sigue el tema de la app:
- *   · claro  -> icono negro + círculo blanco translúcido
- *   · oscuro -> icono blanco + círculo oscuro translúcido
- * El color del icono lo inyecta este componente (ignora el `color` del hijo), de
- * modo que todos los botones flotantes cambian de color con el tema desde un
- * único sitio. El icono pasado como `children` debe aceptar la prop `color`.
- */
+// Botón de cabecera flotante para Android (overlay circular translúcido que sigue el tema); en iOS no se usa.
 const ICON_LIGHT = "#111827"; // negro suave (tema claro)
 const ICON_DARK = "#ffffff"; // blanco (tema oscuro)
 const CIRCLE_LIGHT = "rgba(255, 255, 255, 0.6)"; // blanco translúcido

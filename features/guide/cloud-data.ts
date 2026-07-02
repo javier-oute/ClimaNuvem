@@ -1,9 +1,4 @@
-// Datos NO textuales de la guía de nubes (el texto vive en locales/*.guide).
-// Fuente de verdad de: manifiesto de imágenes, categoría OMM, abreviatura,
-// altitud, si precipita y el riesgo en montaña (paleta de ALERTAS, CLAUDE §5).
-//
-// El manifiesto usa require() ESTÁTICOS porque Metro no admite require dinámico:
-// las imágenes están en assets/images/clouds/{type}-NN.ext.
+// Datos no textuales de la guía (imágenes, categoría OMM, abreviatura, altitud, precipitación, riesgo); el texto vive en locales/*.guide.
 
 export const CLOUD_KEYS = [
   "cirrus",
@@ -54,8 +49,7 @@ const META: Record<CloudKey, Omit<CloudMeta, "riesgoColor">> = {
   cumulonimbus: { category: "vertical", abrev: "Cb", riesgo: 4 },
 };
 
-// Manifiesto estático de imágenes (8 por género). El orden define el del carrusel;
-// la primera es la imagen que ya usa la tarjeta de la Guía.
+// Manifiesto estático de imágenes (8 por género); el orden define el del carrusel.
 const IMAGES: Record<CloudKey, number[]> = {
   cirrus: [
     require("../../assets/images/clouds/cirrus-01.jpg"),

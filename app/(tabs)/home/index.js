@@ -18,15 +18,9 @@ export default function Index() {
   const { colorScheme } = useColorScheme();
   const session = useAuthStore((s) => s.session);
 
-  // Aviso de bienvenida: se muestra UNA sola vez por dispositivo (la primera vez que se llega a la
-  // home, como invitado o con cuenta). Condiciones para no romper la experiencia:
-  //   1) el splash ya ha desaparecido (un Alert nativo se dibuja por encima del overlay del splash),
-  //   2) el store persistido (AsyncStorage) ya está hidratado (no leer el flag por defecto),
-  //   3) aún no se ha visto (hasSeenOnboarding === false).
-  // El ref evita que se lance dos veces si la home se re-monta o re-renderiza.
+  // Aviso de bienvenida una vez por dispositivo: solo tras el splash, con el store hidratado y si no se ha visto (ref anti-doble).
   const onboardingShown = useRef(false);
-  // Ref con el `t` actual: permite usar el idioma vigente sin meter `t` (que cambia en cada render)
-  // en las deps del efecto, evitando re-suscripciones innecesarias.
+  // Ref con el `t` actual: usa el idioma vigente sin meter `t` en las deps del efecto.
   const tRef = useRef(t);
   tRef.current = t;
   useEffect(() => {
@@ -53,9 +47,7 @@ export default function Index() {
     <View className="flex-1 flex-grow justify-end bg-white dark:bg-zinc-900">
       <Stack.Screen
         options={{
-          // En Android quitamos el header nativo (intercepta toques y pinta
-          // sombra/fondo fantasma); los botones se dibujan flotantes (más abajo).
-          // En iOS se mantiene el header nativo transparente con sus botones.
+          // En Android sin header nativo (intercepta toques), botones flotantes; en iOS header nativo transparente.
           headerShown: Platform.OS === "ios",
           headerTransparent: true,
           headerTitle: "",
@@ -93,8 +85,7 @@ export default function Index() {
         }}
       />
       <DemoVideo />
-      {/* Android (sin header nativo): botones de cabecera flotantes
-          (icono blanco con sombra). */}
+      {/* Android (sin header nativo): botones de cabecera flotantes. */}
       {Platform.OS === "android" && (
         <>
           <FloatingHeaderButton

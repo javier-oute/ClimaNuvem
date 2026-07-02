@@ -9,8 +9,7 @@ const PICK_OPTIONS = {
   quality: 1,
 };
 
-// Redimensiona la imagen elegida a 512×512 JPEG comprimido (avatar uniforme y ligero).
-// No sube nada: el guardado es diferido (al pulsar "Guardar").
+// Redimensiona la imagen a 512×512 JPEG (avatar uniforme y ligero); no sube nada (guardado diferido).
 async function processToAvatar(uri) {
   const result = await ImageManipulator.manipulateAsync(
     uri,

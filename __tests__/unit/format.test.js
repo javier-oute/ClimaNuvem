@@ -175,9 +175,7 @@ describe("dayRangeISO", () => {
     });
   });
 
-  // [DATE01] El rango se ancla a Europe/Madrid (consistente con cómo se muestran
-  // las fechas), no a la hora local del dispositivo. Resultado determinista
-  // independiente de la TZ donde corra Jest.
+  // El rango se ancla a Europe/Madrid (determinista, independiente de la TZ donde corra Jest).
   describe("[DATE01] rango anclado a Europe/Madrid", () => {
     it("startISO siempre termina en Z (UTC)", () => {
       const { startISO } = dayRangeISO(new Date("2026-07-15"));
@@ -197,8 +195,7 @@ describe("dayRangeISO", () => {
     });
 
     it("incluye una predicción de la madrugada del día filtrado (hora Madrid)", () => {
-      // Predicción creada a las 01:00 hora Madrid del 15-Jul = 2026-07-14T23:00Z.
-      // Debe caer dentro del rango [start, end).
+      // Predicción a las 01:00 Madrid del 15-Jul (=2026-07-14T23:00Z): debe caer dentro del rango.
       const { startISO, endISO } = dayRangeISO(new Date("2026-07-15"));
       const madrugada = new Date("2026-07-14T23:00:00.000Z").getTime();
       expect(madrugada).toBeGreaterThanOrEqual(new Date(startISO).getTime());

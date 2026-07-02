@@ -2,9 +2,7 @@ import { useT } from "@/lib/i18n";
 import { useColorScheme } from "nativewind";
 import { Image, Text, View } from "react-native";
 
-// Estado vacío del historial cuando NO hay ningún filtro activo (historial realmente vacío).
-// Logo según tema (igual par que el login: fondos sólidos que coinciden con bg-white / dark:bg-zinc-900,
-// por eso el borde es invisible) + título y subtítulo cercanos.
+// Estado vacío del historial sin filtros (realmente vacío): logo según tema + título y subtítulo.
 export default function HistoryEmpty() {
   const t = useT();
   const { colorScheme } = useColorScheme();

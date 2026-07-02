@@ -1,12 +1,4 @@
-// Cobertura del mapeo de clases del pipeline ML (antes [A02] it.todo de la auditoría Revision.md).
-//
-// Contexto: el hook hooks/useModel.jsx mezcla estado + side effects nativos (react-native-fast-tflite,
-// expo-image-manipulator, jpeg-js), así que el hook completo no se testea sin esos módulos nativos. PERO
-// la lógica de negocio que antes vivía dentro de useModel —"mapearClase": elegir la clase ganadora y la
-// segunda a partir del vector softmax, y construir la estructura del resultado— ya está EXTRAÍDA a la
-// función pura lib/forecast/evaluateForecast.js. Esos it.todo se sustituyen aquí por tests reales sobre
-// esa función (lo único que faltaba por cubrir del antiguo A02). El resto del pipeline (decode + resize +
-// inferencia) son llamadas a librerías nativas, fuera del alcance unitario.
+// Cobertura del mapeo de clases del pipeline ML: la lógica pura vive en evaluateForecast.js y se testea allí (antes A02 it.todo).
 
 const { evaluateForecast } = require("@/lib/forecast/evaluateForecast");
 const { CLASS_ORDER } = require("@/lib/forecast/model-meta");

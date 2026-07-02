@@ -20,9 +20,7 @@ export function useProfileForm({ userId, profile, refreshProfile }) {
   const [phone, setPhone] = useState("");
   const [username, setUsername] = useState("");
 
-  // Avatar staged (no se sube hasta "Guardar"):
-  // avatarUri = URI local de preview | null
-  // avatarAction = "none" (sin cambios) | "set" (nueva foto) | "remove" (quitar)
+  // Avatar staged (no se sube hasta Guardar): avatarUri = preview | null; avatarAction = none|set|remove.
   const [avatarUri, setAvatarUri] = useState(null);
   const [avatarAction, setAvatarAction] = useState("none");
 

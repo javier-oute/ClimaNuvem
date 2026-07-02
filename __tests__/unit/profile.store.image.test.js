@@ -1,7 +1,4 @@
-// Tests de stores/profile.store.image.js — gestión del avatar en Storage.
-// Mockea @/lib/supabase (storage) y expo-file-system. Foco en resolveAvatarUrl /
-// isStorageAvatarPath (distinguir URL externa de OAuth de un path de Storage) y en los
-// guardas de path null de getAvatarSignedUrl/deleteAvatar.
+// Tests de stores/profile.store.image.js: resolveAvatarUrl/isStorageAvatarPath y guardas de path null (mockea supabase y expo-file-system).
 
 jest.mock("@/lib/supabase", () => {
   const storageApi = {

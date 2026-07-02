@@ -26,11 +26,7 @@ import "../global.css";
 const SPLASH_BG_LIGHT = "#ffffff";
 const SPLASH_BG_DARK = "#18181b";
 
-// Temas de navegación (headers nativos de React Navigation). Sin esto, todos los headers caen al
-// tema CLARO por defecto → fondo blanco aunque la app esté en oscuro (afectaba a Historial en
-// Android, y a Login/Help en ambas plataformas). La paleta usa los colores reales de la app para
-// que el header del Historial case sin costura con la lista (zinc-900 = #18181b). No afecta a los
-// headers transparentes (los respeta) ni a las tab bars (color propio).
+// Temas de navegación de los headers nativos con la paleta real de la app (sin esto caerían a claro por defecto).
 const CN_LightTheme = {
   ...DefaultTheme,
   colors: {
@@ -61,10 +57,7 @@ export default function RootLayout() {
     applyStoredTheme();
   }, []);
 
-  // Precarga del modelo TFLite una sola vez, diferida tras las interacciones de
-  // arranque para que la congelación de JS de la carga (~1-2 s) no pille el splash
-  // ni la primera pantalla. Cuando el usuario llega a tomar una foto, el modelo ya
-  // está en memoria → el "cargando" del pronóstico aparece al instante.
+  // Precarga del modelo TFLite una vez, diferida tras el arranque, para que su congelación de JS no pille el splash.
   useEffect(() => {
     const task = InteractionManager.runAfterInteractions(() => {
       preloadModel().catch(() => {});
@@ -72,8 +65,7 @@ export default function RootLayout() {
     return () => task.cancel();
   }, []);
 
-  // Fondo NATIVO de ventana (host/windowBackground) acorde al tema: evita el destello blanco
-  // por debajo de React durante el relevo splash → app.
+  // Fondo nativo de ventana acorde al tema: evita el destello blanco durante el relevo splash → app.
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(
       colorScheme === "dark" ? SPLASH_BG_DARK : SPLASH_BG_LIGHT,
@@ -82,9 +74,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView className="flex-1 bg-white dark:bg-[#18181b]">
-      {/* Color de los iconos de la barra de estado según el tema (oscuros en claro,
-          claros en oscuro). En Android edge-to-edge evita que el reloj/notificaciones
-          se vuelvan blancos e ilegibles sobre fondos claros. */}
+      {/* Color de los iconos de la barra de estado según el tema (evita textos ilegibles en Android edge-to-edge). */}
       <StatusBar style="auto" />
       <KeyboardProvider>
         <SafeAreaProvider initialMetrics={initialWindowMetrics ?? undefined}>
@@ -106,9 +96,7 @@ export default function RootLayout() {
                     name="[id]"
                     options={{
                       headerBackTitleVisible: false,
-                      // Android: sin header nativo desde el primer frame (evita el
-                      // flash del botón atrás negro al abrir); la pantalla dibuja su
-                      // propio botón flotante. iOS mantiene su header transparente.
+                      // Android: sin header nativo desde el primer frame (evita el flash del botón atrás); iOS mantiene su header transparente.
                       headerShown: Platform.OS === "ios",
                       headerTitle: "",
                       headerBackTitle: "",
@@ -161,8 +149,7 @@ export default function RootLayout() {
                 </Stack>
               </ThemeProvider>
             </AuthBootstrap>
-            {/* Overlay de splash animada (zoom-in + fade). Sobre toda la app, incluido
-              el login. Toma el relevo de la splash nativa y se desmonta al cargar. */}
+            {/* Overlay de splash animada (zoom-in + fade) sobre toda la app; se desmonta al cargar. */}
             <AnimatedSplash />
           </BottomSheetModalProvider>
         </SafeAreaProvider>

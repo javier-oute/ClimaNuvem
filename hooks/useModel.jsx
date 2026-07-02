@@ -8,9 +8,7 @@ import { useEffect, useState } from "react";
 const IMG_SIZE = 224;
 const RESIZE_SHORT_SIDE = 256; // Resize(256) + CenterCrop(224), igual que el eval del notebook
 
-// Detecta el layout del tensor de entrada del modelo: [1,3,224,224] → NCHW (planar),
-// cualquier otro 4-D → NHWC (intercalado). El export del notebook (ai_edge_torch) conserva
-// la firma NCHW de PyTorch, mientras que un modelo TF clásico sería NHWC.
+// Detecta el layout del tensor de entrada: [1,3,224,224] → NCHW (export ai_edge_torch), cualquier otro 4-D → NHWC.
 function inputLayout(model) {
   const shape = model?.inputs?.[0]?.shape;
   if (Array.isArray(shape) && shape.length === 4 && shape[1] === 3) {
@@ -20,9 +18,7 @@ function inputLayout(model) {
 }
 
 export function useModel(imageUri) {
-  // Instancia compartida del modelo (precargada en el arranque, ver modelLoader).
-  // Al montar esta pantalla no se dispara ninguna carga pesada: el modelo ya está
-  // en memoria, así que el spinner se pinta al instante.
+  // Instancia compartida del modelo (precargada al arranque): al montar no dispara carga, el spinner se pinta al instante.
   const [model, setModel] = useState(null);
 
   const [resultado, setResultado] = useState(null);

@@ -40,9 +40,7 @@ const ABREVIATURAS = {
 
 function NubeCard({ nube }) {
   return (
-    // Altura fija: la imagen (height "100%") siempre mide exactamente lo que la tarjeta,
-    // así cuadra igual en todos los dispositivos. El texto se acota (numberOfLines +
-    // lineHeight fijo) para que NUNCA se desborde, sea cual sea el idioma o la fuente.
+    // Altura fija: la imagen mide lo que la tarjeta (cuadra en todos los dispositivos) y el texto se acota para no desbordar.
     <View
       className="flex-row bg-white dark:bg-zinc-800 rounded-xl shadow-sm"
       style={{ height: 160 }}

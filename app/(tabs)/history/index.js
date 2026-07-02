@@ -91,8 +91,7 @@ function DeleteAction({
   );
 }
 
-// Badge de estado de publicación en el mapa: azul si está publicada (activa), gris atenuado si lo
-// estuvo pero ya no, nada si nunca se publicó.
+// Badge de estado de publicación en el mapa: azul si activa, gris si lo estuvo, nada si nunca.
 const PAGE_SIZE = 15;
 
 export default function Historial() {
@@ -202,9 +201,7 @@ export default function Historial() {
     loadInitial();
   }, [loadInitial, debouncedSearch, day]);
 
-  // Recarga al volver a la pestaña (salta el primer foco, que coincide con el montaje) para reflejar
-  // cambios de estado de publicación hechos fuera: despublicar desde el detalle o desactivar
-  // "compartir en el mapa" desde Ajustes. Así los badges (azul → gris) quedan siempre coherentes.
+  // Recarga al volver a la pestaña (salta el primer foco) para reflejar cambios de publicación hechos fuera.
   const didFocusOnce = useRef(false);
   useFocusEffect(
     useCallback(() => {
@@ -221,8 +218,7 @@ export default function Historial() {
     loadInitial();
   }, [loadInitial]);
 
-  // Optimistic delete: elimina de la lista al instante y borra en Supabase en paralelo.
-  // Si falla el borrado en servidor, recarga la lista para restaurar el item.
+  // Optimistic delete: quita de la lista al instante y borra en Supabase; si falla, recarga para restaurar.
   const handleDeleteItem = useCallback(
     async (item) => {
       setItems((prev) => prev.filter((i) => i.id !== item.id));
@@ -280,9 +276,7 @@ export default function Historial() {
                   hideWhenScrolling: false,
                 }
               : {
-                  // Android look (props específicas). Colores según el tema: el ThemeProvider no
-                  // controla la SearchView nativa, así que se ajustan a mano para que el icono, el
-                  // texto y el placeholder sean legibles sobre el header oscuro.
+                  // Android look: colores de la SearchView nativa ajustados a mano para que sea legible sobre el header oscuro.
                   textColor: colorScheme === "dark" ? "#FFFFFF" : "#0F172A",
                   headerIconColor: colorScheme === "dark" ? "white" : "black",
                   hintTextColor: colorScheme === "dark" ? "#a1a1aa" : "#94a3b8",
@@ -323,22 +317,19 @@ export default function Historial() {
         scrollEnabled={items.length > 0}
         keyExtractor={(item) => String(item.id)}
         refreshing={isRefreshing}
-        /* FLATLIST TIENE UN MONTON DE OPCIONES, SEGUIR MIRANDO */
         onRefresh={onRefresh}
         ListEmptyComponent={
           isLoading ? (
             <ActivityIndicator />
           ) : debouncedSearch || day ? (
-            // Hay búsqueda o filtro de fecha activos pero sin resultados: mensaje neutro (no el
-            // empty-state con "¡haz tu primera predicción!", que solo aplica al historial real vacío).
+            // Búsqueda o filtro activos sin resultados: mensaje neutro (no el empty-state de historial vacío).
             <View className="flex-1 items-center justify-center px-8">
               <Text className="text-center text-base text-slate-500 dark:text-zinc-400">
                 {t("history.noResults")}
               </Text>
             </View>
           ) : null
-          // El empty-state real (historial vacío sin filtros) se renderiza como capa centrada
-          // fuera del FlatList (ver abajo), para centrarlo en la pantalla pese al inset del header.
+          // El empty-state real (historial vacío sin filtros) se renderiza como capa centrada fuera del FlatList.
         }
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
@@ -431,9 +422,7 @@ export default function Historial() {
           );
         }}
       />
-      {/* Empty-state real (historial vacío, sin búsqueda ni filtro de fecha): capa centrada en la
-          pantalla. Va fuera del FlatList para no verse afectada por el inset del header transparente.
-          pointerEvents="none" deja pasar los toques al FlatList que queda debajo. */}
+      {/* Empty-state real (historial vacío) centrado, fuera del FlatList y con pointerEvents none. */}
       {!isLoading && items.length === 0 && !debouncedSearch && !day && (
         <View pointerEvents="none" className="absolute inset-0">
           <HistoryEmpty />

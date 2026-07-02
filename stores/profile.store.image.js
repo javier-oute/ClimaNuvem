@@ -3,8 +3,7 @@ import { File } from "expo-file-system";
 
 const BUCKET = "avatars";
 
-// Nombre de archivo fijo por usuario: cada cambio sobrescribe (upsert) la foto
-// anterior, así no se acumulan huérfanos en Storage.
+// Nombre de archivo fijo por usuario: cada cambio sobrescribe (upsert), sin huérfanos en Storage.
 export async function uploadAvatar({ uri, userId }) {
   const path = `${userId}/avatar.jpg`;
 
@@ -40,10 +39,7 @@ export async function deleteAvatar(path) {
   if (error) throw error;
 }
 
-// Resuelve el valor de profiles.avatar_url a una URL mostrable:
-// - null/"" -> null (se usará el icono por defecto)
-// - URL externa (OAuth, p.ej. Google) -> se muestra tal cual
-// - path de Storage ("{uid}/avatar.jpg") -> se genera una URL firmada
+// Resuelve profiles.avatar_url a URL mostrable: null → icono; URL externa OAuth → tal cual; path de Storage → URL firmada.
 export async function resolveAvatarUrl(avatarUrl) {
   if (!avatarUrl) return null;
   if (/^https?:\/\//i.test(avatarUrl)) return avatarUrl;

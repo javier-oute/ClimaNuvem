@@ -31,8 +31,7 @@ export default function MapScreen() {
   const mapRef = useRef(null);
   const [predictions, setPredictions] = useState([]);
   const [locationGranted, setLocationGranted] = useState(false);
-  // "loading" mientras se piden datos, "ready" al recibirlos, "error" si falla el fetch.
-  // Distinguir error de vacío evita mostrar un mapa "vacío" cuando en realidad falló la red.
+  // 'loading' al pedir datos, 'ready' al recibirlos, 'error' si falla: distinguir error de vacío evita un mapa falsamente vacío.
   const [status, setStatus] = useState("loading");
 
   // Carga de datos (independiente del GPS). Reutilizable desde el foco y desde "Reintentar".
@@ -49,9 +48,7 @@ export default function MapScreen() {
     }
   }, []);
 
-  // Carga al enfocar la tab (sin pull-to-refresh ni polling, Q31). Sin filtro de distancia: se cargan
-  // TODAS las publicaciones activas (con pocos usuarios un radio dejaría el mapa casi vacío). La
-  // ubicación es opcional y solo sirve para centrar la vista; aunque no haya GPS se ven los pins.
+  // Carga al enfocar la tab, sin filtro de distancia (con pocos usuarios un radio dejaría el mapa vacío); la ubicación solo centra la vista.
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
@@ -87,8 +84,7 @@ export default function MapScreen() {
         style={StyleSheet.absoluteFill}
         initialRegion={DEFAULT_REGION}
         showsUserLocation={locationGranted}
-        // En Android, Google Maps dibuja estos controles arriba a la derecha sin respetar los
-        // márgenes; se ocultan. En iOS se mantiene el comportamiento por defecto.
+        // En Android se ocultan los controles de Google Maps (no respetan los márgenes); en iOS por defecto.
         showsMyLocationButton={
           Platform.OS === "android" ? false : locationGranted
         }
@@ -126,8 +122,7 @@ export default function MapScreen() {
         </View>
       ) : null}
 
-      {/* Vacío real (cargó bien pero no hay publicaciones): tarjeta informativa centrada.
-          box-none deja seguir moviendo el mapa por detrás. */}
+      {/* Vacío real (cargó pero sin publicaciones): tarjeta informativa centrada (box-none). */}
       {status === "ready" && predictions.length === 0 ? (
         <View
           pointerEvents="box-none"

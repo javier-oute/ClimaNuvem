@@ -6,15 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CloseIcon, ExpandIcon } from "./icons";
 
-/**
- * Pista "Toca para ampliar" (icono ⤢ + texto) centrada arriba sobre la foto de fondo.
- * Al pulsarla abre el visor a pantalla completa (mismo efecto que tocar la foto).
- *
- * En iOS estas pantallas mantienen un header nativo transparente (UINavigationBar) que
- * se monta POR ENCIMA del contenido y captura los toques de su franja (~44pt). Por eso
- * el botón se baja por debajo del header en iOS; el zIndex de RN no puede superar una
- * vista nativa del header. En Android no hay header nativo, así que va casi arriba.
- */
+// Pista 'Toca para ampliar' sobre la foto; en iOS se baja bajo el header nativo transparente que captura los toques.
 export function ImageZoomHint({ onPress }) {
   const t = useT();
   const insets = useSafeAreaInsets();
@@ -38,13 +30,7 @@ export function ImageZoomHint({ onPress }) {
   );
 }
 
-/**
- * Visor de imagen a pantalla completa (zoom + desplazamiento).
- *
- * Se abre tocando la foto de fondo de una pantalla. Muestra la imagen ENTERA
- * (`contain`, sin recortar) sobre negro. Cerrar: botón ✕, un toque sobre la foto,
- * o el botón atrás de Android (`onRequestClose`).
- */
+// Visor de imagen a pantalla completa (zoom + desplazamiento, imagen entera sobre negro).
 export function FullscreenImageViewer({ visible, uri, onClose }) {
   const insets = useSafeAreaInsets();
 

@@ -52,8 +52,7 @@ export async function saveForecastWithPhoto({
 
     return data;
   } catch (err) {
-    // Si la foto ya se subió pero el INSERT falló, borramos la imagen
-    // huérfana de Storage para no acumular ficheros sin registro asociado.
+    // Si la foto se subió pero el INSERT falló, borra la imagen huérfana de Storage.
     if (imagePath) {
       try {
         await deleteImage(imagePath);

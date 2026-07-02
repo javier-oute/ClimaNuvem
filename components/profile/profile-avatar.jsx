@@ -7,8 +7,7 @@ import { PencilIcon, UserIcon } from "../icons";
 const SIZE = 112; // diámetro del círculo del avatar
 const BADGE = 34; // diámetro del badge de la esquina
 
-// Header del avatar: muestra (prioridad) preview staged > avatar guardado > icono por defecto.
-// En modo edición aparece un badge con lápiz abajo-derecha (el avatar se ve siempre nítido).
+// Header del avatar: preview staged > avatar guardado > icono; en edición muestra un badge con lápiz.
 export function ProfileAvatar({
   avatarUrl, // valor guardado en profiles.avatar_url
   stagedUri, // preview local (aún sin subir) | null
@@ -68,10 +67,7 @@ export function ProfileAvatar({
     </View>
   );
 
-  // Raíz SIEMPRE Pressable (mismo tipo de nodo) para que la <Image> no se
-  // desmonte/re-monte al alternar el modo edición (lo que provocaba un fundido
-  // de entrada que dejaba ver el fondo azulado del círculo). Solo activamos la
-  // interacción en edición.
+  // Raíz siempre Pressable para que la Image no se remonte al alternar edición; solo se activa la interacción en edición.
   return (
     <Pressable
       onPress={onPressEdit}

@@ -17,10 +17,7 @@ export function BotonTomarFoto() {
       const foto = await abrirCamara();
       if (!foto) return;
 
-      // Navegamos YA, sin esperar al GPS (antes se hacía `await
-      // tryGetCoordsAndPlace()` aquí y bloqueaba la transición varios segundos
-      // dejando la Home congelada). La ubicación se resuelve dentro de
-      // forecast-screen sin bloquear la pantalla de carga.
+      // Navegamos ya, sin esperar al GPS (antes bloqueaba la transición); la ubicación se resuelve en forecast-screen.
       router.push({
         pathname: "/forecast-screen",
         params: {
@@ -68,9 +65,7 @@ export function SaveButton({ onSave, isSaving }) {
   );
 }
 
-// `floating`: en Android se renderiza como botón flotante circular (el header
-// transparente nativo no recibe toques en Android). En iOS se usa la versión
-// normal dentro de headerRight.
+// `floating`: en Android botón flotante circular (el header transparente no recibe toques); en iOS versión normal.
 export function DownloadPhotoButton({ uri, color, floating = false }) {
   const { saveCameraPhoto } = useSavePhoto();
 
